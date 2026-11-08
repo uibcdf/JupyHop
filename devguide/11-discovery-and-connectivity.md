@@ -2,6 +2,12 @@
 
 > **Design specification, not a claim of universal discovery.** JupyHop must report when discovery is incomplete.
 
+M2 implements the supported subset documented in [16](16-m2-existing-servers.md):
+private current-user metadata, Linux process/socket checks, IPv4 HTTP, simple
+ASCII base paths and attached owned forwards. Coverage is always partial.
+IPv6-only, HTTPS, legacy Notebook metadata and complex auth/proxies remain
+unsupported; the broader requirements below retain their future release gates.
+
 ## Sources of truth and scope
 
 - **Connectivity:** OpenSSH aliases, configuration and trust store on the **current client**, including `Host`, `Include`, `Match`, `ProxyJump`, user identities and host-key validation. Do not build a second SSH parser or select LAN vs external route through guesswork.

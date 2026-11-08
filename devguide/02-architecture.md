@@ -3,9 +3,10 @@
 ## Proposed system
 
 M1 implements the local package/CLI, bounded OpenSSH execution and read-only
-stdin doctor probe. See [15](15-m1-foundations.md). The lifecycle components in
-the diagram remain future design; M0 chose a no-install path for M1/M2 in
-[13](13-m0-validation.md).
+doctor probe. M2 adds read-only runtime discovery, process/socket ownership
+checks and foreground-owned forwarding/open. See [16](16-m2-existing-servers.md).
+The lifecycle components in the diagram remain future design; neither a remote
+installed helper nor a managed registry is needed by M2.
 
 ```text
 Client machine

@@ -25,6 +25,9 @@ JupyHop may inspect only Jupyter runtime data available to the authenticated rem
 
 M0 selected normal Jupyter login through a token-free URL as the safe baseline.
 No JupyHop credential cache or automatic browser token transfer is implemented.
+M2 validates current UID/process/socket ownership and uses explicit login with
+verified IPv4 loopback forwarding. Read the
+[implemented controls and remaining limits](16-m2-existing-servers.md).
 The following requirements govern future automation; see the
 [M0 threat/tradeoff evaluation](13-m0-validation.md).
 

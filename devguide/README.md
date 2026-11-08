@@ -1,6 +1,8 @@
 # JupyHop Development Guide
 
-> **Status: M0/M1 foundations implemented.** This guide specifies intended behavior and acceptance criteria. Only source installation and `doctor` diagnostics ship; session commands remain planned. See the milestone reports below.
+> **Status: M0–M2 implemented.** SSH diagnostics and read-only discovery/open of
+> existing current-user servers ship. Managed launching/lifecycle remain planned.
+> See the milestone reports below for exact acceptance evidence and limits.
 
 JupyHop is a lightweight, SSH-native tool to launch, discover, manage, and reconnect to remote Jupyter sessions without deploying JupyterHub.
 
@@ -51,3 +53,5 @@ This directory is the project's design source of truth. Update specifications an
   test target; feasibility is distinct from shipped acceptance.
 - [M1 foundations](15-m1-foundations.md): implemented CLI/transport/protocol,
   tests, packaging and limitations.
+- [M2 existing-server access](16-m2-existing-servers.md): discovery, verified
+  forwarding, normal Jupyter login, browser/Conda tests and remaining limits.

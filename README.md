@@ -6,7 +6,7 @@ JupyHop is an open-source project for **discovering, opening, launching, managin
 
 It is designed for researchers, data scientists, developers, and small teams who already have SSH access to workstations or servers and want to work with their remote notebooks as easily as with local ones.
 
-> **Project status: M0 and M1 foundations.** Source installation and the read-only `jupyhop doctor` diagnostic are implemented. Discovering, opening, launching and managing Jupyter sessions remain **planned**, beginning at M2. JupyHop is not published on PyPI. See the [M0 validation](devguide/13-m0-validation.md), [M1 report](devguide/15-m1-foundations.md) and [development guide](devguide/README.md).
+> **Project status: M2 — existing-server access.** `doctor`, `discover`, `list` and foreground `open` are implemented for supported current-user Linux Jupyter servers. Managed launching and lifecycle control remain **planned**, beginning at M3. JupyHop is not published on PyPI. See the [M2 report](devguide/16-m2-existing-servers.md) and [development guide](devguide/README.md).
 
 ## The problem
 
@@ -14,17 +14,31 @@ Remote Jupyter is already possible with SSH, but the ordinary workflow involves 
 
 **JupyHop's goal is to make the location of the browser independent of the location of the computation.** The Jupyter server, kernels, Python environments, data, and notebooks stay on the remote host. JupyHop takes care of the access workflow using SSH connections the user is already authorized to make.
 
-## At a glance: intended experience
+## At a glance
 
-A few examples of the proposed CLI:
+With an existing authorized SSH alias and a discoverable Jupyter server:
 
 ```console
 # Open an existing Jupyter server on an SSH-accessible machine
 jupyhop open workstation
 
-# Find available servers (including supported manually started servers)
+# Find supported current-user servers; discovery is always partial
 jupyhop discover workstation
 jupyhop list workstation
+
+# Keep the tunnel attached and print a token-free login URL
+jupyhop open workstation --no-browser
+```
+
+`open` opens the normal Jupyter login page. Enter your existing password/token;
+JupyHop does not retrieve or cache credentials. Keep the command running.
+Ctrl-C closes its tunnel, leaving the remote server alone. Multiple candidates
+require a terminal selection or an exact ID from `discover`; scripting never
+chooses arbitrarily. No JupyHop TOML configuration is required.
+
+The following managed-session commands are **future workflows**:
+
+```console
 
 # Start a JupyHop-managed server in a remote Python environment and directory
 jupyhop start workstation --env research --workdir '~/projects/analysis' --name analysis
@@ -37,13 +51,17 @@ jupyhop status workstation analysis
 jupyhop stop workstation analysis
 ```
 
-**These commands are illustrative and subject to change.** If several servers match, JupyHop should ask the user to select one (or require an explicit identifier in noninteractive mode), rather than guessing. A manually started server can be opened when safely discoverable, but cannot automatically be stopped by JupyHop.
+**Managed commands are illustrative and subject to change.** M2's `stop` guard
+refuses all lifecycle control without sending SSH commands. Discovered servers
+are never silently adopted, stopped or restarted.
 
 A host such as `workstation` would be an existing alias in the user's `~/.ssh/config`; SSH can connect directly or via a jump host using `ProxyJump`.
 
 ## Use cases and scenarios
 
-The following are **intended workflows**, not a list of shipped features. Unless noted otherwise, they are part of the planned core experience.
+Existing-server discovery/open and SSH diagnostics ship in M2. Managed launch,
+persistent lifecycle guarantees and broader platform/network support below are
+intended workflows; their acceptance gates remain in the roadmap.
 
 ### 1. Open a Jupyter server that is already running
 
@@ -125,7 +143,11 @@ A headless client should be able to use a documented `--no-browser` flow and obt
 
 ### 15. Diagnose remote Jupyter access
 
-A planned `jupyhop doctor workstation` command should help distinguish SSH failures, missing remote prerequisites, unsupported Jupyter runtime locations, incompatible helper versions, and tunnel problems, with actionable diagnostics.
+`jupyhop doctor workstation` diagnoses SSH access and the selected Python's
+installed Jupyter packages, visible runtime directory and process managers.
+It does not prove server readiness or supervise managed sessions. Discovery can
+use a stdlib-only remote Python even when doctor reports no Jupyter packages in
+that interpreter; the server may run in a different Conda environment.
 
 ## Where JupyHop can connect
 
@@ -144,14 +166,16 @@ A planned `jupyhop doctor workstation` command should help distinguish SSH failu
 
 | Capability | JupyHop-managed server | Existing/discovered server |
 | --- | --- | --- |
-| Discover and list | Planned | Planned, best-effort |
-| Open through SSH | Planned | Planned, subject to verification/authentication |
+| Discover and list | Planned | Implemented, partial coverage |
+| Open through SSH | Planned | Implemented for verified IPv4 loopback / HTTP servers |
 | Start with chosen environment/workdir | Planned | Started outside JupyHop |
-| Reconnect to a still-running server | Planned | Planned when accessible |
+| Reconnect to a still-running server | Planned lifecycle guarantees | Fresh tunnel and normal login; full kernel continuity gate remains M4 |
 | Stop through JupyHop | Planned | **Not allowed in MVP** |
 | Preserve kernel state after remote reboot | **Not possible by default** | **Not possible by default** |
 
-JupyHop manages **the route to a server**, **the remote server process when it created it**, and **the session registry for its own servers**. It does not replace the Jupyter Server kernel manager or make notebook kernels intrinsically persistent across crashes and reboots.
+M2 manages **the route to a server**. Managing remote processes and a session
+registry is future work. JupyHop does not replace Jupyter's kernel manager or
+make kernels persistent across crashes and reboots.
 
 ## Design principles
 
@@ -178,7 +202,11 @@ Local client
                                                +-- managed session metadata
 ```
 
-JupyHop should discover or invoke current-user remote Jupyter processes, validate their endpoints, create a local loopback SSH forward, and open an authenticated browser session. A small remote helper may be needed for some lifecycle operations; its deployment and protocol are still under evaluation. Remote-managed sessions must survive client disconnection without requiring a central JupyHop daemon.
+M2 reads supported runtime metadata, verifies current-account process/socket
+ownership and HTTP/authentication behavior, creates an owned loopback forward,
+then opens Jupyter's normal login page. Read-only probes travel through SSH
+stdin; no remote JupyHop installation is needed. A lifecycle helper may be needed
+in M3/M4. No central daemon is required.
 
 See the [architecture](devguide/02-architecture.md), [session and authentication contracts](devguide/09-session-lifecycle-and-auth.md), and [remote runtime design](devguide/10-remote-runtime-and-protocol.md).
 
@@ -224,7 +252,7 @@ For detailed milestones, acceptance criteria, design decisions, and known constr
 
 ## Installation
 
-For the implemented diagnostics, use Linux, Python 3.11–3.14 and the OpenSSH client.
+Use Linux, Python 3.11–3.14 and the OpenSSH client.
 From a checkout, in your development environment:
 
 ```console
@@ -232,6 +260,9 @@ python -m pip install --no-deps -e .
 jupyhop --help
 jupyhop doctor workstation
 jupyhop doctor workstation --remote-python /absolute/remote/environment/bin/python --json
+jupyhop discover workstation --json
+jupyhop open workstation
+jupyhop open workstation SERVER_ID --no-browser
 ```
 
 The client has **no Python runtime dependencies** and does not need local
@@ -247,17 +278,46 @@ Server/core versions, the runtime directory visible to that interpreter, the
 remote Unix identity, and process-manager availability. Missing Jupyter packages
 produce a diagnostic and exit 4; choose the existing environment using its
 absolute Python path. No remote package, helper, server or tunnel is installed
-or started. Environment activation is unnecessary. Runtime coverage is partial;
-doctor neither lists running servers nor proves their absence or readiness.
+or started by doctor. Environment activation is unnecessary; doctor does not
+list running servers or prove their absence/readiness.
+
+Discovery uses Jupyter's runtime path when available and standard Linux defaults
+otherwise. For custom or separate environment paths, explicitly extend coverage:
+
+```console
+jupyhop discover workstation --runtime-dir '~/custom/runtime'
+jupyhop discover workstation --remote-python /env/one/bin/python --remote-python /env/two/bin/python
+```
+
+`--runtime-dir` and discovery/open `--remote-python` are repeatable. No process
+scan or Conda inventory is attempted. Discovery always reports `complete: false`;
+a zero-result search is not proof that no servers exist. Runtime directories and
+metadata must belong to the remote account, be private (0700 / 0600), and use
+paths without symlinks. Metadata is never modified or deleted.
+
+The initial tested server stack is Jupyter Server 2.21.1 / JupyterLab 4.6.4.
+Supported candidates must own a `127.0.0.1` TCP listener and expose recognizable
+Jupyter 2 API/auth behavior. Simple ASCII custom base paths such as `/science/`
+work, including WebSockets. Public/wildcard listeners, IPv6-only servers, HTTPS,
+Unix sockets, older `nbserver` metadata and unknown authentication/proxy setups
+are rejected or labeled unsupported. TLS verification is never disabled.
+
+`open` prints a token-free login URL and owns one fresh foreground SSH connection.
+Keep it running; Ctrl-C, SIGTERM or terminal hangup closes only that connection.
+Repeated opens create independent tunnels and ports. Browser absence falls back
+to the printed URL on this client. There is no detached tunnel daemon or shared
+connection reuse. The original launcher remains responsible for server/kernel
+persistence. See [the M2 contract](devguide/16-m2-existing-servers.md).
 
 Exit codes: 0 checks passed; 2 invalid input; 3 SSH/access/timeout failure;
 4 missing remote prerequisites or failed Python probe; 5 invalid/incompatible
-probe output; 130 interrupted. `--json` emits nonsecret structured results;
+probe output; 6 no verified candidate (partial search); 7 ambiguous/invalid
+selection; 8 forwarding failure; 11 unmanaged lifecycle refusal; 130 interrupted.
+`--json` emits nonsecret structured results;
 errors go to stderr. Transport errors leave remote session state unknown.
 
-Only `doctor`, `--help` and `--version` are available. All session commands shown
-elsewhere in this README remain future workflows. Other client/remote operating
-systems and non-POSIX remote login shells are untested.
+`start` and managed `status`/`stop` remain future work. Other client/remote
+operating systems and non-POSIX remote login shells are untested.
 
 ## Contributing
 
@@ -274,12 +334,14 @@ ruff format --check .
 mypy
 python -m build --no-isolation
 python -m experiments.package_smoke
+python -m experiments.browser_smoke  # optional Chrome + JupyterLab acceptance
 ```
 
 Integration requires a non-root Unix user, OpenSSH server/client, an existing
 `/run/sshd`, permission to bind loopback sockets, and Jupyter Server in the
 test interpreter. It creates temporary keys/configuration and never uses your
-SSH hosts. See [test evidence and limits](devguide/15-m1-foundations.md).
+SSH hosts; their HOME/runtime are isolated too. See
+[test evidence and limits](devguide/16-m2-existing-servers.md).
 Suggestions and research-computing use cases remain welcome.
 
 Developed by the [Computational Biology and Drug Design Research Unit (UIBCDF)](https://www.uibcdf.org/).

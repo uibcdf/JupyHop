@@ -1,6 +1,6 @@
 # 06 — Development roadmap
 
-**Status:** M0/M1 complete; M2 onward planned. Dependency-ordered milestones,
+**Status:** M0–M2 complete; M3 onward planned. Dependency-ordered milestones,
 **not** a release timeline. Each milestone has an independently demonstrable
 vertical slice; security is a gate at every stage. Never advertise proposed CLI
 syntax as implemented.
@@ -28,6 +28,10 @@ implemented.
 **Acceptance:** connect directly to a disposable Linux target and via a jump host. Respect host-key verification and selected remote OS account. No remote service/SSH config rewrite or elevated permission required.
 
 ## M2 — Discover and open an existing Jupyter server
+
+**Completed 2026-11-08:** [implementation, acceptance and limits](16-m2-existing-servers.md).
+Normal login is the authentication baseline; no credential handoff/cache or
+managed lifecycle is implemented. Stop after M2 for review before M3.
 
 **Outputs:** best-effort, current-user discovery using supported Jupyter runtime information (including multiple environment paths where known); candidate verification; `discover`/`list` and `open`; dynamic loopback-only SSH forwarding; browser/no-browser UX; explicit password/login fallback; labeling of unsupported runtime directories and base URL variants.
 

@@ -1,7 +1,8 @@
 # 03 — CLI and configuration specification
 
-> `doctor` is implemented in M1; see [its exact contract](15-m1-foundations.md).
-> All session commands below remain proposed and subject to refinement.
+> `doctor` ships in M1; `discover`, `list HOST` and foreground `open` ship in M2.
+> See [the current exact contract](16-m2-existing-servers.md). Managed launching,
+> status and stop below remain proposed; the M2 `stop` guard only refuses control.
 
 ## Proposed commands
 

@@ -1,8 +1,9 @@
 # 08 — Scenario catalogue and acceptance matrix
 
 **Status:** specification with [per-scenario evidence](14-acceptance-ledger.md).
-M1 implements SSH diagnostics and its security controls; session scenarios remain
-pending. Each scenario must be mapped to a test ID before its milestone is complete.
+M1/M2 implement diagnostics and verified read-only existing-server access.
+Managed lifecycle, physical topology and additional compatibility scenarios remain
+pending as recorded in the ledger; a feasibility spike alone is not acceptance.
 
 ## Topology and assumptions
 

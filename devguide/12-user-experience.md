@@ -1,8 +1,8 @@
 # 12 — User experience and CLI contract
 
-> **Planned session UX.** Only [M1 doctor diagnostics](15-m1-foundations.md) are
-> implemented. The main quality bar is fewer steps than managing Jupyter and SSH
-> tunnels manually.
+> **Session UX contract.** [M2](16-m2-existing-servers.md) implements existing-server
+> discovery/open with normal Jupyter login and attached foreground tunnels.
+> Managed workflows below remain planned.
 
 ## Two levels of experience
 

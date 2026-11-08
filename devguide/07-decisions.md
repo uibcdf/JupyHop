@@ -46,6 +46,22 @@ only within the stated scope:
 M0 design acceptance is met; later feature acceptance remains pending. See the
 [scenario ledger](14-acceptance-ledger.md).
 
+## M2 decisions (2026-11-08)
+
+The [M2 report](16-m2-existing-servers.md) supplies context, alternatives,
+security impact and live-test evidence for these decisions:
+
+| ID | Decision | Rationale / consequence |
+| --- | --- | --- |
+| D21 | Read-only bounded metadata + current UID/PID start/socket-inode verification; partial coverage always | Neither a PID file nor an open port grants ownership; IDs are observations, never lifecycle authority |
+| D22 | Token-free normal Jupyter login; IPv4 HTTP and simple ASCII base paths initially | Real browser/form/cookie/WS tests pass; no credential cache, token argv or TLS bypass |
+| D23 | One foreground-owned OpenSSH master with a private control socket | Clear configured forwards, add only our forward through mux, verify owned PID, prohibit client fallback and revalidate on the exact connection |
+
+D23 refines D16 without introducing detached/shared tunnel reuse. The no-install
+stdin policy D13 is now demonstrated with a stdlib-only helper interpreter and
+a Jupyter server in another environment. Lifecycle helper/process manager/state
+questions remain M3/M4 decisions, not resolved by M2 discoverability.
+
 ## Decisions remaining for their implementation milestones
 
 | Topic | Options / questions | Evidence needed |

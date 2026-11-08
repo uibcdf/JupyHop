@@ -2,10 +2,11 @@
 
 ## Test levels
 
-Current M1 commands, fixtures, observed counts and limitations are in the
-[M1 report](15-m1-foundations.md). Remaining matrix rows are release gates,
-not claims of existing test coverage. Integration is opt-in locally and enabled
-in the Linux CI definition.
+Current commands, fixtures, four-version results and real browser/Conda evidence
+are in the [M2 report](16-m2-existing-servers.md). Remaining matrix rows are
+release gates, not claims of existing coverage. Integration is opt-in locally
+and enabled in Linux CI. Default unit collection does not import optional
+Jupyter dependencies; browser smoke additionally requires Chrome/Chromium.
 
 **Unit:** CLI parsing, session identifiers, config validation, state transitions, serialization, output redaction, launcher argument construction and error messaging.
 
