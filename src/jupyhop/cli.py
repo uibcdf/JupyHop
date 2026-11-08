@@ -12,6 +12,7 @@ from jupyhop import __version__
 from jupyhop.discovery import discover, select_server
 from jupyhop.doctor import diagnose
 from jupyhop.errors import JupyHopError, OwnershipError
+from jupyhop.lifecycle import lifecycle, require_lifecycle_ok, validate_managed_id
 from jupyhop.managed import new_id, password_input, require_ready, start
 from jupyhop.opening import open_connection
 from jupyhop.ssh import SSHTransport
@@ -20,7 +21,7 @@ from jupyhop.ssh import SSHTransport
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="jupyhop",
-        description="Discover and open existing Jupyter servers through OpenSSH.",
+        description="Discover, launch and reconnect to remote Jupyter servers through OpenSSH.",
     )
     parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
     commands = parser.add_subparsers(dest="command", required=True)
@@ -86,12 +87,26 @@ def _parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Print the login URL and keep the tunnel attached.",
     )
-    stop = commands.add_parser(
-        "stop",
-        help="Refuse lifecycle control of discovered servers (managed stop is not implemented).",
-    )
-    stop.add_argument("host")
-    stop.add_argument("session")
+    for name in ("status", "stop"):
+        control = commands.add_parser(
+            name,
+            help={
+                "status": "Observe managed sessions and reconcile interrupted launch readiness.",
+                "stop": "Gracefully stop one verified managed session; terminates its kernels.",
+            }[name],
+        )
+        _connection_arguments(control, multiple=False)
+        control.add_argument(
+            "session",
+            nargs="?" if name == "status" else None,
+            help="Exact managed session UUID; names and unmanaged IDs are refused.",
+        )
+        if name == "stop":
+            control.add_argument(
+                "--yes",
+                action="store_true",
+                help="Authorize stopping this exact managed UUID and its kernels without a terminal prompt.",
+            )
     return parser
 
 
@@ -216,10 +231,34 @@ def main(argv: list[str] | None = None) -> int:
     launch_id = None
     try:
         if args.command == "stop":
-            raise OwnershipError(
-                "M3 does not implement stop: unmanaged servers can never be stopped or adopted by JupyHop, and managed stop is deferred to M4. No SSH command was sent."
-            )
+            validate_managed_id(args.session)
+            if not args.yes:
+                if not sys.stdin.isatty() or args.json:
+                    raise OwnershipError(
+                        "Stop terminates kernels and computations. Supply an exact managed UUID and --yes, or use a terminal for confirmation. No SSH command was sent."
+                    )
+                print(
+                    f"Stop managed session {args.session}? This terminates its kernels and computations. Type stop to confirm: ",
+                    end="",
+                    file=sys.stderr,
+                    flush=True,
+                )
+                if sys.stdin.readline().strip() != "stop":
+                    raise OwnershipError("Stop cancelled; no SSH command was sent.")
         transport = SSHTransport(args.host, config=args.ssh_config, timeout=args.timeout)
+        if args.command in {"status", "stop"}:
+            report = lifecycle(transport, args.command, args.session, python=args.remote_python)
+            if args.json:
+                print(json.dumps(report, ensure_ascii=True))
+            else:
+                for server in report["servers"]:
+                    print(
+                        f"{server['id']}  managed  {server['name']}  {server['state']}  {server['reason']}"
+                    )
+                if not report["servers"]:
+                    print("No managed session records found in this host/account registry.")
+            require_lifecycle_ok(report)
+            return 0
         if args.command == "start":
             password = password_input(args.password_stdin)
             launch_id = new_id()
@@ -291,7 +330,9 @@ def main(argv: list[str] | None = None) -> int:
         return exc.exit_code
     except KeyboardInterrupt:
         message = (
-            f"jupyhop: interrupted; session request {launch_id} may remain running. Owned tunnel closed; use discover before retrying start."
+            "jupyhop: stop interrupted; remote outcome is unknown. Use status before retrying."
+            if args.command == "stop"
+            else f"jupyhop: interrupted; session request {launch_id} may remain running. Owned tunnel closed; use discover before retrying start."
             if launch_id
             else "jupyhop: interrupted; owned tunnel closed, remote sessions were not modified."
         )

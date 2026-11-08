@@ -35,3 +35,7 @@ class OwnershipError(JupyHopError):
 
 class LaunchError(JupyHopError):
     exit_code = 12
+
+
+class LifecycleError(JupyHopError):
+    exit_code = 13

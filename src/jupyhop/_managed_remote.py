@@ -1,7 +1,7 @@
 """Versioned per-user launch state. Also sent as source to remote Python.
 
 No writes occur on import or during discovery. Only the explicit start RPC
-creates records. Password hashes live in a separate private Jupyter settings
+creates records. Explicit lifecycle RPCs reconcile or stop them. Password hashes live in a separate private Jupyter settings
 file, never in records or responses. This module has no daemon or installed API.
 """
 
@@ -22,8 +22,8 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
-if TYPE_CHECKING:
-    from jupyhop._discovery_probe import _candidate, listener_inode, process_identity
+if TYPE_CHECKING or __name__ == "jupyhop._managed_remote":
+    from jupyhop._discovery_probe import Unsupported, _candidate, listener_inode, process_identity
 
 SCHEMA = {"major": 1, "minor": 0}
 _SID = re.compile(r"[a-f0-9]{32}\Z")
@@ -225,6 +225,8 @@ def validate_record(value: dict[str, Any], sid: str) -> dict[str, Any]:
         raise ManagedProblem("corrupt_state")
     if value.get("error") not in (None, "launch_failed", "server_initialization_failed"):
         raise ManagedProblem("corrupt_state")
+    if "stop_requested" in value and type(value["stop_requested"]) is not bool:
+        raise ManagedProblem("corrupt_state")
     return value
 
 
@@ -355,6 +357,69 @@ def managed_context() -> tuple[list[dict[str, Any]], list[str]]:
         return [], ["managed_state_unavailable"]
 
 
+def runner_matches(record: dict[str, Any]) -> bool:
+    """Process + private manager evidence, independent of HTTP availability."""
+    try:
+        if (
+            record["boot_id"] != boot_id()
+            or process_identity(record["pid"]) != record["process_start"]
+        ):
+            return False
+        root = os.path.dirname(record["runtime"])
+        with open(f"/proc/{record['pid']}/cmdline", "rb") as stream:
+            arguments = stream.read(16385).split(b"\0")[:-1]
+        expected = [record["server_python"], "-I", "-B", os.path.join(root, "launch.py"), root]
+        if arguments != [os.fsencode(value) for value in expected]:
+            return False
+        directory = _private_dir(os.path.dirname(record["socket"]))
+        os.close(directory)
+        info = os.stat(record["socket"], follow_symlinks=False)
+        if not stat.S_ISSOCK(info.st_mode) or info.st_uid != os.getuid() or info.st_mode & 0o077:
+            return False
+        result = subprocess.run(
+            [
+                "tmux",
+                "-S",
+                record["socket"],
+                "display-message",
+                "-p",
+                "-t",
+                record["id"] + ":0.0",
+                "#{pane_pid}",
+            ],
+            capture_output=True,
+            timeout=2,
+            check=False,
+        )
+        return result.returncode == 0 and result.stdout.strip() == str(record["pid"]).encode()
+    except (OSError, Unsupported, ManagedProblem, subprocess.TimeoutExpired, ValueError, TypeError):
+        return False
+
+
+def observed_state(record: dict[str, Any]) -> str:
+    if record["boot_id"] != boot_id():
+        return "stale"
+    if record["pid"] is None:
+        return "failed" if record["state"] == "failed" else "starting"
+    try:
+        current = process_identity(record["pid"])
+    except (FileNotFoundError, ProcessLookupError):
+        return (
+            "stopped"
+            if record.get("stop_requested")
+            else "failed"
+            if record["state"] == "failed"
+            else "stale"
+        )
+    except (OSError, Unsupported, ValueError):
+        return "unreachable"
+    if current != record["process_start"]:
+        return "stale"
+    if record.get("stop_requested"):
+        return "stopping"
+    return "failed" if record["state"] == "failed" else "unreachable"
+
+
 def mark_managed(candidate: dict[str, Any], records: list[dict[str, Any]]) -> dict[str, Any]:
     candidate["observed_id"] = candidate["id"]
     candidate["name"] = None
@@ -368,42 +433,12 @@ def mark_managed(candidate: dict[str, Any], records: list[dict[str, Any]]) -> di
             and candidate.get("_socket_inode") == record["socket_inode"]
             and candidate["port"] == record["port"]
             and candidate["base_url"] == record["base_url"]
+            and runner_matches(record)
         ):
-            root = os.path.dirname(record["runtime"])
-            try:
-                with open(f"/proc/{record['pid']}/cmdline", "rb") as stream:
-                    arguments = stream.read(16385).split(b"\0")[:-1]
-            except OSError:
-                continue
-            expected = [record["server_python"], "-I", "-B", os.path.join(root, "launch.py"), root]
-            if arguments != [os.fsencode(value) for value in expected]:
-                continue
-            try:
-                socket_dir = _private_dir(os.path.dirname(record["socket"]))
-                os.close(socket_dir)
-                socket_info = os.stat(record["socket"], follow_symlinks=False)
-                if not stat.S_ISSOCK(socket_info.st_mode) or socket_info.st_uid != os.getuid():
-                    continue
-                result = subprocess.run(
-                    [
-                        "tmux",
-                        "-S",
-                        record["socket"],
-                        "display-message",
-                        "-p",
-                        "-t",
-                        record["id"] + ":0.0",
-                        "#{pane_pid}",
-                    ],
-                    capture_output=True,
-                    timeout=2,
-                    check=False,
-                )
-            except (OSError, ManagedProblem, subprocess.TimeoutExpired):
-                continue
-            if result.returncode == 0 and result.stdout.strip() == str(record["pid"]).encode():
-                candidate.update({"id": record["id"], "origin": "managed", "name": record["name"]})
-                break
+            candidate.update({"id": record["id"], "origin": "managed", "name": record["name"]})
+            if record.get("stop_requested"):
+                candidate.update({"state": "stopping", "reason": "managed_stopping"})
+            break
     candidate.pop("_process_start", None)
     candidate.pop("_socket_inode", None)
     return candidate
@@ -414,17 +449,7 @@ def missing_managed(records: list[dict[str, Any]], found: set[str]) -> list[dict
     for record in records:
         if record["id"] in found:
             continue
-        state = (
-            "stale"
-            if record["boot_id"] != boot_id()
-            else "starting"
-            if record["state"] in {"requested", "starting"}
-            else "failed"
-            if record["state"] == "failed"
-            else "stale"
-            if record["state"] == "exited"
-            else "unreachable"
-        )
+        state = observed_state(record)
         values.append(
             {
                 "id": record["id"],

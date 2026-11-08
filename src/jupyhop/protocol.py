@@ -113,7 +113,16 @@ def parse_doctor(raw: bytes) -> dict[str, Any]:
         ) from None
 
 
-DISCOVERY_STATES = {"ready", "stale", "unsupported", "unreachable", "starting", "failed"}
+DISCOVERY_STATES = {
+    "ready",
+    "stale",
+    "unsupported",
+    "unreachable",
+    "starting",
+    "failed",
+    "stopping",
+    "stopped",
+}
 DISCOVERY_REASONS = {
     "verified",
     "invalid_metadata",
@@ -128,6 +137,8 @@ DISCOVERY_REASONS = {
     "managed_failed",
     "managed_stale",
     "managed_unreachable",
+    "managed_stopping",
+    "managed_stopped",
 }
 
 

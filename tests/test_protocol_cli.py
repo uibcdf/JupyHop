@@ -142,7 +142,6 @@ def test_remote_python_path_policy_and_safe_source_transport(envelope):
     "argv",
     [
         ["start", "workstation"],
-        ["status", "workstation"],
         ["doctor", "-oProxyCommand=id"],
         ["doctor", "workstation", "--timeout", "nan"],
     ],

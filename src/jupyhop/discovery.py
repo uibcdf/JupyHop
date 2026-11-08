@@ -138,7 +138,7 @@ def select_server(
         )
     for index, server in enumerate(candidates, 1):
         print(
-            f"{index}: {server['id']} unmanaged 127.0.0.1:{server['port']}{server['base_url']}",
+            f"{index}: {server['id']} {server['origin']} 127.0.0.1:{server['port']}{server['base_url']}",
             file=sys.stderr,
         )
     print("Select a server number: ", end="", file=sys.stderr, flush=True)

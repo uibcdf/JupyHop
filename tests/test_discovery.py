@@ -207,7 +207,7 @@ def test_directory_symlinks_and_shared_permissions_are_rejected(tmp_path):
 
 
 def test_selection_never_guesses_and_excludes_stale():
-    first = {"id": "a" * 24, "state": "ready", "port": 8888, "base_url": "/"}
+    first = {"id": "a" * 24, "state": "ready", "port": 8888, "base_url": "/", "origin": "unmanaged"}
     second = dict(first, id="b" * 24)
     stale = dict(first, id="c" * 24, state="stale")
     with pytest.raises(DiscoveryError, match="partial"):

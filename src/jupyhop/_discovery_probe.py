@@ -394,7 +394,7 @@ def main() -> None:
     if report["identity"] is None:
         print("Discovery needs Linux /proc and Python >=3.11.", file=sys.stderr)
         sys.exit(4)
-    envelope = {"protocol": {"major": 1, "minor": 2}, "operation": "discover", "data": report}
+    envelope = {"protocol": {"major": 1, "minor": 3}, "operation": "discover", "data": report}
     while len(json.dumps(envelope).encode()) > 60 * 1024:
         if report["servers"]:
             report["servers"].pop()

@@ -212,5 +212,6 @@ def test_unreachable_managed_record_is_not_proof_of_server_death():
         "base_url": "/",
         "runtime": "/runtime",
     }
-    values = remote.missing_managed([record], set())
+    with patch.object(remote, "process_identity", side_effect=PermissionError):
+        values = remote.missing_managed([record], set())
     assert values[0]["state"] == "unreachable"
