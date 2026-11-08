@@ -10,7 +10,7 @@ Jupyter grants code execution as the account running its server. Risks include a
 2. **Binding:** remote Jupyter binds to loopback only; local forwards also bind to loopback. No blanket firewall changes, no direct public Jupyter ports.
 3. **Authentication:** preserve supported Jupyter Server token/password authentication. A tunnel is transport protection, not a reason to disable Jupyter auth.
 4. **Authorization:** all remote helper actions run as the authenticated Unix account; no shared service account, sudo, or other-user process enumeration in MVP.
-5. **Secrets:** never commit, log, print in diagnostic JSON, or persist Jupyter tokens/URLs containing tokens in plaintext. Use short-lived secure access where needed, and carefully design how a newly connected client obtains authentication to an existing session.
+5. **Secrets:** never commit, log, or expose Jupyter tokens/URLs containing tokens, passwords, private keys, or cookies in ordinary diagnostics/JSON. **No unprotected plaintext credential persistence.** If persistence is necessary, permit only a separately reviewed, remote-account-restricted design (e.g. mode 0600, appropriate lifetime and cleanup) after documenting threats and tradeoffs; do not treat filesystem permissions as encryption. Establish how a second authorized client authenticates.
 6. **Process safety:** no `pkill jupyter`, PID-only termination, or killing arbitrary unmanaged servers. Validate process identity and managed ownership.
 7. **Filesystem:** secure per-user state permissions (directories 0700, secret files 0600 if unavoidable), atomic writes, no symlink-following vulnerabilities.
 8. **Input safety:** avoid `shell=True` and shell-formatted untrusted strings; validate session names and launcher paths, handle SSH argument injection.
@@ -47,6 +47,10 @@ Client SSH connection, local tunnel, remote Jupyter Server and kernel process ar
 ## Reliability requirements
 
 Session start/stop should be idempotent where possible; use bounded readiness checks and meaningful timeouts. Keep process lifetime separate from tunnel lifetime. Document behavior on host reboot (persistence does not automatically mean auto-restart after reboot).
+
+## Versioning, helpers and client-boundary checks
+
+If a remote helper is needed, it must have authenticated/verified bootstrap, compatible control protocol, and safe updates that do not restart scientific workloads. Tunnel listeners must be verified as JupyHop-owned before reuse/cleanup. Custom HTTPS and IPv6 must fail safely if unsupported. See [10](10-remote-runtime-and-protocol.md) and [11](11-discovery-and-connectivity.md).
 
 ## Security release gate
 
