@@ -6,6 +6,10 @@ See [product scope](01-product-scope.md), [scenario matrix](08-scenarios-and-acc
 
 ## M0 — Complete the design baseline
 
+**Completed 2026-11-07:** [validation/ADR](13-m0-validation.md) and
+[scenario ledger](14-acceptance-ledger.md). This closes the design baseline;
+browser, logout, reboot and lifecycle feature gates remain in their own milestones.
+
 **Outputs:** explicit CLI contracts, managed vs discovered server classification, security/authentication threat model, session/tunnel/kernel lifetimes, network reachability assumptions, supported Jupyter discovery strategy, remote workdir semantics, proposed process-manager evaluation, remote-helper bootstrap/compatibility approach, tunnel process lifetime, simple/advanced user flows and requirements-to-test mapping.
 
 **Acceptance:** every essential scenario in [08](08-scenarios-and-acceptance.md) has a release gate, no hidden assumption that all machines connect both ways, and no unresolved security ambiguity blocks M1–M2 prototypes. Record architecture decisions and uncertainties transparently.

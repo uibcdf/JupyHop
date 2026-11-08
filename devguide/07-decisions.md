@@ -26,14 +26,33 @@ Keep explicit decisions separate from hypotheses. Add dates, rationale and rejec
 - **CLI ambiguity:** `open host` may choose exactly one validated candidate; multiple candidates require explicit selection. `stop` is limited to managed sessions and must never guess when ambiguous.
 - **Portability:** the same alias may have different OpenSSH routing on different clients; an alias alone is not a global host identity.
 
-## Decisions pending before implementation
+## M0 decisions (2026-11-07)
+
+The dated ADR [M0 validation](13-m0-validation.md) records context, experiments,
+alternatives, consequences and security impact. It supersedes pending questions
+only within the stated scope:
+
+| ID | Decision | Evidence / boundary |
+| --- | --- | --- |
+| D13 | No-install stdin Python probe for M1/M2 | Direct/jump experiments; no remote cache or package update |
+| D14 | Read-only bounded runtime parsing for M2 | Jupyter list API deletes stale records |
+| D15 | Normal token-free login page is the auth baseline | Token/password POST succeeds; browser automation still pending |
+| D16 | Attached, fresh owned forward for initial M2 | Independent transports preserve tested kernel state |
+| D17 | Capability-dependent supervision; no universal backend selected | tmux works in fixture; systemd context/logout needs further tests |
+| D18 | Version 1.0 bounded JSON probe; registry version separate | M1 must test malformed output and major mismatch |
+| D19 | Python >=3.11, Linux first; stdlib-only client runtime | Test floor in CI; observed local Python 3.14 |
+
+M0 design acceptance is met; later feature acceptance remains pending. See the
+[scenario ledger](14-acceptance-ledger.md).
+
+## Decisions remaining for their implementation milestones
 
 | Topic | Options / questions | Evidence needed |
 | --- | --- | --- |
-| Remote helper deployment | Copy/execute helper on demand vs install package on remote | UX, version compatibility, permissions |
+| Lifecycle helper deployment (M3/M4) | Copy/execute helper on demand vs install package on remote | M1/M2 use stdin without installation; lifecycle needs separate evidence |
 | Process manager | systemd --user, tmux fallback, or another mechanism | Linger/login behavior, portability, process identity; no automatic admin changes |
 | Remote state | XDG state directory, versioned JSON, lock strategy | Atomicity, concurrent starts, stale state |
-| Existing session authentication | Secure retrieval of owned authentication material; explicit-login fallback for unsupported tokens/passwords | Jupyter Server supported APIs, leakage risks |
+| Automatic browser authentication (M2) | Protected token handoff beyond selected normal-login baseline | Real browser cookie/history exposure tests |
 | Manually started server discovery | Runtime dir enumeration, supported versions, probe ownership/liveness, custom base URL | Prototype in multiple Conda environments |
 | Remote port allocation | Jupyter-assigned port vs helper-managed allocation | Race-free selection and verification |
 | Local tunnel lifetime | Foreground CLI, detached SSH, or reuse/control socket | Reliable cleanup and reconnection |

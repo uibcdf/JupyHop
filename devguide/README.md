@@ -42,3 +42,10 @@ JupyHop is developed by UIBCDF and is licensed under the [MIT License](../LICENS
 The MVP's nonnegotiable workflows are an existing-server open through ProxyJump (M2) and a managed-server restart-free reconnect from another client (M4). Run M0 feasibility spikes before freezing helper, discovery, token handoff, process-manager, and tunnel designs.
 
 This directory is the project's design source of truth. Update specifications and decisions when findings from prototypes change the plan.
+
+## Milestone evidence
+
+- [M0 validation and ADR](13-m0-validation.md): isolated feasibility experiments,
+  selected baseline, and explicit deferred evidence.
+- [Acceptance ledger](14-acceptance-ledger.md): every scenario's release gate and
+  test target; feasibility is distinct from shipped acceptance.
