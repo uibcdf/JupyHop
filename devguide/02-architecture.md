@@ -59,6 +59,10 @@ Define a transport interface and a launcher/process-manager interface only when 
 
 The topology, LAN vs bastion routing, concurrent clients, manually launched Jupyter, and failure expectations are specified in [08 — Scenario catalogue](08-scenarios-and-acceptance.md). Implementations must treat reachability as directional and rely on the actual client's OpenSSH configuration, not assumptions about network location.
 
+## Remote runtime and compatibility
+
+Choose the minimal M2 remote probing method before requiring helper installation. For M3/M4, document a user-space bootstrap, versioned protocol and safe upgrade path; a new client must not corrupt old remote state or terminate active kernels. See [10](10-remote-runtime-and-protocol.md).
+
 ## Open architecture questions
 
-See [07 — Decisions](07-decisions.md): remote helper bootstrap, process manager (systemd --user vs tmux fallback), registry schema, Jupyter auth URL handling, local tunnel lifecycle, and concurrency model. No process manager may require automatic elevation or enabling linger.
+See [07 — Decisions](07-decisions.md), [11 — Discovery and connectivity](11-discovery-and-connectivity.md), and [12 — UX](12-user-experience.md): remote helper bootstrap, process manager (systemd --user vs tmux fallback), registry schema, Jupyter auth URL handling, local tunnel lifecycle, and concurrency model. No process manager may require automatic elevation or enabling linger.
