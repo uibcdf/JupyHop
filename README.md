@@ -79,6 +79,10 @@ This roadmap describes intentions, not shipping features or release commitments.
 
 JupyHop has **not been published to PyPI**, and there is currently no supported installation procedure.
 
+## Development plan
+
+The proposed architecture, CLI contract, security model, test strategy, and milestone roadmap are documented in the [development guide](devguide/README.md).
+
 ## Contributing
 
 JupyHop is in the early design phase. Use cases, architectural feedback, and comparisons with existing tools will be valuable as the project develops.
@@ -87,4 +91,4 @@ Developed by the [Computational Biology and Drug Design Research Unit (UIBCDF)](
 
 ## License
 
-A license has **not yet been selected**. Until an explicit license is added, do not assume permission to reuse or redistribute the code.
+JupyHop is distributed under the [MIT License](LICENSE), following the licensing approach of MolSysMT and MolSysViewer.
