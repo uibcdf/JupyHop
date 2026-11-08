@@ -15,7 +15,7 @@ JupyHop aims to make these everyday workflows simple while keeping notebooks, da
 ## Intended experience
 
 ```console
-jupyhop start workstation --env research
+jupyhop start workstation --env research --workdir '~/projects/research'
 jupyhop list
 jupyhop open workstation
 jupyhop stop workstation
@@ -29,7 +29,7 @@ These commands are **proposals**, not a currently supported interface. A host su
 - **SSH-native:** reuse OpenSSH configuration, authentication, and jump hosts.
 - **Remote execution:** leave kernels, environments, notebooks, and data where they belong.
 - **Persistent sessions:** disconnect one client and reconnect later from another.
-- **Discoverable sessions:** find sessions belonging to the authenticated user.
+- **Discoverable sessions:** find managed sessions and, where supported, existing Jupyter servers accessible to the authenticated remote user.
 - **Automatic forwarding:** select free local ports rather than relying on fixed forwarding ranges.
 - **Multi-host workflows:** manage independent machines through one consistent interface.
 - **Extensibility:** accommodate different process managers and eventually schedulers such as Slurm.
