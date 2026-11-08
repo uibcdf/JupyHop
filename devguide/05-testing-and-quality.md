@@ -27,6 +27,12 @@
 | Users | Two distinct Unix users; no cross-account list/stop |
 | Work directory | Remote project dir; spaces; Unicode; missing dir |
 | Routing | Lab LAN vs external SSH ProxyJump selected by client SSH config |
+| Network/addressing | IPv4 loopback; optional IPv6 loopback; unavailable jump host; suspend/resume |
+| URL behavior | Custom base URL; HTTP/WebSocket paths; HTTPS and certificate mismatch |
+| Credential rotation | Changed token/password; unavailable credentials; safe login fallback |
+| Local tunnel lifecycle | Repeat open; unrelated local listener; Ctrl-C; terminal close; stale forwards |
+| Versioning | Client/helper major mismatch; older state schema; concurrent bootstrap/update |
+| Transfer | Large-file traffic and sustained WebSocket connection through jump host |
 
 Start with Linux clients and Linux remotes. Only advertise other platforms after CI or manual acceptance testing.
 
@@ -41,6 +47,10 @@ Start with Linux clients and Linux remotes. Only advertise other platforms after
 ## Scenario traceability
 
 All behavior must be traceable to [08 — Scenario catalogue](08-scenarios-and-acceptance.md) and [09 — Session contracts](09-session-lifecycle-and-auth.md). Record which IDs are automated and which require manual testing, supported platforms and observed results. **M2 must prove discovery/opening of an already-running authorized Jupyter server through a jump host; M4 must separately prove same live kernel across disconnect/reconnect.** Never infer kernel persistence from a merely available HTTP endpoint.
+
+## Required evidence before the MVP is considered complete
+
+Create a traceability ledger mapping every mandatory scenario ID in [08](08-scenarios-and-acceptance.md) to a test name, expected result, observed status, supported version and security assertion. Maintain a known-limitations list for unsupported or partially discoverable Jupyter configurations. Add a usability smoke test starting with only a working SSH alias and a manually launched Jupyter Server. See [10](10-remote-runtime-and-protocol.md), [11](11-discovery-and-connectivity.md), and [12](12-user-experience.md).
 
 ## Definition of done for each milestone
 
