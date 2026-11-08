@@ -22,16 +22,19 @@ SSH tunnels support remote Jupyter, but starting servers, selecting ports, retai
 | U6 | Open sessions on two hosts at once | Local forwards do not collide |
 | U7 | Select a scientific environment | Launch Jupyter using an explicit remote environment/command |
 | U8 | Lose connectivity | Clear recovery behavior, no unexpected session termination |
-| U9 | Stop a session | Only the selected, owned session is stopped |
+| U9 | Stop a session | Only the selected, JupyHop-managed session is stopped |
+| U10 | Open a manually started Jupyter Server | Discover a verified current-user server and open it through a secure tunnel without adopting ownership |
+| U11 | Work in a project directory | Start a managed server in a validated remote working directory |
+| U12 | Access a lab machine from within/outside its LAN | Honor route selection supplied by the client's OpenSSH configuration |
 
 ## MVP scope
 
-A CLI with `start`, `list`, `open`, `status`, and `stop` operations; SSH aliases including ProxyJump; owned and persistent remote sessions; local SSH forwarding; and browser opening. All lifecycle operations concern **JupyHop-managed sessions** initially.
+A CLI with `start`, `list`, `open`, `status`, and `stop` operations; SSH aliases including ProxyJump; **best-effort discovery and opening of existing authorized current-user Jupyter servers**; owned persistent remote sessions; local SSH forwarding; and browser opening. **Only JupyHop-managed sessions may be stopped.** Managed-session persistence is independent of the client connection but not guaranteed across remote host reboots. See [08](08-scenarios-and-acceptance.md) and [09](09-session-lifecycle-and-auth.md).
 
 ## Non-goals for MVP
 
 - A multiuser web portal, central identity provider, or JupyterHub clone.
-- Automatic discovery/control of arbitrary manually launched Jupyter processes.
+- Exhaustive discovery of arbitrary Jupyter processes, cross-user discovery, or lifecycle control of unmanaged servers.
 - Cross-account session sharing, account provisioning, or administrator privileges.
 - A VPN or bypass of institutional network access policies.
 - Installation or modification of research environments.
@@ -40,7 +43,7 @@ A CLI with `start`, `list`, `open`, `status`, and `stop` operations; SSH aliases
 
 ## Success criteria
 
-A fresh client can reconnect to an existing owned remote session without knowing a remote port. One broken tunnel does not terminate the remote session. Two users on the same host have isolated session state. No passwords/tokens leak into logs or public documentation.
+A fresh client can open an existing discoverable current-user Jupyter server and reconnect to an existing managed remote session without knowing a remote port. One broken tunnel does not terminate the remote session. Two users on the same host have isolated session state. No passwords/tokens leak into logs or public documentation.
 
 ## Out-of-scope future options
 
