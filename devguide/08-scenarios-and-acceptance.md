@@ -4,7 +4,7 @@
 
 ## Topology and assumptions
 
-Five illustrative machines: Diego's home client (Aleph), Diego's lab workstation (Nauta), Liliana's home client, Liliana's lab workstation (Spika), and the lab SSH gateway/cluster login node (Ixtlilton). Only the gateway is reachable from outside the lab via SSH; internal workstations are SSH-reachable via the gateway. The gateway has a fixed public IP. These are **illustrative site-specific facts, not application defaults**; tests use fictional names and addresses.
+Five illustrative machines: Researcher A's home client (`home-a`), Researcher A's lab workstation (`workstation-a`), Researcher B's home client (`home-b`), Researcher B's lab workstation (`workstation-b`), and an SSH gateway/cluster login node (`gateway`). Only the gateway is reachable from outside the lab via SSH; internal workstations are SSH-reachable via the gateway. A fixed public IP for the gateway is optional and is **not stored in this public guide**. These are fictional generic names, not application defaults.
 
 The tool must not assume that all hosts are connected to each other. **Reachability is directional**: a client can control a remote host only when OpenSSH can establish an authorized connection from that client. Remote access *to a home machine* is not guaranteed and requires an existing permitted route (VPN, reverse tunnel, additional jump host, etc.) outside MVP.
 
@@ -62,7 +62,7 @@ Discovery is **best-effort** and limited to the authenticated remote user's acce
 | SCI-01 | Choose a Conda/venv executable | Launch a matching remote Jupyter environment without sourcing untrusted shell profiles | M5 |
 | SCI-02 | Launch from a project work directory | Remote path validated; spaces, Unicode, ~, symlinks handled predictably | M5 |
 | SCI-03 | Run computation for hours | Browser disconnect does not kill computation; restart of OS is not checkpoint recovery | M4 |
-| SCI-04 | Nauta and Spika Jupyter sessions active simultaneously | Multiple forwards and session IDs coexist | M5 |
+| SCI-04 | workstation-a and workstation-b Jupyter sessions active simultaneously | Multiple forwards and session IDs coexist | M5 |
 | SCI-05 | Notebook on Slurm compute node | Deferred to optional backend, not assumed available in MVP | M7 |
 
 ## Cross-cutting error and security cases
@@ -119,4 +119,4 @@ Discovery is **best-effort** and limited to the authenticated remote user's acce
 
 ## Acceptance workflow
 
-For each row define a test fixture, command invocation, expected state changes, observable assertions and failure artifacts **without secrets**. Release gates in the table are minimum targets, not permission to skip earlier security controls. The first end-to-end success metric is **Aleph -> Nauta (existing manual Jupyter) with SSH jump and automatic browser access, followed by disconnect/reconnect**; kernel continuity is an M4 test, not guaranteed by the first M2 prototype.
+For each row define a test fixture, command invocation, expected state changes, observable assertions and failure artifacts **without secrets**. Release gates in the table are minimum targets, not permission to skip earlier security controls. The first end-to-end success metric is **home-a -> workstation-a (existing manual Jupyter) with SSH jump and automatic browser access, followed by disconnect/reconnect**; kernel continuity is an M4 test, not guaranteed by the first M2 prototype.
