@@ -41,10 +41,14 @@ A CLI with `start`, `list`, `open`, `status`, and `stop` operations; SSH aliases
 - Slurm, Kubernetes, containers, or remote GPU allocation in the first release.
 - Exposure of remote Jupyter to public IP interfaces.
 
+## Usability and setup requirement
+
+With an existing working SSH alias and an authorized discoverable remote server, `jupyhop open host` should require no additional JupyHop config in the common case. Other scenarios may need explicit discovery directories, launcher profiles or supported remote helper bootstrap. The CLI must distinguish empty discovery from **incomplete** discovery. See [12](12-user-experience.md).
+
 ## Success criteria
 
 A fresh client can open an existing discoverable current-user Jupyter server and reconnect to an existing managed remote session without knowing a remote port. One broken tunnel does not terminate the remote session. Two users on the same host have isolated session state. No passwords/tokens leak into logs or public documentation.
 
 ## Out-of-scope future options
 
-Slurm launcher, kernel selection UX, unmanaged session discovery, optional web front end, and organization-managed profiles. These require distinct design and security reviews.
+Slurm launcher, advanced/universal unmanaged server discovery or adoption, kernel selection UX, optional web front end, and organization-managed profiles. **Basic best-effort discovery/opening of authorized unmanaged Jupyter Server instances is in the MVP (M2).** These require distinct design and security reviews.
