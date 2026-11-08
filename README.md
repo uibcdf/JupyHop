@@ -66,14 +66,16 @@ The security design must be reviewed and tested before recommending production d
 
 ## Roadmap (proposed)
 
-1. **Foundation:** specify CLI behavior, host configuration, supported platforms, and security assumptions.
-2. **First useful workflow:** start or discover a remote Jupyter session, establish a tunnel, and open it locally.
-3. **Lifecycle:** list, stop, and reconnect to persistent sessions; handle failures and stale state.
-4. **Scientific environments:** support different Python environments and concurrent sessions on multiple hosts.
-5. **HPC:** explore Slurm integration and other execution backends.
-6. **Optional UI:** evaluate whether a web interface adds value without duplicating JupyterHub.
+1. **Design baseline:** specify security, session lifetimes, discovery, CLI behavior and test scenarios.
+2. **SSH foundations:** use OpenSSH configuration and diagnose direct/ProxyJump access.
+3. **Existing sessions:** discover and open an authorized manually started Jupyter Server over SSH.
+4. **Managed sessions:** launch new remote Jupyter Servers without exposing their ports publicly.
+5. **Persistence:** manage owned servers, reconnect from other authorized clients and verify live kernel continuity.
+6. **Scientific workflows:** support environment profiles, project directories and multiple hosts.
+7. **Public beta:** complete compatibility and security testing, documentation and packaging.
+8. **Optional extensions:** evaluate Slurm, enhanced discovery or an interface without recreating JupyterHub.
 
-This roadmap describes intentions, not shipping features or release commitments.
+See the [detailed development roadmap](devguide/06-roadmap.md) and [scenario acceptance matrix](devguide/08-scenarios-and-acceptance.md). These are plans, not currently shipping features.
 
 ## Installation
 
