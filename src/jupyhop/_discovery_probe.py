@@ -12,8 +12,10 @@ import os
 import pwd
 import re
 import signal
+import socket
 import stat
 import sys
+import time
 from pathlib import PurePosixPath
 from typing import Any
 
@@ -176,8 +178,35 @@ def listener_inode(pid: int, port: int) -> str:
     return matches[0]
 
 
+class _DeadlineSocket(socket.socket):
+    """Bound total reads, including a peer that keeps trickling header bytes."""
+
+    def __init__(self) -> None:
+        super().__init__(socket.AF_INET, socket.SOCK_STREAM)
+        self.deadline = time.monotonic() + 2
+        self.settimeout(1)
+
+    def recv_into(self, buffer: Any, nbytes: int = 0, flags: int = 0) -> int:
+        remaining = self.deadline - time.monotonic()
+        if remaining <= 0:
+            raise TimeoutError
+        self.settimeout(min(1, remaining))
+        return super().recv_into(buffer, nbytes, flags)
+
+
+class _Connection(http.client.HTTPConnection):
+    def connect(self) -> None:
+        channel = _DeadlineSocket()
+        try:
+            channel.connect(("127.0.0.1", self.port))
+            self.sock = channel
+        except BaseException:
+            channel.close()
+            raise
+
+
 def endpoint(port: int, base: str) -> str:
-    connection = http.client.HTTPConnection("127.0.0.1", port, timeout=1)
+    connection = _Connection("127.0.0.1", port, timeout=1)
     try:
         connection.request("GET", base + "api", headers={"Connection": "close"})
         response = connection.getresponse()
@@ -191,7 +220,7 @@ def endpoint(port: int, base: str) -> str:
             raise Unsupported
     finally:
         connection.close()
-    connection = http.client.HTTPConnection("127.0.0.1", port, timeout=1)
+    connection = _Connection("127.0.0.1", port, timeout=1)
     try:
         connection.request("GET", base + "api/status", headers={"Connection": "close"})
         if connection.getresponse().status != 403:

@@ -4,6 +4,8 @@ import signal
 import socket
 import subprocess
 import sys
+import threading
+import time
 from pathlib import Path
 from unittest.mock import patch
 from urllib.parse import urlsplit
@@ -14,6 +16,7 @@ import requests
 from experiments.jupyter_fixture import JupyterFixture
 from experiments.lab import SSHLab
 from experiments.m0_spike import execute
+from jupyhop._discovery_probe import endpoint
 from jupyhop.discovery import discover, select_server
 from jupyhop.errors import DiscoveryError, SelectionError, TunnelError
 from jupyhop.opening import open_connection
@@ -207,6 +210,46 @@ def test_headless_cli_signal_closes_only_owned_tunnel(ssh_lab, manual_server, st
         if process.poll() is None:
             os.killpg(process.pid, signal.SIGKILL)
             process.communicate(timeout=5)
+
+
+def test_http_header_trickle_cannot_extend_absolute_deadline():
+    done = threading.Event()
+    with socket.socket() as listener:
+        listener.bind(("127.0.0.1", 0))
+        listener.listen()
+        listener.settimeout(3)
+
+        def trickle():
+            try:
+                with listener.accept()[0] as channel:
+                    channel.settimeout(1)
+                    channel.recv(4096)
+                    for chunk in (
+                        b"HTTP/1.1 200 OK\r\n",
+                        b"X-Test: ",
+                        b"a",
+                        b"b",
+                        b"c",
+                        b"d",
+                        b"e",
+                        b"f",
+                    ):
+                        channel.sendall(chunk)
+                        if done.wait(0.4):
+                            break
+            except OSError:
+                pass
+
+        worker = threading.Thread(target=trickle, daemon=True)
+        worker.start()
+        started = time.monotonic()
+        try:
+            with pytest.raises(TimeoutError):
+                endpoint(listener.getsockname()[1], "/")
+            assert time.monotonic() - started < 3
+        finally:
+            done.set()
+            worker.join(timeout=2)
 
 
 def test_remote_connection_refusal_preserves_server(ssh_lab, manual_server):
