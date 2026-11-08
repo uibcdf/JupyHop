@@ -271,6 +271,7 @@ def test_unsupported_server_is_refused_before_registry_or_launch(tmp_path):
     }
     with (
         patch.object(remote.subprocess, "run", return_value=SimpleNamespace(returncode=5)),
+        patch.object(remote.shutil, "which", side_effect=lambda command: command),
         patch.object(remote, "Registry") as registry,
     ):
         with pytest.raises(remote.ManagedProblem) as exc:

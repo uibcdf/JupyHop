@@ -16,8 +16,9 @@ mamba activate jupyhop-dev
 python -m pip install -e '.[dev,experiments]'
 ```
 
-OpenSSH client/server and tmux are additional OS prerequisites for integration
-tests. They are not needed for unit tests. An operator may need to create
+Unit tests need `ssh-keygen` for private fixture-key preparation; they do not
+connect over SSH, run sshd or require tmux. Integration additionally needs the
+OpenSSH client/server and tmux. An operator may need to create
 `/run/sshd` for local sshd privilege separation. Never modify a shared SSH service
 or institutional machines just to run tests.
 
