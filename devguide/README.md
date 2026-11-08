@@ -15,6 +15,9 @@ JupyHop is a lightweight, SSH-native tool to launch, discover, manage, and recon
 7. [Decisions](07-decisions.md) — agreed constraints and unresolved questions
 8. [Scenario catalogue](08-scenarios-and-acceptance.md) — real network, user and failure cases with acceptance gates
 9. [Session lifecycle and authentication](09-session-lifecycle-and-auth.md) — independent lifetimes, discovery, reconnection and process-manager choices
+10. [Remote runtime and protocol](10-remote-runtime-and-protocol.md) — bootstrap, helper alternatives, schema and version compatibility
+11. [Discovery and connectivity](11-discovery-and-connectivity.md) — detection, routing, tunnels, IPv6, URLs and authentication limitations
+12. [User experience](12-user-experience.md) — low-configuration workflow, CLI selection, diagnosis and advanced use
 
 ## Product promise
 
@@ -35,5 +38,7 @@ From an authorized computer, reconnect to your own Jupyter session running on an
 A user can discover and open an already-running, authorized Jupyter Server over SSH, without manual forwarding; then start a managed Jupyter session, disconnect, reconnect from another authorized client, list sessions, and explicitly stop a managed session. Discovery is best-effort and must never imply cross-user visibility or control. Local ports are allocated as needed; remote servers remain loopback-only and authenticated.
 
 JupyHop is developed by UIBCDF and is licensed under the [MIT License](../LICENSE).
+
+The MVP's nonnegotiable workflows are an existing-server open through ProxyJump (M2) and a managed-server restart-free reconnect from another client (M4). Run M0 feasibility spikes before freezing helper, discovery, token handoff, process-manager, and tunnel designs.
 
 This directory is the project's design source of truth. Update specifications and decisions when findings from prototypes change the plan.
