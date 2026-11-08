@@ -597,6 +597,8 @@ def _prepare(request: dict[str, Any]) -> dict[str, Any]:
         with registry.lock():
             if any(value["name"] == name for value in registry.records()):
                 raise ManagedProblem("name_conflict")
+            if os.path.lexists(os.path.join(registry.root, "archive", sid)):
+                raise ManagedProblem("id_conflict")
             try:
                 os.mkdir(sid, 0o700, dir_fd=registry.sessions)
             except FileExistsError:

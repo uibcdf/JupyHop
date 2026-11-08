@@ -186,6 +186,8 @@ def lifecycle_main(request: dict[str, Any]) -> None:
                     except ManagedProblem as error:
                         data["error"] = error.code
                     records = registry.records()
+                    if not any(r["id"] == sid for r in records):
+                        data["error"] = "not_managed"
                 for record in records:
                     if sid is not None and record["id"] != sid:
                         continue
