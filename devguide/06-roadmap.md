@@ -1,59 +1,67 @@
 # 06 — Development roadmap
 
-This is a **dependency-ordered roadmap**, not a promised schedule. Each milestone should produce a small, testable outcome. Do not implement later features until earlier security and lifecycle contracts are credible.
+**Status:** planning. Dependency-ordered milestones, **not** a release timeline. Each milestone has an independently demonstrable vertical slice; security is a gate at every stage. Never advertise proposed CLI syntax as implemented.
 
-## M0 — Design baseline
+See [product scope](01-product-scope.md), [scenario matrix](08-scenarios-and-acceptance.md), [lifecycle/authentication contracts](09-session-lifecycle-and-auth.md), and [open decisions](07-decisions.md). Existing tests and public docs must track shipped behavior.
 
-**Deliverables:** repository documentation, MIT license, agreed MVP scope, proposed CLI interface, security decisions, process-manager evaluation, session registry schema and a minimal test plan.
+## M0 — Complete the design baseline
 
-**Acceptance:** all MVP commands have unambiguous behavioral contracts, and no unresolved security decision prevents first prototype.
+**Outputs:** explicit CLI contracts, managed vs discovered server classification, security/authentication threat model, session/tunnel/kernel lifetimes, network reachability assumptions, supported Jupyter discovery strategy, remote workdir semantics, proposed process-manager evaluation and requirements-to-test mapping.
 
-## M1 — SSH and remote prerequisites
+**Acceptance:** every essential scenario in [08](08-scenarios-and-acceptance.md) has a release gate, no hidden assumption that all machines connect both ways, and no unresolved security ambiguity blocks M1–M2 prototypes. Record architecture decisions and uncertainties transparently.
 
-**Deliverables:** Python package skeleton and `jupyhop` CLI; host-alias transport; diagnostic command; remote environment detection; structured error handling.
+## M1 — SSH foundations and diagnostics
 
-**Acceptance:** directly and via ProxyJump, tool validates SSH and reports whether an appropriate remote Python/Jupyter launcher is present without changing the host.
+**Outputs:** initial package and command entrypoint; reuse OpenSSH host aliases and ProxyJump; safe remote command invocation; `doctor` checks for SSH, Jupyter Server, Python and relevant runtime dirs; actionable failures.
 
-## M2 — Launch and connect: vertical slice
+**Acceptance:** connect directly to a disposable Linux target and via a jump host. Respect host-key verification and selected remote OS account. No remote service/SSH config rewrite or elevated permission required.
 
-**Deliverables:** start a managed server under the SSH user's account, bind to remote loopback, wait until ready, establish loopback local forward, open browser or print a safe access instruction.
+## M2 — Discover and open an existing Jupyter server
 
-**Acceptance:** execute a notebook kernel through the forwarded session; no fixed forward ports, public listener, or disabled Jupyter auth. Handle launcher/readiness failures without orphaned privileged resources.
+**Outputs:** best-effort, current-user discovery using supported Jupyter runtime information; candidate verification; `discover`/`list` and `open`; dynamic loopback-only SSH forwarding; browser/no-browser UX; explicit password/login fallback; labeling of unsupported runtime directories and base URL variants.
 
-## M3 — Persistent lifecycle and discovery
+**Acceptance:** an already-running, manually started Jupyter Server on a host reachable through ProxyJump can be opened and used without manually selecting local ports. Multiple candidates are distinguishable. Failed discovery is reported as incomplete, not as proof of absence. Invalid auth is never bypassed; unmanaged `stop` is refused.
 
-**Deliverables:** chosen remote process manager; versioned per-user registry; session names/IDs; `list`, `status`, `open`, `stop`; stale state reconciliation.
+**Scope limit:** discovered servers are read-only for lifecycle actions. Discovering arbitrary user processes or all Conda environments is not promised. Initial kernel continuity after reconnection is tested separately in M4.
 
-**Acceptance:** close first client; open from a second authorized client; reconnect to the same running kernel; stop only that managed session. Two concurrent sessions remain independently controllable.
+## M3 — Managed launch and readiness
 
-## M4 — Research usability
+**Outputs:** `start` launches a current-user Jupyter Server on remote loopback, selects safe remote port, verifies readiness/auth, registers stable session ID/owner/provenance, and connects through SSH. Specify remote helper installation/bootstrap and remote workdir/launcher contract.
 
-**Deliverables:** explicit environment launcher profiles, multi-host listing, clear selection UX, headless mode, machine-readable output and robust troubleshooting.
+**Acceptance:** execute a kernel through the forwarded server; launch failure produces accurate status and recoverable records; no public listener, shared privileged daemon, arbitrary shell injection, or disabled Jupyter auth. Two managed sessions can coexist without identity collision.
 
-**Acceptance:** two separate remote hosts and multiple launcher profiles function without host-specific code; ambiguous selections and missing environments yield helpful errors.
+## M4 — Persistent lifecycle, reconciliation and reconnection
 
-## M5 — Public beta and documentation
+**Outputs:** choose and validate user-process supervision (`systemd --user` when feasible, tested fallback if necessary); remote per-user registry with atomic locks; `status`, `list`, `open`, `stop` managed sessions; local tunnel lifecycle; safe reauth from another client; collision/race/failure handling.
 
-**Deliverables:** quickstart, configuration examples, architecture/security documentation, contribution guide, regression suite, packaging metadata and published release after validation.
+**Acceptance:** close browser and tunnel, then connect from an **independent authorized client** to the same live server and kernel without losing in-memory state; remote reboot is detected as lost state (not automatic kernel restoration). Concurrent starts, stale records, interrupted stop, and token redaction pass tests. Only verified managed processes can be stopped.
 
-**Acceptance:** a new user with working SSH access can complete start/reconnect/stop using documentation alone. Release artifacts contain correct MIT metadata and no private configuration.
+## M5 — Real-world scientific and multi-host workflows
 
-## M6 — Optional extensions (separate decisions)
+**Outputs:** remote environment profiles (Conda/venv/system Python), validated `--workdir`, multi-host listing and selection, multiple simultaneous independent local forwards, clearer error and headless/JSON UX, testing across LAN/direct and external/ProxyJump routes, account isolation.
 
-- Slurm launcher and job lifecycle, respecting compute-node allocation.
-- Detection of explicitly authorized unmanaged Jupyter servers.
-- Optional web UI or machine discovery.
-- Shared/team session policy only after independent authorization review.
-- macOS/Windows client support after platform testing.
+**Acceptance:** both lab workstations operate simultaneously from a home client; two separate remote Unix users cannot see/stop each other's managed sessions; a researcher can start in a selected project directory/environment, disconnect and reconnect without manually finding a port. If a route does not exist, explain rather than silently create an unsafe path.
 
-Do not treat M6 as a requirement for a usable first release.
+## M6 — Public beta, compatibility and release
 
-## Milestone dependency chain
+**Outputs:** test matrix, security review, docs with actual commands, quickstart, troubleshooting, contribution instructions, package metadata and MIT license, clean install/build, CI for supported platforms, versioned state/protocol compatibility strategy, release notes.
 
-`M0 -> M1 -> M2 -> M3 -> M4 -> M5`
+**Acceptance:** a new user with legitimate OpenSSH access can complete discovered-open and managed-start/reconnect/stop guided by docs. Automated and documented manual acceptance cases cover mandatory scenario IDs; no real lab IP/credentials in fixtures or release artifacts. PyPI release only after clean install and end-to-end tests.
 
-Parallelizable work: documentation, CI baseline, packaging, and security tests. Keep the functional vertical slice first.
+## M7 — Optional extensions (separate scope decisions)
+
+- **Slurm launcher:** submit/cancel within scheduler allocations and route to compute nodes; never run compute workloads by default on the login/bastion node.
+- **Enhanced discovery:** support explicit additional runtime paths or selected older server variants and safe, opt-in adoption policy.
+- **Web interface or coordinator:** justify against central JupyterHub rather than replicate identity/routing functions.
+- **Cross-user collaboration:** requires explicit sharing and authorization design.
+- **Additional client platforms:** macOS and Windows only when tested and documented.
+
+## Dependency and risk strategy
+
+`M0 → M1 → M2 → M3 → M4 → M5 → M6`. M7 is optional.
+
+Some M2 discovery probes and M4 supervision/authentication spikes should be performed early in M0 to avoid discovering a fundamental blocker after implementing the CLI. Documentation, lint, package skeleton, and unit tests may proceed in parallel, but must not claim maturity ahead of implementation.
 
 ## Prioritization rule
 
-Prefer eliminating manual port and reconnection work before adding UI, backends, or centralized features. If a proposed feature requires a permanent coordinator, first determine whether it belongs in JupyterHub rather than JupyHop.
+Solve **open an existing Jupyter from another computer** first; then automate **managed launch**, then prove **persistent recovery of the same live kernel**. Do not add a central portal, remote host auto-discovery, scheduler integration or a generalized web service before those workflows are stable.
