@@ -39,4 +39,8 @@ its cleanup scope. Do not use the generated homes for work you intend to retain.
 Thirteen unprivileged tests cover preparation/privacy, path constraints, refusal
 without sudo, changed account identity/PID refusal and symlink rejection. Native
 pidfd termination was exercised only on an owned disposable child. Actual account
-provisioning/cleanup still requires the operator's privileged execution.
+provisioning was performed explicitly by the operator, and the real-account
+acceptance passed. Run `experiments.m5_account_acceptance --root PATH_FROM_PREPARE
+--server-python ABSOLUTE_SHARED_PYTHON` as the ordinary user for that check;
+the chosen Jupyter environment must be readable/executable by both accounts.
+Operator cleanup still requires sudo and remains explicit.

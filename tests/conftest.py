@@ -7,6 +7,13 @@ import pytest
 from experiments.lab import SSHLab
 
 
+@pytest.fixture(autouse=True)
+def isolated_local_config(tmp_path, monkeypatch):
+    # A developer's optional host/profile preferences must never influence
+    # fixture routes, working directories or executable selection.
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "isolated-client-config"))
+
+
 def pytest_addoption(parser):
     parser.addoption(
         "--run-integration", action="store_true", help="Run private loopback sshd tests."

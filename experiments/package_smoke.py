@@ -25,6 +25,7 @@ def main():
         environment = dict(os.environ)
         environment.pop("PYTHONPATH", None)
         environment.pop("PYTHONHOME", None)
+        environment["XDG_CONFIG_HOME"] = str(lab.root / "isolated-client-config")
         venv = lab.root / "clean-client"
         subprocess.run(
             [sys.executable, "-m", "venv", str(venv)],
@@ -80,6 +81,35 @@ def main():
         report = json.loads(result.stdout)
         if not report["ok"] or report["data"]["identity"]["uid"] != os.getuid():
             raise RuntimeError("Installed wheel diagnostic failed")
+        client_config = lab.root / "jupyhop-config.toml"
+        client_config.write_text(
+            f'version = 1\n[profiles.research]\nserver_python = {json.dumps(sys.executable)}\nworkdir = "~"\n[hosts.destination]\nprofile = "research"\n'
+        )
+        client_config.chmod(0o600)
+        listed = subprocess.run(
+            [
+                cli,
+                "list",
+                "direct",
+                "destination",
+                "--config",
+                str(client_config),
+                "--ssh-config",
+                str(lab.config),
+                "--json",
+            ],
+            cwd=lab.root,
+            env=environment,
+            check=True,
+            capture_output=True,
+        )
+        fleet = json.loads(listed.stdout)
+        if (
+            fleet["version"] != 1
+            or len(fleet["hosts"]) != 2
+            or not all(h["ok"] for h in fleet["hosts"])
+        ):
+            raise RuntimeError("Installed wheel fleet inventory failed")
         discovered = subprocess.run(
             [cli, "discover", "destination", "--ssh-config", str(lab.config), "--json"],
             cwd=lab.root,
@@ -120,6 +150,10 @@ def main():
                     cli,
                     "start",
                     "destination",
+                    "--config",
+                    str(client_config),
+                    "--env",
+                    "research",
                     "--ssh-config",
                     str(lab.config),
                     "--password-stdin",
@@ -199,6 +233,27 @@ def main():
                 report = json.loads(result.stdout)
                 if report["error"] is not None or report["servers"][0]["state"] != expected:
                     raise RuntimeError("Installed wheel managed lifecycle failed")
+            for _ in range(2):
+                result = subprocess.run(
+                    [
+                        cli,
+                        "archive",
+                        "destination",
+                        launched["id"],
+                        "--yes",
+                        "--ssh-config",
+                        str(lab.config),
+                        "--json",
+                    ],
+                    cwd=lab.root,
+                    env=environment,
+                    check=True,
+                    capture_output=True,
+                    timeout=30,
+                )
+                report = json.loads(result.stdout)
+                if report["archived"]["id"] != launched["id"]:
+                    raise RuntimeError("Installed wheel archive failed")
         finally:
             if managed_snapshot is not None:
                 subprocess.run(
@@ -209,7 +264,7 @@ def main():
                     timeout=5,
                 )
     print(
-        "PASS: clean wheel client without local Jupyter, existing-server access, managed start/open/status/idempotent stop via ProxyJump and owned tunnel cleanup"
+        "PASS: clean wheel without local Jupyter, profiles/fleet inventory, existing-server access, start/open/status/stop/archive via ProxyJump and owned tunnel cleanup"
     )
 
 

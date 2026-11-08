@@ -1,5 +1,5 @@
 include LICENSE README.md
 recursive-include devguide *.md
-recursive-include experiments *.py
+recursive-include experiments *.py *.md
 recursive-include tests *.py
 recursive-include .github *.yml

@@ -24,3 +24,22 @@ jobs:
         run: google-chrome --version && python -m experiments.browser_smoke
       - if: matrix.python == '3.14'
         run: python -m experiments.browser_smoke --managed --reconnect
+      - name: Prepare isolated account fixture
+        if: matrix.python == '3.14'
+        run: |
+          fixture_root="$(python -c 'from experiments.m5_accounts import prepare; print(prepare())')"
+          echo "JUPYHOP_TEST_ROOT=$fixture_root" >> "$GITHUB_ENV"
+          sudo /usr/bin/python3 -m experiments.m5_accounts provision --root "$fixture_root"
+          python -m experiments.m5_accounts check --root "$fixture_root"
+      - name: Verify real Unix account isolation
+        if: matrix.python == '3.14'
+        run: |
+          server_python="$(python -c 'import sys; print(sys.executable)')"
+          python -m experiments.m5_account_acceptance --root "$JUPYHOP_TEST_ROOT" --server-python "$server_python"
+      - name: Remove isolated account fixture
+        if: always() && matrix.python == '3.14' && env.JUPYHOP_TEST_ROOT != ''
+        run: |
+          if sudo test -f "/run/$(basename "$JUPYHOP_TEST_ROOT")/state.json"; then
+            sudo /usr/bin/python3 -m experiments.m5_accounts cleanup --root "$JUPYHOP_TEST_ROOT"
+          fi
+          rm -rf -- "$JUPYHOP_TEST_ROOT"
