@@ -24,6 +24,7 @@ class JupyterFixture:
         auth=True,
         python=None,
         lab=False,
+        port=0,
     ):
         self.root = root
         root.mkdir(mode=0o700)
@@ -35,13 +36,14 @@ class JupyterFixture:
         self.address = address
         self.auth = auth
         self.lab = lab
+        self.requested_port = port
         self.process = None
 
     def __enter__(self):
         config = self.root / "config.py"
         lines = [
             f"c.ServerApp.ip = {self.address!r}",
-            "c.ServerApp.port = 0",
+            f"c.ServerApp.port = {self.requested_port}",
             "c.ServerApp.port_retries = 0",
             "c.ServerApp.open_browser = False",
             f"c.ServerApp.base_url = {self.base!r}",
