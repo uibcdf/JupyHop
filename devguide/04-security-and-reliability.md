@@ -17,9 +17,17 @@ Jupyter grants code execution as the account running its server. Risks include a
 9. **Privacy:** sanitize help output, tracebacks, logs, telemetry and docs. No phone-home or analytics by default.
 10. **Institutional policy:** local policies govern access to hosts and use of bastions; tool must not bypass them.
 
+## Authorization boundary for unmanaged discovery
+
+JupyHop may inspect only Jupyter runtime data available to the authenticated remote Unix user. A discovered server is not automatically managed: users may connect if verified and authorized, but `stop`/restart must refuse it. Do not assume that a port or PID identifies an authorized Jupyter process. SSH tunnels must preserve remote and local loopback binding, supported base paths, and Jupyter authentication.
+
 ## Authentication design decision pending
 
-Opening an existing server from a second client requires a legitimate way to authenticate without leaking a token. Evaluate Jupyter Server's supported runtime/API behavior and restrictive remote-only token access before selecting a design. Do not claim this is solved simply by forwarding the port.
+Opening an existing server from a second client requires a legitimate way to authenticate without leaking a token. It must support a fall back to interactive login for servers whose credentials cannot be safely retrieved. Jupyter-auth URLs must not appear in shell history, diagnostics, JSON results or general logs; the browser flow has its own exposure considerations. Evaluate Jupyter Server's supported runtime/API behavior and restrictive remote-only token access before selecting a design. Do not claim this is solved simply by forwarding the port.
+
+## Separate lifetimes
+
+Client SSH connection, local tunnel, remote Jupyter Server and kernel process are different resources. A failed forward must not stop a server. Reconnecting to an alive server does not guarantee a kernel survived a server crash. No design promises in-memory kernel recovery across a host reboot. Process-manager selection must consider `systemd --user` session/linger limitations and tmux fallback; never enable lingering or request sudo implicitly.
 
 ## Failure and recovery matrix
 
