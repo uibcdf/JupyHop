@@ -90,6 +90,12 @@ Idempotent stop requires verified ownership and process identity, not PID alone.
 - Multiple clients: use distinct local forwards; avoid changing remote port/server when an existing one is healthy.
 - Stop: stopping managed server may terminate kernels and running computations; require clear warning/confirmation policy.
 
+## Additional validity boundaries
+
+A remote loopback port is not evidence of ownership. Unmanaged discovery must have a defined completeness indicator, handle custom runtime directories and URL base paths, and preserve normal Jupyter authorization. Kernels must be verified to survive reconnect tests; a surviving HTTP endpoint is insufficient. See [11](11-discovery-and-connectivity.md).
+
+There is no implicit promise that `open` keeps a tunnel alive after its terminal exits until a documented tunnel ownership/lifecycle policy is selected. See [12](12-user-experience.md). Any versioned helper or stored managed registry must support safe cross-client version negotiation; see [10](10-remote-runtime-and-protocol.md).
+
 ## Mandatory design spikes before M3/M4
 
 1. Run a manually launched Jupyter Server in a Conda environment; inspect supported runtime metadata and token/password behavior.
