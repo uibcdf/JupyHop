@@ -1,6 +1,7 @@
 # 06 — Development roadmap
 
-**Status:** M0–M4 complete; M5 onward planned. Dependency-ordered milestones,
+**Status:** M0–M4 complete; M5 acceptance verified, operator fixture cleanup
+pending; M6 onward planned. Dependency-ordered milestones,
 **not** a release timeline. Each milestone has an independently demonstrable
 vertical slice; security is a gate at every stage. Never advertise proposed CLI
 syntax as implemented.
@@ -64,7 +65,14 @@ Stop here for review before M5.
 
 ## M5 — Real-world scientific and multi-host workflows
 
+**Acceptance verified 2026-11-08:** [profiles, two-target kernels, archive, real
+Unix accounts, tests and limits](19-m5-scientific-workflows.md). Operator cleanup
+of the explicitly provisioned account fixture is pending. Stop before M6.
+
 **Outputs:** remote environment profiles (Conda/venv/system Python), validated `--workdir`, multi-host listing and selection, multiple simultaneous independent local forwards, clearer error and headless/JSON UX, testing across LAN/direct and external/ProxyJump routes, account isolation.
+
+The demonstrated active-registry bound/name reuse need is addressed by explicit
+nondeleting archive of inactive evidence, not automatic scientific-resource cleanup.
 
 **Acceptance:** both lab workstations operate simultaneously from a home client; two separate remote Unix users cannot see/stop each other's managed sessions; a researcher can start in a selected project directory/environment, disconnect and reconnect without manually finding a port. If a route does not exist, explain rather than silently create an unsafe path.
 

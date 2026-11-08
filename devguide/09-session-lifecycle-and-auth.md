@@ -7,6 +7,13 @@ M3 implements the [initial launch/state/auth slice](17-m3-managed-launch.md).
 M4 adds managed observations/readiness reconciliation and pinned graceful stop;
 independent authorized software clients recover the same live kernel.
 
+M5 adds explicit `archive HOST UUID [--yes]` after observed inactivity. It moves
+private evidence/settings into an archive and releases active name/budget without
+deleting recovery files or scientific data. Archived IDs are not active sessions
+and cannot be implicitly reopened/restarted; names can be reused by a new UUID.
+Unknown pre-PID intent cannot authorize archive. [M5](19-m5-scientific-workflows.md)
+also verifies these boundaries with two actual remote Unix UIDs.
+
 ## Vocabulary
 
 - **Client:** machine invoking JupyHop.

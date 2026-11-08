@@ -7,7 +7,8 @@
 M3 implements [managed start/readiness](17-m3-managed-launch.md) with password
 prompt/protected stdin, explicit server Python/workdir, no-open and attached
 browser flows. M4 implements managed status and verified stop with exact UUIDs;
-profile UX and name-based resolution remain planned.
+M5 adds named executable/workdir profiles, multi-host inventory/selection and
+inactive-record archive. Name-based session resolution remains unimplemented.
 
 ## Two levels of experience
 
@@ -34,14 +35,25 @@ jupyhop list workstation
 jupyhop status workstation SESSION_ID
 jupyhop open workstation SESSION_ID
 jupyhop stop workstation SESSION_ID
+jupyhop archive workstation SESSION_ID
+jupyhop list workstation-a workstation-b --json
 jupyhop doctor workstation
 ```
 
 `--server-python` selects an existing remote Python; workdir is validated remotely.
-Named `--env` profiles remain M5. Stop warns about terminating kernels and needs
+Named `--env` profiles use optional TOML v1; CLI values override profile defaults.
+`list` without aliases uses configured hosts; hostless `open` selects across those
+routes. Ambiguity requires a terminal or explicit `open HOST ID`. Stop warns about terminating kernels and needs
 confirmation or explicit `--yes`. It cannot select by name, PID or unmanaged ID.
 The server kernel list can differ from its launcher environment. Never silently
 install or activate arbitrary environments.
+
+Archive needs the same exact-UUID confirmation policy and proof of inactivity.
+It moves private evidence without deleting data, releases the active name and
+record budget, and never stops orphaned kernels. Unconfirmed/live state is refused.
+List JSON uses a version-1 per-host envelope and exit 14 for partial host failures;
+`discover HOST` retains the original single-host report. No route repair/relay is
+attempted, and one failed host does not hide results from reachable aliases.
 
 ## Selection and ambiguity rules
 

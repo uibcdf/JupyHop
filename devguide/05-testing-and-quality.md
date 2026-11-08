@@ -14,8 +14,13 @@ execution and the four Python versions. [M4](18-m4-lifecycle.md) records indepen
 client/key/HOME and real-browser reconnection to the same live kernel, safe stop,
 concurrency, lost replies, crash/boot-identity simulations and legacy runners.
 Physical reboot and PAM/logind last-logout policy are not tested by the loopback
-fixture; two real remote accounts remain M5. The report distinguishes simulation
-from observed live kernel continuity.
+fixture. [M5](19-m5-scientific-workflows.md) adds profiles, two-target simultaneous
+kernel/reconnection tests, config isolation and nondeleting archive/name reuse.
+Two real temporary Unix accounts separately verify authentication and lifecycle
+isolation with a private loopback sshd. The four-version suite has 258 cases
+(206 unit, 52 integration); real-account and browser experiments are additional.
+All default local config is isolated from developer preferences. Physical
+network/site policy remains distinct from these automated mechanism tests.
 
 **Unit:** CLI parsing, session identifiers, config validation, state transitions, serialization, output redaction, launcher argument construction and error messaging.
 

@@ -87,28 +87,38 @@ See [18](18-m4-lifecycle.md) for experiments, alternatives and boundaries.
 | D32 | Keep private tmux as the supported backend; OS logout policy is external | Independent-client/kernel continuity verified; no user bus in no-PAM SSH fixture; no auto linger/restart/backend switch |
 | D33 | Exact UUID confirmation, retain forensic state/settings after stop | Concurrent/lost-reply retry is safe; cleanup/name reuse must preserve possible orphaned-kernel recovery evidence |
 
+## M5 decisions (2026-11-08)
+
+Context, experiments and limits: [19](19-m5-scientific-workflows.md).
+
+| ID | Decision | Rationale / consequence |
+| --- | --- | --- |
+| D34 | Optional bounded TOML v1 with named Python/workdir profiles and per-alias helper/runtime preferences | Stdlib-only parsing, explicit CLI precedence, no shell activation/credentials/SSH duplication; owned nonwritable config and isolated test defaults |
+| D35 | Sequential inventory of up to 16 explicit/configured aliases, per-route errors, list JSON v1 | Simple bounded requests, no SSH parser/topology inference/cache; original single-host discover remains stable; ambiguous open needs explicit choice |
+| D36 | Archive inactive directories atomically, retain forensic settings/runtime files, release active name/budget | Resolves 128-entry operational bound without deleting orphaned-kernel recovery data or scientific files; refuse live/uncertain identities; RPC 1.4, schema unchanged |
+| D37 | Operator-provisioned temporary real accounts and a separate loopback sshd for isolation acceptance | Actual UID/auth boundaries are verified; privileged fixture is separate from the non-root product; namespace restriction/VM attempt did not establish acceptance |
+
 ## Decisions remaining for their implementation milestones
 
 | Topic | Options / questions | Evidence needed |
 | --- | --- | --- |
 | Lifecycle rollout extensions | Optional installed helper/migration | M4 source RPC and unchanged M3 runners are verified; no installation is needed |
 | Other process managers / site validation | Explicit systemd backend and PAM/linger fixture | M4 tmux is tested; physical site logout policy cannot be inferred from it |
-| Registry retirement / migration | Explicit terminal cleanup and name reuse without losing orphaned-kernel evidence | M4 retains bounded records and private settings; no automatic deletion |
-| Automatic browser authentication (M2) | Protected token handoff beyond selected normal-login baseline | Real browser cookie/history exposure tests |
-| Manually started server discovery | Runtime dir enumeration, supported versions, probe ownership/liveness, custom base URL | Prototype in multiple Conda environments |
+| Archive deletion / migration | Explicit retention/deletion policy and orphaned-kernel recovery | M5 archive/name reuse is verified; permanent deletion and migration remain unimplemented |
+| Automatic browser authentication extension | Protected token handoff beyond selected normal-login baseline | Normal password/token login and cookie WebSocket tests pass; automatic credential handoff needs separate exposure review |
+| Broader manually started server discovery | Additional versions/authentication/runtime layouts | M2 current-user metadata, explicit paths/interpreters, ownership and simple base paths are verified; coverage remains partial |
 | Future port customization | M3 fixes native ephemeral allocation; explicit port policy is separate scope | No manual remote-port coordinator is needed for M3 |
-| Local tunnel lifetime | Foreground CLI, detached SSH, or reuse/control socket | Reliable cleanup and reconnection |
-| Environment launcher | Explicit Python path, profile command, kernel selection | Safe quoting, reproducibility, cross-env UX |
+| Background/shared tunnel extension | Detached SSH or verified reuse/control socket | Foreground owned cleanup, independent forwards and reconnection are verified through M5; no background mode is needed |
+| Additional environment behavior | Activation hooks or kernel-selection UX | M5 executable/workdir profiles are verified; arbitrary shell activation is intentionally absent |
 | Minimum versions | Python, Jupyter Server, OpenSSH, Linux distros | Dependency testing and CI |
-| Broader identity reconciliation | Cross-user/multi-host policy and name reuse | M4 continuity/stop are verified; M5/M6 extend acceptance |
-| Workdir / launch profiles | Explicit remote working directory, environment Python path and safe quoting | Conda/venv and Unicode-path tests |
-| Multi-client forward | Foreground/background tunnel tracking and cleanup | Port collisions, process ownership, WebSocket tests |
-| Reboot behavior | Mark stale vs optional user-requested restart | Predictability and policy |
-| Runtime/helper rollout | No-install discovery vs minimal helper vs on-demand helper | Security, remote Python requirements, updates, installation UX |
-| Lifecycle compatibility/migrations | M3 wire 1.2/schema 1.0 are fixed; incompatible writes fail | State migrations and installed lifecycle upgrades remain M4/M6 |
-| URL variants | IPv6/HTTP/HTTPS, base paths and TLS hostname mismatch | Live Jupyter and browser/WebSocket tests |
-| Discovery coverage | Multiple Jupyter runtime dirs, deduplication and explicit paths | Multi-Conda environment prototypes |
-| Browser/tunnel contract | Attached vs supervised background forward, repeat open, close behavior | UX and recovery tests |
+| Broader identity reconciliation | Additional shared-filesystem/site identity policies | M5 verifies actual UID isolation, duplicate aliases, changed routes and archived-name reuse; broader site coverage remains M6 |
+| Broader scientific filesystem cases | Long network-filesystem workloads and special activation policy | M5 Conda/venv, relative/tilde/symlink/Unicode paths verified; broader site matrix remains M6 |
+| Physical reboot/site logout policy | Controlled reboot and PAM/cgroup acceptance | Changed boot identity is detected as stale; physical reboot and last-logout behavior remain unmeasured |
+| Installed helper extension | Optional installation/update strategy | Source-only bootstrap is verified without remote installation; an installed helper has no demonstrated need |
+| Lifecycle compatibility/migrations | Schema 1.0 and per-operation wire minors are fixed; incompatible writes fail | State migrations and installed lifecycle upgrades remain M6 review |
+| Broader URL variants | IPv6, HTTPS and TLS hostname mismatch | IPv4 HTTP/simple ASCII base paths and browser WebSockets pass; additional variants require live tests |
+| Broader discovery coverage | Additional Conda layouts and legacy runtime formats | Explicit multiple runtime dirs/interpreters and deduplication pass; exhaustive inventory is outside MVP |
+| Browser/tunnel edge cases | Suspend/resume and CLI upgrade during an attached session | Browser/tunnel closure and independent reconnect pass; physical client transitions remain unmeasured |
 
 ## Architectural decision record format
 

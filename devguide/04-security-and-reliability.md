@@ -42,6 +42,21 @@ No PID-only fallback, tmux kill, SIGKILL escalation or credential retrieval is
 used. An interrupted stop retains intent; retry revalidates it. State/settings
 are retained rather than risk deleting recovery evidence for orphaned kernels.
 
+M5's [archive policy](19-m5-scientific-workflows.md) moves only a verified inactive
+session directory under the same private registry. It releases the active name
+and record budget, preserves hashes/connection evidence and never deletes files
+or stops orphaned kernels. A live PID/start identity, a live runner at the exact
+state path, any live private tmux pane or an unconfirmed pre-PID launch blocks
+retirement. Compatibility, ownership, no-symlink parsing and locking still apply.
+
+Optional local TOML is bounded, owned, single-link and not writable by group/other;
+raw parse errors and unknown fields are suppressed. It accepts no credentials or
+shell fragments. OpenSSH owns connectivity. Tests isolate XDG configuration from
+the developer's preferences. Two actual temporary Unix accounts have separately
+verified discovery/read/open/stop/archive isolation and Jupyter login rejection.
+The explicitly privileged account fixture is development tooling; the product
+never creates users, requires sudo or modifies a normal SSH service.
+
 Opening an existing server from a second client requires a legitimate way to authenticate without leaking a token. It must support a fall back to interactive login for servers whose credentials cannot be safely retrieved. Jupyter-auth URLs must not appear in shell history, diagnostics, JSON results or general logs; the browser flow has its own exposure considerations. Evaluate Jupyter Server's supported runtime/API behavior and restrictive remote-only token access before selecting a design. Do not claim this is solved simply by forwarding the port.
 
 ## Separate lifetimes

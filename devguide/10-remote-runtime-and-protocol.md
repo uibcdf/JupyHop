@@ -9,7 +9,10 @@
 M3 adds [immutable per-session runners and registry schema 1.0](17-m3-managed-launch.md)
 without a remote package installation. Read-only probes and managed start use
 wire 1.2 for start. M4 uses [wire 1.3](18-m4-lifecycle.md) for discovery/status/stop,
-with schema 1.0 and additive stop intent. Migrations/cleanup remain unimplemented.
+with schema 1.0 and additive stop intent. M5 adds archive RPC 1.4 while retaining
+schema 1.0; it atomically moves inactive evidence into `archive/UUID`, without
+rewriting records/runners or deleting data. List inventory and local TOML each
+have separate version-1 contracts. Migrations and automatic deletion remain absent.
 
 ## Goal and constraints
 
@@ -42,6 +45,11 @@ bounded JSON with diagnostics on stderr. M1 freezes doctor protocol 1.0;
 M2 adds discovery 1.1, and M3 freezes managed discovery/start wire 1.2 and registry
 schema 1.0 in [17](17-m3-managed-launch.md). M4 adds wire 1.3 without rewriting
 existing runners or migrating state. Old runners preserve optional stop intent.
+
+M5's archive source is sent only for explicit archive requests, keeping each
+bootstrap within the existing 64 KiB input budget. No archived source is executed.
+Older clients see only active `sessions/` entries; archival does not introduce
+stored states they cannot parse. New starts cannot reuse an archived UUID.
 
 Minimum operations: `capabilities`, `discover`, `status`; later `start`, `stop`, and managed-session reconciliation. A record must distinguish `managed`, `unmanaged`, `stale`, `unreachable`, and `unsupported` without conflating them.
 

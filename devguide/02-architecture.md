@@ -11,6 +11,8 @@ M3 adds an immutable per-session runner, private tmux launch and a versioned
 per-host/account registry. See [17](17-m3-managed-launch.md) for the exact state,
 auth and bootstrap contract. M4 adds [managed status/reconciliation, pinned
 graceful stop and independent-client kernel continuity](18-m4-lifecycle.md).
+M5 adds [optional local profiles, bounded multi-alias inventory, real account
+isolation and inactive-state archive](19-m5-scientific-workflows.md).
 
 ```text
 Client machine
@@ -37,7 +39,7 @@ No central service or inter-user privileged daemon is required.
 
 **Remote source RPC:** start/status/stop owned processes, plus read-only discovery
 of current-user Jupyter Servers. Versioned stdlib source travels through SSH
-stdin; no installed helper package. Lifecycle RPC is wire 1.3.
+stdin; no installed helper package. Status/stop use wire 1.3; archive uses 1.4.
 
 **Process manager:** private tmux per session; no automatic restart. The tested
 no-PAM SSH context has no user manager. OS logout/cgroup policy remains an
@@ -47,8 +49,14 @@ backend needs its own acceptance fixture before being offered.
 **Session registry:** host/account-scoped XDG state (default below
 `~/.local/state/jupyhop/`) with private permissions, locking and atomic updates.
 Stable random IDs record endpoint/process/runner identity. Entries are untrusted
-until identity is verified. Terminal records/settings are retained within the
-128-record bound; cleanup/name reuse is not yet implemented.
+until identity is verified. Up to 128 active records are retained. Explicit
+archive atomically moves inactive evidence/settings to a private archive and
+releases its active name/budget. It never deletes data or stops orphaned kernels.
+
+**Local preferences:** optional version-1 TOML specifies launch profiles and
+per-alias helper/runtime preferences. OpenSSH still owns addresses, users and
+routes. Inventory always probes remote state; the local file is not a session
+registry. Config does not execute shell fragments or activate environments.
 
 ## State, ownership, and discovery
 

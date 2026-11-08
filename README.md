@@ -6,7 +6,7 @@ JupyHop is an open-source project for **discovering, opening, launching, managin
 
 It is designed for researchers, data scientists, developers, and small teams who already have SSH access to workstations or servers and want to work with their remote notebooks as easily as with local ones.
 
-> **Project status: M4 — managed lifecycle and reconnection.** Existing-server access, managed launch, `status` and verified graceful `stop` are implemented for supported current-user Linux Jupyter servers. Independent clients can reconnect to the same surviving kernel. Persistence depends on remote OS policy; reboot/crash does not preserve kernel memory. JupyHop is not published on PyPI. See the [M4 report](devguide/18-m4-lifecycle.md) and [development guide](devguide/README.md).
+> **Project status: M5 — profiles, multiple hosts and account isolation.** Existing-server access, managed launch/lifecycle, named profiles, multi-host inventory and safe record archiving are implemented for supported Linux Jupyter servers. Independent clients can reconnect to the same surviving kernel; two real Unix accounts were tested separately. Persistence depends on remote OS policy; reboot/crash does not preserve kernel memory. JupyHop is not published on PyPI. See the [M5 report](devguide/19-m5-scientific-workflows.md) and [development guide](devguide/README.md).
 
 ## The problem
 
@@ -56,20 +56,59 @@ argument exists. `--no-open` returns verified launch information without creatin
 a local tunnel; otherwise the same attached browser/no-browser flow is used.
 
 `discover`/`list` label verified owned servers as `managed` and preserve a stable
-session ID. `open` accepts that exact ID. Named environment profiles and record
-cleanup remain future work. `status` observes the managed registry and reconciles
+session ID. `open` accepts that exact ID. `status` observes the managed registry and reconciles
 readiness after an interrupted start. `stop` requires an exact managed UUID and
 terminal confirmation; scripts must explicitly use `--yes`. Stopping terminates
 that server's kernels and computations. Unmanaged IDs, names and PIDs cannot
 authorize stop. Discovered servers are never adopted, stopped or restarted.
+
+Optional launch profiles and host preferences use TOML:
+
+```toml
+# ~/.config/jupyhop/config.toml (or --config FILE)
+version = 1
+[profiles.research]
+server_python = "/absolute/remote/env/bin/python"
+workdir = "~/projects/analysis"
+[hosts.workstation-a]
+profile = "research"
+[hosts.workstation-b]
+profile = "research"
+```
+
+Use an owned regular file without group/other write permission (`chmod 600` is
+recommended). Host addresses, users, keys and jumps remain in OpenSSH config;
+credentials are not accepted in JupyHop TOML. Profiles select an existing Python
+and directory without activating, installing or modifying an environment.
+
+```console
+jupyhop start workstation-a --env research
+jupyhop list workstation-a workstation-b --json
+jupyhop list                   # all configured hosts
+jupyhop open                   # configured hosts; choose on a terminal if ambiguous
+jupyhop archive workstation-a SESSION_ID --yes
+```
+
+Explicit CLI Python/workdir values override the profile. Per-host
+`remote_python` and `runtime_dirs` can specify a stdlib helper and additional
+discovery paths; no Jupyter dependency is required in that helper.
+`list` returns version-1 multi-host inventory with per-route errors. Its JSON
+shape differs from the old single-host alias: use `discover HOST --json` for
+the original single-host report. Scripts choose a route explicitly with
+`open HOST ID` when multiple candidates exist.
+
+After stopping a managed session, `archive` moves its inactive record/settings
+and recovery files into a private archive, freeing its name and active-record
+budget. It preserves evidence for possible orphaned kernels. It does not delete
+scientific data or stop orphaned kernels; live or uncertain identities are refused.
 
 A host such as `workstation` would be an existing alias in the user's `~/.ssh/config`; SSH can connect directly or via a jump host using `ProxyJump`.
 
 ## Use cases and scenarios
 
 Existing-server access, diagnostics, managed launch/stop and same-live-kernel
-reconnection ship in M4. Broader platform/network and profile workflows below
-remain intended capabilities with acceptance gates in the roadmap.
+reconnection, profiles and multi-host inventory ship through M5. Broader platform
+and physical-network workflows remain bounded by the roadmap's acceptance gates.
 
 ### 1. Open a Jupyter server that is already running
 
@@ -90,7 +129,7 @@ jupyhop start workstation --server-python /absolute/remote/env/bin/python --work
 ```
 
 The environment must already exist; it is not installed or activated by JupyHop.
-Named `--env` profiles remain planned for M5. Server and kernel environments are
+Named `--env` profiles choose an executable/workdir from optional TOML. Server and kernel environments are
 distinct concepts; JupyHop checks that kernel specifications are available.
 
 ### 4. Continue work from another computer
@@ -181,10 +220,12 @@ that interpreter; the server may run in a different Conda environment.
 | Start with chosen Python/workdir | Implemented, private tmux launcher | Started outside JupyHop |
 | Reconnect to a still-running server | Fresh login/tunnel; same surviving kernel verified across independent clients | Fresh login/tunnel; persistence belongs to its external launcher |
 | Stop through JupyHop | Verified graceful stop by exact UUID, with confirmation | **Not allowed in MVP** |
+| Archive inactive registry evidence / release name | Explicit verified move to private archive | **Not allowed** |
 | Preserve kernel state after remote reboot | **Not possible by default** | **Not possible by default** |
 
-M4 manages **the route**, creates owned servers, reconciles readiness and
-observes process loss, and gracefully stops verified owned identities.
+M5 manages **the route**, creates owned servers, reconciles readiness and
+observes process loss, gracefully stops verified identities and archives inactive
+records without deleting recovery evidence.
 JupyHop does not replace Jupyter's kernel manager or
 make kernels persistent across crashes and reboots.
 
@@ -250,7 +291,8 @@ See [security and reliability](devguide/04-security-and-reliability.md), [discov
 
 ## Development roadmap
 
-The planned dependency-ordered stages are:
+M0–M5 are implemented in dependency order; M6 is the next proposed milestone.
+The full roadmap is:
 
 1. **M0 — Validate design assumptions:** discovery, auth handoff, process managers, tunnel lifetime, and remote helper.
 2. **M1 — SSH foundations:** host aliases, ProxyJump, remote diagnostics.
@@ -333,14 +375,19 @@ path depends on shell activation. Relative workdirs resolve against remote HOME;
 State lives under `$XDG_STATE_HOME/jupyhop/hosts/<host-account-scope>/sessions/ID`
 (default `~/.local/state`). Host scope hashes the Linux machine ID and account
 UID so shared HOME directories do not merge different hosts. State directories
-are private 0700; files are 0600. Registry schema 1.0 and wire protocol 1.3
-(start retains 1.2) are separate; incompatible state is refused without automatic migration. No existing
+are private 0700; files are 0600. Registry schema 1.0 is separate from wire
+protocols (start 1.2, discovery/status/stop 1.3, archive 1.4). Incompatible state
+is refused without automatic migration. No existing
 Jupyter configuration, scientific environment or SSH config is rewritten.
 
 Failed or interrupted starts may leave a running server and a recoverable launch
 record. Note the request ID and run `status HOST ID` or `discover` before retrying.
-Names stay reserved and records retained (maximum 128) until explicit future
-cleanup; no automatic deletion is attempted. A request with no verified PID may
+Names stay reserved and active records are retained (maximum 128) until explicit
+archive. `archive HOST ID` needs confirmation or `--yes`; it moves only the
+inactive private session directory to `archive/ID` under the same host/account
+registry. Repeated archive is safe. Old UUIDs are not reused, and archived data is
+retained with its private permissions. No automatic deletion is attempted.
+A request with no verified PID may
 remain `starting`; this is unconfirmed intent, not proof of a running process.
 
 `status` distinguishes `ready`, `starting`, `stopping`, `stopped`, `stale`, `failed`
@@ -358,20 +405,27 @@ a capable helper with `--remote-python`. The descriptor is pinned before
 identity/provenance checks, and receives only graceful SIGTERM. There is no
 PID-only signal, tmux kill, automatic SIGKILL or automatic restart. Stop timeout
 or SSH interruption leaves its outcome unknown: check status before retrying.
-See [the M4 contract and evidence](devguide/18-m4-lifecycle.md).
+See [the lifecycle contract](devguide/18-m4-lifecycle.md) and
+[M5 profiles, inventory and archival evidence](devguide/19-m5-scientific-workflows.md).
 
 Exit codes: 0 checks passed; 2 invalid input; 3 SSH/access/timeout failure;
 4 missing remote prerequisites or failed Python probe; 5 invalid/incompatible
 probe output; 6 no verified candidate (partial search); 7 ambiguous/invalid
 selection; 8 forwarding failure; 11 lifecycle refusal; 12 unconfirmed/failed
-managed launch; 13 unconfirmed/pending lifecycle request; 130 interrupted. Managed-start transport failure also uses 12
+managed launch; 13 unconfirmed/pending lifecycle request; 14 partially failed
+multi-host inventory; 130 interrupted. `list` returns 0 when every selected host
+was inspected (even with no ready servers), 14 when some hosts failed, and 3
+when all failed. Discovery remains partial. Managed-start transport failure also uses 12
 because the remote write/process outcome may be unknown.
 `--json` emits nonsecret structured results;
 errors go to stderr. Transport errors leave remote session state unknown.
 
-Automatic record cleanup, name reuse, profile configuration, custom supervision
+Automatic deletion of archived state, profile activation hooks, custom supervision
 backends, other operating systems and non-POSIX remote login shells are untested
-or unimplemented.
+or unimplemented. Config v1 permits up to 16 hosts and 32 profiles; sequential
+inventory uses a deadline per host. Scientific environments that require custom
+activation scripts must be prepared outside JupyHop. Available notebook kernels
+remain Jupyter's responsibility.
 
 ## Contributing
 
@@ -391,6 +445,7 @@ python -m experiments.package_smoke
 python -m experiments.browser_smoke  # optional Chrome + JupyterLab acceptance
 python -m experiments.browser_smoke --managed --reconnect
 python -m experiments.m4_reconnect
+# Optional real-account acceptance: see experiments/m5_accounts.md
 ```
 
 Integration requires a non-root Unix user, OpenSSH server/client, an existing

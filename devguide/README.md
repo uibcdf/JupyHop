@@ -1,7 +1,8 @@
 # JupyHop Development Guide
 
-> **Status: M0–M4 implemented.** SSH diagnostics, existing-server access, managed
-> launch/status/stop and same-live-kernel reconnection ship. OS logout policy,
+> **Status: M0–M5 implemented.** SSH diagnostics, existing-server access, managed
+> lifecycle/reconnection, profiles, multi-host inventory and archive ship.
+> Real Unix account isolation is verified; see M5 for operator cleanup status. OS logout policy,
 > physical reboot and wider M5/M6 compatibility are bounded in the reports.
 > See the milestone reports below for exact acceptance evidence and limits.
 
@@ -61,3 +62,6 @@ This directory is the project's design source of truth. Update specifications an
 - [M4 lifecycle and reconnection](18-m4-lifecycle.md): pinned graceful stop,
   interrupted requests, independent clients/browser kernel continuity, legacy
   runners, four-version results and OS/cleanup limits.
+- [M5 scientific and multi-host workflows](19-m5-scientific-workflows.md): local
+  profiles, route inventory, simultaneous scientific kernels, safe archive/name
+  reuse and two real Unix accounts; privileged test-fixture instructions.

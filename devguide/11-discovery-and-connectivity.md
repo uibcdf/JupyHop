@@ -13,6 +13,15 @@ UUIDs/names. A registry entry alone cannot establish managed provenance. Unknown
 managed state versions are reported as unavailable; unmanaged search stays
 partial. See [17](17-m3-managed-launch.md).
 
+M5's [local preferences/inventory contract](19-m5-scientific-workflows.md) adds
+per-alias helper/runtime directories and bounded multi-host listing. These paths
+extend partial discovery; profiles do not enumerate all Conda environments.
+Each route retains its own success/error record. Same-machine aliases remain
+explicit routes to the same remote registry, without guessed LAN/bastion changes.
+Real UID tests reject another account's runtime directory and process, even when
+the requester knows its UUID, path and port. Archived records are not active
+discovery sources. Existing unmanaged servers remain read-only for lifecycle.
+
 ## Sources of truth and scope
 
 - **Connectivity:** OpenSSH aliases, configuration and trust store on the **current client**, including `Host`, `Include`, `Match`, `ProxyJump`, user identities and host-key validation. Do not build a second SSH parser or select LAN vs external route through guesswork.
