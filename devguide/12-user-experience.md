@@ -2,11 +2,12 @@
 
 > **Session UX contract.** [M2](16-m2-existing-servers.md) implements existing-server
 > discovery/open with normal Jupyter login and attached foreground tunnels.
-> M3 adds managed launch; persistent lifecycle workflows remain planned.
+> M3 adds managed launch; [M4](18-m4-lifecycle.md) adds status/stop/reconnection.
 
 M3 implements [managed start/readiness](17-m3-managed-launch.md) with password
 prompt/protected stdin, explicit server Python/workdir, no-open and attached
-browser flows. Managed status/stop/reconciliation and profile UX remain planned.
+browser flows. M4 implements managed status and verified stop with exact UUIDs;
+profile UX and name-based resolution remain planned.
 
 ## Two levels of experience
 
@@ -20,20 +21,27 @@ jupyhop open workstation
 
 Expected: connect using OpenSSH, find validated candidates, choose only if ambiguous, establish a local loopback forward and open an authenticated browser view. If auth requires a password, ask the user to log in normally; if discovery is incomplete, say so clearly.
 
-No mandatory TOML config, manually selected port range, server daemon or admin account should be required in the common case. The exact remote Python/helper prerequisite is an M0 spike, not a promise that absolutely no remote setup is needed.
+No mandatory TOML config, manually selected port range, server daemon or admin
+account is required in the supported case. The helper needs an existing Linux
+Python >=3.11 and `/proc`; managed launch additionally needs tmux and a selected
+Jupyter Server 2 environment. No promise of zero remote prerequisites is made.
 
 ### Advanced mode: launch and manage
 
 ```console
-jupyhop start workstation --env research --workdir '~/projects/project-a' --name analysis
+jupyhop start workstation --server-python /absolute/env/bin/python --workdir '~/projects/project-a' --name analysis
 jupyhop list workstation
-jupyhop status workstation analysis
-jupyhop open workstation analysis
-jupyhop stop workstation analysis
+jupyhop status workstation SESSION_ID
+jupyhop open workstation SESSION_ID
+jupyhop stop workstation SESSION_ID
 jupyhop doctor workstation
 ```
 
-`--env` refers to a documented remote launch profile; the remote working directory is validated on the remote machine. The server kernel list can differ from its launcher environment. Never silently install or activate arbitrary environments.
+`--server-python` selects an existing remote Python; workdir is validated remotely.
+Named `--env` profiles remain M5. Stop warns about terminating kernels and needs
+confirmation or explicit `--yes`. It cannot select by name, PID or unmanaged ID.
+The server kernel list can differ from its launcher environment. Never silently
+install or activate arbitrary environments.
 
 ## Selection and ambiguity rules
 
@@ -41,7 +49,8 @@ jupyhop doctor workstation
 - **One valid candidate:** `open host` may select it automatically.
 - **Multiple candidates:** interactive picker on a TTY; noninteractive calls return an ambiguity error with safe identifiers, not a random selection.
 - **Unmanaged candidate:** open if authorized; refuse `stop`.
-- **`stop host` with multiple managed sessions:** never guess. Require ID/name or an explicit user selection with confirmation.
+- **`stop host`:** always require an exact managed UUID and confirmation (or
+  explicit `--yes`); never infer a selection, even for a single server.
 - **Name collisions:** display session ID and host/account context; refuse unsafe ambiguous resolution.
 - **Idempotent open:** never restart an already-running remote server just to create a tunnel.
 - **Missing browser:** `--no-browser` provides a documented headless method without printing secrets in generic diagnostics.

@@ -75,20 +75,32 @@ review and limits for the launch baseline:
 | D27 | Immutable per-session source bootstrap; wire 1.2 separate from registry 1.0 | No remote package install, no implicit migration or replacement of running launchers |
 | D28 | Native Jupyter ephemeral port + verified readiness; uncertain starts retain evidence | No guessed port or automatic restart/cleanup; reconciliation remains M4 |
 
+## M4 decisions (2026-11-08)
+
+See [18](18-m4-lifecycle.md) for experiments, alternatives and boundaries.
+
+| ID | Decision | Rationale / consequence |
+| --- | --- | --- |
+| D29 | Pin Linux pidfd before stop identity checks, graceful SIGTERM only | Avoid PID reuse races; never tmux kill/PID-only fallback/SIGKILL escalation |
+| D30 | Prefer Python pidfd API, feature-detect named libc wrappers if absent | Tested Conda builds omit the API; stdlib ctypes needs no package dependency; unavailable capability refuses stop |
+| D31 | Wire 1.3, unchanged schema 1.0 with optional boolean stop intent | M3 runners preserve additive intent; no stored-state migration or launcher replacement |
+| D32 | Keep private tmux as the supported backend; OS logout policy is external | Independent-client/kernel continuity verified; no user bus in no-PAM SSH fixture; no auto linger/restart/backend switch |
+| D33 | Exact UUID confirmation, retain forensic state/settings after stop | Concurrent/lost-reply retry is safe; cleanup/name reuse must preserve possible orphaned-kernel recovery evidence |
+
 ## Decisions remaining for their implementation milestones
 
 | Topic | Options / questions | Evidence needed |
 | --- | --- | --- |
-| Lifecycle rollout (M4) | Extend immutable per-session runners vs installed lifecycle helper | M3 requires no remote package; reconciliation/upgrade evidence still needed |
-| Persistent process manager (M4) | systemd --user, tested tmux policy, or other backend | M3 tmux launch works; final logout/linger/OS policy remains unvalidated |
-| Reconciliation/state migration (M4) | Explicit migration, stale-state handling, safe cleanup | Initial schema/atomic locking are implemented; stop/recovery remain pending |
+| Lifecycle rollout extensions | Optional installed helper/migration | M4 source RPC and unchanged M3 runners are verified; no installation is needed |
+| Other process managers / site validation | Explicit systemd backend and PAM/linger fixture | M4 tmux is tested; physical site logout policy cannot be inferred from it |
+| Registry retirement / migration | Explicit terminal cleanup and name reuse without losing orphaned-kernel evidence | M4 retains bounded records and private settings; no automatic deletion |
 | Automatic browser authentication (M2) | Protected token handoff beyond selected normal-login baseline | Real browser cookie/history exposure tests |
 | Manually started server discovery | Runtime dir enumeration, supported versions, probe ownership/liveness, custom base URL | Prototype in multiple Conda environments |
 | Future port customization | M3 fixes native ephemeral allocation; explicit port policy is separate scope | No manual remote-port coordinator is needed for M3 |
 | Local tunnel lifetime | Foreground CLI, detached SSH, or reuse/control socket | Reliable cleanup and reconnection |
 | Environment launcher | Explicit Python path, profile command, kernel selection | Safe quoting, reproducibility, cross-env UX |
 | Minimum versions | Python, Jupyter Server, OpenSSH, Linux distros | Dependency testing and CI |
-| Full session identity reconciliation | M3 UUID/host-account scope/provenance exist; recovery needs stronger lifecycle evidence | Cross-client continuity, stop and name reuse remain M4 |
+| Broader identity reconciliation | Cross-user/multi-host policy and name reuse | M4 continuity/stop are verified; M5/M6 extend acceptance |
 | Workdir / launch profiles | Explicit remote working directory, environment Python path and safe quoting | Conda/venv and Unicode-path tests |
 | Multi-client forward | Foreground/background tunnel tracking and cleanup | Port collisions, process ownership, WebSocket tests |
 | Reboot behavior | Mark stale vs optional user-requested restart | Predictability and policy |

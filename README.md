@@ -6,7 +6,7 @@ JupyHop is an open-source project for **discovering, opening, launching, managin
 
 It is designed for researchers, data scientists, developers, and small teams who already have SSH access to workstations or servers and want to work with their remote notebooks as easily as with local ones.
 
-> **Project status: M3 — managed launch and readiness.** Existing-server access and `start` are implemented for supported current-user Linux Jupyter servers. Full persistent lifecycle, reconciliation and managed `stop` remain **planned for M4**. JupyHop is not published on PyPI. See the [M3 report](devguide/17-m3-managed-launch.md) and [development guide](devguide/README.md).
+> **Project status: M4 — managed lifecycle and reconnection.** Existing-server access, managed launch, `status` and verified graceful `stop` are implemented for supported current-user Linux Jupyter servers. Independent clients can reconnect to the same surviving kernel. Persistence depends on remote OS policy; reboot/crash does not preserve kernel memory. JupyHop is not published on PyPI. See the [M4 report](devguide/18-m4-lifecycle.md) and [development guide](devguide/README.md).
 
 ## The problem
 
@@ -43,6 +43,8 @@ directory. The remote host needs `tmux` on its noninteractive SSH PATH:
 jupyhop start workstation --server-python /absolute/remote/env/bin/python --workdir '~/projects/analysis' --name analysis
 jupyhop start workstation --name analysis-batch --no-open --json
 jupyhop open workstation SESSION_ID
+jupyhop status workstation SESSION_ID
+jupyhop stop workstation SESSION_ID
 ```
 
 `start` prompts privately for a new Jupyter session password. It crosses encrypted
@@ -54,19 +56,20 @@ argument exists. `--no-open` returns verified launch information without creatin
 a local tunnel; otherwise the same attached browser/no-browser flow is used.
 
 `discover`/`list` label verified owned servers as `managed` and preserve a stable
-session ID. `open` accepts that exact ID. Named environment profiles, managed
-`status`/`stop`, cleanup, and full kernel-continuity guarantees remain future work.
-The `stop` guard refuses all lifecycle control without sending SSH commands.
-Use Jupyter's own authenticated shutdown action for a newly launched server until
-M4. Discovered servers are never silently adopted, stopped or restarted.
+session ID. `open` accepts that exact ID. Named environment profiles and record
+cleanup remain future work. `status` observes the managed registry and reconciles
+readiness after an interrupted start. `stop` requires an exact managed UUID and
+terminal confirmation; scripts must explicitly use `--yes`. Stopping terminates
+that server's kernels and computations. Unmanaged IDs, names and PIDs cannot
+authorize stop. Discovered servers are never adopted, stopped or restarted.
 
 A host such as `workstation` would be an existing alias in the user's `~/.ssh/config`; SSH can connect directly or via a jump host using `ProxyJump`.
 
 ## Use cases and scenarios
 
-Existing-server access, diagnostics and managed launch/readiness ship in M3.
-Persistent lifecycle guarantees and broader platform/network support below are
-intended workflows; their acceptance gates remain in the roadmap.
+Existing-server access, diagnostics, managed launch/stop and same-live-kernel
+reconnection ship in M4. Broader platform/network and profile workflows below
+remain intended capabilities with acceptance gates in the roadmap.
 
 ### 1. Open a Jupyter server that is already running
 
@@ -176,12 +179,12 @@ that interpreter; the server may run in a different Conda environment.
 | Discover and list | Implemented with verified ownership | Implemented, partial coverage |
 | Open through SSH | Implemented | Implemented for verified IPv4 loopback / HTTP servers |
 | Start with chosen Python/workdir | Implemented, private tmux launcher | Started outside JupyHop |
-| Reconnect to a still-running server | Fresh tunnel/login; full lifecycle gate M4 | Fresh tunnel/login; full kernel continuity gate M4 |
-| Stop through JupyHop | Planned for M4; currently refused | **Not allowed in MVP** |
+| Reconnect to a still-running server | Fresh login/tunnel; same surviving kernel verified across independent clients | Fresh login/tunnel; persistence belongs to its external launcher |
+| Stop through JupyHop | Verified graceful stop by exact UUID, with confirmation | **Not allowed in MVP** |
 | Preserve kernel state after remote reboot | **Not possible by default** | **Not possible by default** |
 
-M3 manages **the route**, creates owned servers and records their launch identity
-in private remote state. Full reconciliation and stop are future work.
+M4 manages **the route**, creates owned servers, reconciles readiness and
+observes process loss, and gracefully stops verified owned identities.
 JupyHop does not replace Jupyter's kernel manager or
 make kernels persistent across crashes and reboots.
 
@@ -330,28 +333,45 @@ path depends on shell activation. Relative workdirs resolve against remote HOME;
 State lives under `$XDG_STATE_HOME/jupyhop/hosts/<host-account-scope>/sessions/ID`
 (default `~/.local/state`). Host scope hashes the Linux machine ID and account
 UID so shared HOME directories do not merge different hosts. State directories
-are private 0700; files are 0600. Registry schema 1.0 and wire protocol 1.2 are
-separate; incompatible state is refused without automatic migration. No existing
+are private 0700; files are 0600. Registry schema 1.0 and wire protocol 1.3
+(start retains 1.2) are separate; incompatible state is refused without automatic migration. No existing
 Jupyter configuration, scientific environment or SSH config is rewritten.
 
 Failed or interrupted starts may leave a running server and a recoverable launch
-record. Note the request ID and run `discover` before retrying. Names stay reserved
-until future reconciliation/cleanup. Do not infer server death from a timeout.
-Private tmux detachment is verified for the tested SSH context; last-logout/linger
-policy, host reboot and complete cross-client kernel continuity remain M4 gates.
-See [the M3 contract and evidence](devguide/17-m3-managed-launch.md).
+record. Note the request ID and run `status HOST ID` or `discover` before retrying.
+Names stay reserved and records retained (maximum 128) until explicit future
+cleanup; no automatic deletion is attempted. A request with no verified PID may
+remain `starting`; this is unconfirmed intent, not proof of a running process.
+
+`status` distinguishes `ready`, `starting`, `stopping`, `stopped`, `stale`, `failed`
+and `unreachable`. Reboot identity changes and missing/replaced processes are
+reported as stale; no kernel restoration or automatic restart is attempted.
+Private tmux and live-kernel continuity are tested after closing browser, tunnel
+and all first-client connections. Site last-logout/cgroup/linger policy still
+applies: JupyHop never changes it and cannot guarantee survival if the OS kills
+the user workload. Physical host reboot/last-login policy was not tested.
+
+Safe stop requires Linux pidfd support (kernel >=5.3), exposed by the helper's
+Python or native libc. Python APIs are preferred; builds omitting them use named
+libc wrappers through stdlib ctypes. If unavailable, stop refuses safely; select
+a capable helper with `--remote-python`. The descriptor is pinned before
+identity/provenance checks, and receives only graceful SIGTERM. There is no
+PID-only signal, tmux kill, automatic SIGKILL or automatic restart. Stop timeout
+or SSH interruption leaves its outcome unknown: check status before retrying.
+See [the M4 contract and evidence](devguide/18-m4-lifecycle.md).
 
 Exit codes: 0 checks passed; 2 invalid input; 3 SSH/access/timeout failure;
 4 missing remote prerequisites or failed Python probe; 5 invalid/incompatible
 probe output; 6 no verified candidate (partial search); 7 ambiguous/invalid
 selection; 8 forwarding failure; 11 lifecycle refusal; 12 unconfirmed/failed
-managed launch; 130 interrupted. Managed-start transport failure also uses 12
+managed launch; 13 unconfirmed/pending lifecycle request; 130 interrupted. Managed-start transport failure also uses 12
 because the remote write/process outcome may be unknown.
 `--json` emits nonsecret structured results;
 errors go to stderr. Transport errors leave remote session state unknown.
 
-Managed `status`/`stop` remain future work. Other client/remote
-operating systems and non-POSIX remote login shells are untested.
+Automatic record cleanup, name reuse, profile configuration, custom supervision
+backends, other operating systems and non-POSIX remote login shells are untested
+or unimplemented.
 
 ## Contributing
 
@@ -369,14 +389,15 @@ mypy
 python -m build --no-isolation
 python -m experiments.package_smoke
 python -m experiments.browser_smoke  # optional Chrome + JupyterLab acceptance
-python -m experiments.browser_smoke --managed
+python -m experiments.browser_smoke --managed --reconnect
+python -m experiments.m4_reconnect
 ```
 
 Integration requires a non-root Unix user, OpenSSH server/client, an existing
 `/run/sshd`, permission to bind loopback sockets, tmux, and Jupyter Server/kernels
 in the test interpreter. It creates temporary keys/configuration and never uses your
 SSH hosts; their HOME/runtime are isolated too. See
-[test evidence and limits](devguide/17-m3-managed-launch.md).
+[test evidence and limits](devguide/18-m4-lifecycle.md).
 Suggestions and research-computing use cases remain welcome.
 
 Developed by the [Computational Biology and Drug Design Research Unit (UIBCDF)](https://www.uibcdf.org/).

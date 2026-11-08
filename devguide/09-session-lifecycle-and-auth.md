@@ -1,9 +1,11 @@
 # 09 — Session, tunnel, kernel and authentication contracts
 
-**Status:** proposed specification. Decisions requiring prototypes are marked *open*.
+**Status:** lifecycle contract with [M4 implementation/evidence](18-m4-lifecycle.md).
+Unimplemented extensions and external policy boundaries remain explicit.
 
-M3 implements only the [initial launch/state/auth slice](17-m3-managed-launch.md).
-The full persistent lifecycle and stop/reconciliation states below remain M4.
+M3 implements the [initial launch/state/auth slice](17-m3-managed-launch.md).
+M4 adds managed observations/readiness reconciliation and pinned graceful stop;
+independent authorized software clients recover the same live kernel.
 
 ## Vocabulary
 
@@ -77,7 +79,12 @@ Separate interactive browser opening (where one-time token URLs may be used with
 
 ## Lifecycle state machines
 
-**Managed server states:** requested -> starting -> running -> stopping -> stopped; additional observation states: unreachable, stale, failed. `unreachable` describes transport failure, **not** evidence of server death. Reconcile using remote process identity, listening endpoint and registry.
+**Stored launch states (schema 1.0):** requested, starting, ready, failed, exited.
+An optional boolean `stop_requested` preserves stop intent across client loss and
+old runner updates. **Observations:** starting, ready, stopping, stopped,
+unreachable, stale, failed. `stopped` requires intent plus observed process exit;
+stale means boot change/missing/replaced process. Unreachable is uncertainty,
+not proof of death. `status` promotes starting to ready only after verification.
 
 **Tunnel states:** creating -> ready -> closed/failed. The tunnel may fail while the server remains running.
 
@@ -93,7 +100,11 @@ Idempotent stop requires verified ownership and process identity, not PID alone.
 | `tmux` | Common on remote scientific systems, survives SSH logout | Session naming, reliable lifecycle identification, no reboot survival |
 | Controlled detached process | Few external requirements | Process groups, cleanup, log management and portability are harder |
 
-**Recommendation for prototype:** test `systemd --user` first where available, and establish a supported fallback only after end-to-end evidence. Do not enable linger automatically or require administrative privileges. Decide explicitly whether restart-on-failure is enabled; unexpected kernel restarts can conceal lost state.
+**M4 choice:** private tmux is the supported backend, validated across complete
+first-client disconnect and fresh client/kernel reconnection. systemd user-manager
+availability on the local host does not provide a bus in the no-PAM SSH fixture.
+No automatic restart, linger changes or privilege requirements. Site logind/cgroup
+policy can still terminate workloads; no unconditional last-logout guarantee.
 
 ## Recovery guarantees
 

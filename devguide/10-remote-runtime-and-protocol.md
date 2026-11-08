@@ -2,13 +2,14 @@
 
 > **Lifecycle design specification.** M1/M2 implement no-install read-only
 > [doctor/discovery probes and protocols](16-m2-existing-servers.md). M3 adds a
-> per-session runner/registry; full reconciliation/stop remains future work.
+> per-session runner/registry; M4 adds managed status and pinned graceful stop.
 > The MVP must remain usable without root access, a mandatory
 > always-on coordinator, or installing JupyterHub.
 
 M3 adds [immutable per-session runners and registry schema 1.0](17-m3-managed-launch.md)
 without a remote package installation. Read-only probes and managed start use
-wire 1.2. Managed reconciliation/stop and migrations remain future M4 contracts.
+wire 1.2 for start. M4 uses [wire 1.3](18-m4-lifecycle.md) for discovery/status/stop,
+with schema 1.0 and additive stop intent. Migrations/cleanup remain unimplemented.
 
 ## Goal and constraints
 
@@ -39,8 +40,8 @@ Specify a minimum Python version after testing; remote Jupyter installation may 
 If a helper is used, its control channel is SSH **stdout** carrying versioned,
 bounded JSON with diagnostics on stderr. M1 freezes doctor protocol 1.0;
 M2 adds discovery 1.1, and M3 freezes managed discovery/start wire 1.2 and registry
-schema 1.0 in [17](17-m3-managed-launch.md). Reconciliation/stop and state migration
-contracts remain pending before M4.
+schema 1.0 in [17](17-m3-managed-launch.md). M4 adds wire 1.3 without rewriting
+existing runners or migrating state. Old runners preserve optional stop intent.
 
 Minimum operations: `capabilities`, `discover`, `status`; later `start`, `stop`, and managed-session reconciliation. A record must distinguish `managed`, `unmanaged`, `stale`, `unreachable`, and `unsupported` without conflating them.
 

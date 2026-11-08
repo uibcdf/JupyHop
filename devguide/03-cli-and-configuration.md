@@ -2,13 +2,19 @@
 
 > `doctor` ships in M1; `discover`, `list HOST` and foreground `open` ship in M2.
 > M3 adds `start` and managed provenance; see [the current exact contract](17-m3-managed-launch.md).
-> Managed status/stop remain proposed; the stop guard only refuses control.
+> M4 adds `status HOST [UUID]` and `stop HOST UUID [--yes]`;
+> [the current lifecycle contract](18-m4-lifecycle.md) supersedes proposals below.
 
 M3 now implements `start` using `--server-python`, `--workdir`, `--name`,
 `--password-stdin`, `--no-open` and the attached browser/no-browser flow. Its
 [exact contract](17-m3-managed-launch.md) supersedes proposed `start` examples
-below. Named `--env` profiles, managed status/stop and name-based open remain
+below. Named `--env` profiles, multi-host listing and name-based open remain
 planned. Discovery/list/open now distinguish verified managed provenance.
+
+`status` observes managed records and reconciles interrupted launch readiness.
+`stop` accepts only an exact managed UUID, confirms kernel termination (or
+requires `--yes`), and sends SIGTERM through a verified pinned descriptor. It
+retains records/settings for inspection; automatic cleanup is not implemented.
 
 ## Proposed commands
 
@@ -32,7 +38,9 @@ Design `start` to print session ID and browser URL only when requested/appropria
 - `status`: check liveness and distinguish stale registry from temporarily unreachable host.
 - `discover`: inspect supported current-user Jupyter runtime metadata, validate live server endpoints, and label unmanaged/stale entries; this is best-effort, not a promise to scan every environment.
 - `open`: verify the selected managed **or** authorized discovered server, create a fresh local SSH forward, and open the authenticated localhost endpoint; do not restart a healthy server. If credentials cannot safely be obtained, open the login page for explicit authentication.
-- `stop`: stop only a selected **JupyHop-managed** server; refuse unmanaged servers, confirm remote process identity to avoid PID reuse hazards, then clean up owned state. Warn that kernel work may be terminated.
+- `stop`: stop only a selected **JupyHop-managed** server; refuse unmanaged servers,
+  verify the pinned process identity and warn about kernel termination. Retain
+  owned state; any later cleanup needs a separate explicit safe policy.
 - `doctor`: diagnose SSH access, remote helper, Jupyter availability, process-manager support and network forwarding.
 
 ## SSH host configuration

@@ -1,6 +1,6 @@
 # 06 — Development roadmap
 
-**Status:** M0–M3 complete; M4 onward planned. Dependency-ordered milestones,
+**Status:** M0–M4 complete; M5 onward planned. Dependency-ordered milestones,
 **not** a release timeline. Each milestone has an independently demonstrable
 vertical slice; security is a gate at every stage. Never advertise proposed CLI
 syntax as implemented.
@@ -50,6 +50,13 @@ stop and cross-client live-kernel guarantees remain M4. Stop here for review.
 **Acceptance:** execute a kernel through the forwarded server; launch failure produces accurate status and recoverable records; no public listener, shared privileged daemon, arbitrary shell injection, or disabled Jupyter auth. Two managed sessions can coexist without identity collision.
 
 ## M4 — Persistent lifecycle, reconciliation and reconnection
+
+**Completed 2026-11-08:** [contract, experiments, acceptance and limits](18-m4-lifecycle.md).
+Private tmux is the supported backend, subject to site logout/cgroup policy.
+Independent clients and Chrome/tunnel closure preserve the same tested live
+kernel; pidfd stop, lost replies, concurrent stops and boot-identity simulations
+are verified. Physical reboot/PAM policy and automatic cleanup are not claimed.
+Stop here for review before M5.
 
 **Outputs:** choose and validate user-process supervision (`systemd --user` when feasible, tested fallback if necessary); remote per-user registry with atomic locks; `status`, `list`, `open`, `stop` managed sessions; local tunnel lifecycle; safe reauth from another client; collision/race/failure handling.
 
