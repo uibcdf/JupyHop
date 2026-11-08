@@ -15,7 +15,7 @@ jupyhop doctor workstation
 jupyhop discover workstation
 ```
 
-Design `start` to print session ID and browser URL only when requested/appropriate; avoid emitting token-bearing URLs in logs, CI, telemetry, or shell history. When multiple sessions exist, commands must request an explicit session ID/name or show an interactive choice; automation uses `--session` or equivalent.
+Design `start` to print session ID and browser URL only when requested/appropriate; avoid emitting token-bearing URLs in logs, CI, telemetry, or shell history. For `open host`: zero candidates means no result (with coverage diagnostic); one validated candidate may be opened directly; multiple candidates require a TTY selection or explicit ID/name. For `stop`: never infer which managed session to terminate when ambiguous, and refuse unmanaged candidates. Noninteractive callers require explicit IDs. See [12](12-user-experience.md).
 
 ## Behavioral contract
 
@@ -66,6 +66,10 @@ Use clear exit codes, actionable error messages, optional JSON output for script
 ## Remote working directories and launchers
 
 `--workdir` selects a directory **on the remote host**. Specify tilde handling, validation, nonexistence and permission errors, and safe argument passing for spaces/Unicode. An environment profile must resolve to a real remote Jupyter-capable Python executable; do not depend implicitly on `.bashrc` or shell aliases. Server environment and notebook kernel environments may differ. The `--env` option is a profile selector, not necessarily a Conda environment name.
+
+## Tunnel process and compatibility UX
+
+Before shipping, freeze an explicit local tunnel lifetime policy: whether `open` stays attached or launches a tracked background forward, whether repeated opens reuse a verified existing forward, and what happens on Ctrl-C, terminal close, suspend/resume and CLI upgrade. `open` must not shut down remote Jupyter merely because the client tunnel closes. Custom `base_url`, IPv6, and HTTPS certificate mismatch need documented success/failure behavior; never disable TLS/SSH checks as a fallback. See [11](11-discovery-and-connectivity.md).
 
 ## Packaging plan
 
