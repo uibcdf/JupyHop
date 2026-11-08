@@ -62,7 +62,7 @@ State stored on a client is convenience-only; the remote current-user managed re
 
 ## Usability tests
 
-A new Linux user with working SSH access should be able to complete M2 discovery/open with only the documented prerequisites. Additional tests: one vs multiple servers, two accounts, two clients, duplicate aliases, browser not installed, SSH passphrase prompt, custom base URL, resume from laptop suspend, and simultaneous Nauta/Spika sessions with no fixed local port allocation.
+A new Linux user with working SSH access should be able to complete M2 discovery/open with only the documented prerequisites. Additional tests: one vs multiple servers, two accounts, two clients, duplicate aliases, browser not installed, SSH passphrase prompt, custom base URL, resume from laptop suspend, and simultaneous workstation-a/workstation-b sessions with no fixed local port allocation.
 
 ## Documentation deliverables
 
