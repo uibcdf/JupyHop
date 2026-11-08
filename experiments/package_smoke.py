@@ -107,8 +107,78 @@ def main():
             if opened.poll() is None:
                 os.killpg(opened.pid, signal.SIGKILL)
                 opened.communicate(timeout=5)
+        managed_snapshot = None
+        try:
+            created = subprocess.run(
+                [
+                    cli,
+                    "start",
+                    "destination",
+                    "--ssh-config",
+                    str(lab.config),
+                    "--password-stdin",
+                    "--no-open",
+                    "--json",
+                    "--timeout",
+                    "40",
+                    "--name",
+                    "wheel-managed",
+                ],
+                input=b"fixture-password\n",
+                cwd=lab.root,
+                env=environment,
+                check=True,
+                capture_output=True,
+                timeout=45,
+            )
+            launched = json.loads(created.stdout)
+            if launched["state"] != "ready" or launched["server"]["origin"] != "managed":
+                raise RuntimeError("Installed wheel managed start failed")
+            managed_snapshot = json.loads(Path(launched["record_path"]).read_text())
+            managed_open = subprocess.Popen(
+                [
+                    cli,
+                    "open",
+                    "destination",
+                    launched["id"],
+                    "--ssh-config",
+                    str(lab.config),
+                    "--no-browser",
+                    "--json",
+                ],
+                cwd=lab.root,
+                env=environment,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                start_new_session=True,
+            )
+            try:
+                with selectors.DefaultSelector() as selector:
+                    selector.register(managed_open.stdout, selectors.EVENT_READ)
+                    if not selector.select(20):
+                        raise RuntimeError("Installed wheel managed open timed out")
+                connection = json.loads(managed_open.stdout.readline())
+                if connection["origin"] != "managed" or "token=" in connection["url"]:
+                    raise RuntimeError("Installed wheel managed ownership check failed")
+                managed_open.send_signal(signal.SIGINT)
+                managed_open.communicate(timeout=10)
+                if managed_open.returncode != 130:
+                    raise RuntimeError("Installed wheel managed tunnel cleanup failed")
+            finally:
+                if managed_open.poll() is None:
+                    os.killpg(managed_open.pid, signal.SIGKILL)
+                    managed_open.communicate(timeout=5)
+        finally:
+            if managed_snapshot is not None:
+                subprocess.run(
+                    ["tmux", "-S", managed_snapshot["socket"], "kill-server"],
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL,
+                    check=False,
+                    timeout=5,
+                )
     print(
-        "PASS: clean wheel client without local Jupyter, doctor/discover/open via ProxyJump, packaged probes and owned tunnel cleanup"
+        "PASS: clean wheel client without local Jupyter, existing-server access, managed start/open via ProxyJump and owned tunnel cleanup"
     )
 
 
