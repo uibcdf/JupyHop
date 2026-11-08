@@ -2,11 +2,11 @@
 
 **Status:** planning. Dependency-ordered milestones, **not** a release timeline. Each milestone has an independently demonstrable vertical slice; security is a gate at every stage. Never advertise proposed CLI syntax as implemented.
 
-See [product scope](01-product-scope.md), [scenario matrix](08-scenarios-and-acceptance.md), [lifecycle/authentication contracts](09-session-lifecycle-and-auth.md), and [open decisions](07-decisions.md). Existing tests and public docs must track shipped behavior.
+See [product scope](01-product-scope.md), [scenario matrix](08-scenarios-and-acceptance.md), [lifecycle/authentication contracts](09-session-lifecycle-and-auth.md), [remote runtime](10-remote-runtime-and-protocol.md), [discovery/connectivity](11-discovery-and-connectivity.md), [UX](12-user-experience.md), and [open decisions](07-decisions.md). Existing tests and public docs must track shipped behavior.
 
 ## M0 — Complete the design baseline
 
-**Outputs:** explicit CLI contracts, managed vs discovered server classification, security/authentication threat model, session/tunnel/kernel lifetimes, network reachability assumptions, supported Jupyter discovery strategy, remote workdir semantics, proposed process-manager evaluation and requirements-to-test mapping.
+**Outputs:** explicit CLI contracts, managed vs discovered server classification, security/authentication threat model, session/tunnel/kernel lifetimes, network reachability assumptions, supported Jupyter discovery strategy, remote workdir semantics, proposed process-manager evaluation, remote-helper bootstrap/compatibility approach, tunnel process lifetime, simple/advanced user flows and requirements-to-test mapping.
 
 **Acceptance:** every essential scenario in [08](08-scenarios-and-acceptance.md) has a release gate, no hidden assumption that all machines connect both ways, and no unresolved security ambiguity blocks M1–M2 prototypes. Record architecture decisions and uncertainties transparently.
 
@@ -18,9 +18,9 @@ See [product scope](01-product-scope.md), [scenario matrix](08-scenarios-and-acc
 
 ## M2 — Discover and open an existing Jupyter server
 
-**Outputs:** best-effort, current-user discovery using supported Jupyter runtime information; candidate verification; `discover`/`list` and `open`; dynamic loopback-only SSH forwarding; browser/no-browser UX; explicit password/login fallback; labeling of unsupported runtime directories and base URL variants.
+**Outputs:** best-effort, current-user discovery using supported Jupyter runtime information (including multiple environment paths where known); candidate verification; `discover`/`list` and `open`; dynamic loopback-only SSH forwarding; browser/no-browser UX; explicit password/login fallback; labeling of unsupported runtime directories and base URL variants.
 
-**Acceptance:** an already-running, manually started Jupyter Server on a host reachable through ProxyJump can be opened and used without manually selecting local ports. Multiple candidates are distinguishable. Failed discovery is reported as incomplete, not as proof of absence. Invalid auth is never bypassed; unmanaged `stop` is refused.
+**Acceptance:** an already-running, manually started Jupyter Server on a host reachable through ProxyJump can be opened and used without manually selecting local ports. Multiple candidates are distinguishable. Failed discovery is reported as incomplete, not as proof of absence. Invalid auth is never bypassed; unmanaged `stop` is refused. One-server `open host` works with no mandatory JupyHop TOML file where prerequisites are discoverable. State clear limitations for IPv6, custom base paths, and HTTPS.
 
 **Scope limit:** discovered servers are read-only for lifecycle actions. Discovering arbitrary user processes or all Conda environments is not promised. Initial kernel continuity after reconnection is tested separately in M4.
 
