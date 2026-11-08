@@ -45,14 +45,14 @@ SEC gates apply from the first relevant prototype onward, not only at release.
 | SCI-03 | M4 | `A-SCI-03` | Pending |
 | SCI-04 | M5 | `A-SCI-04` | Pending |
 | SCI-05 | M7 | `A-SCI-05` | Pending |
-| SEC-01 | M1 | `A-SEC-01` | Pending |
+| SEC-01 | M1 | `test_unknown_host_key_is_refused`; `test_changed_host_key_is_refused` | M1 satisfied (SSH trust) |
 | SEC-02 | M2 | `A-SEC-02`; `experiments.m0_spike` | Pending (M0 feasibility only) |
-| SEC-03 | M1/M2 | `A-SEC-03` | Pending |
+| SEC-03 | M1/M2 | `test_minor_compatibility_and_secret_field_allowlist`; error redaction tests | M1 diagnostics satisfied; M2 browser gate pending |
 | SEC-04 | M4/M5 | `A-SEC-04` | Pending |
 | SEC-05 | M2 | `A-SEC-05`; `experiments.m0_spike` | Pending (M0 feasibility only) |
 | SEC-06 | M2 | `A-SEC-06` | Pending |
 | SEC-07 | M2/M4 | `A-SEC-07` | Pending |
-| SEC-08 | M1 | `A-SEC-08`; `experiments.m0_spike` | Pending (M0 feasibility only) |
+| SEC-08 | M1 | `test_remote_shell_injection_is_literal`; unit input/quoting tests | M1 satisfied (SSH arguments) |
 | NET-09 | M2/M6 | `A-NET-09` | Pending |
 | NET-10 | M2 | `A-NET-10`; `experiments.m0_spike` | Pending (M0 feasibility only) |
 | NET-11 | M2/M6 | `A-NET-11` | Pending |
@@ -74,6 +74,6 @@ SEC gates apply from the first relevant prototype onward, not only at release.
 | UX-03 | M2 | `A-UX-03` | Pending |
 | UX-04 | M4 | `A-UX-04` | Pending |
 | UX-05 | M2 | `A-UX-05` | Pending |
-| UX-06 | M1/M2 | `A-UX-06` | Pending |
+| UX-06 | M1/M2 | `test_doctor_direct_and_proxyjump`; `test_fresh_python_without_jupyter_is_reported` | M1 no-install probe satisfied; M2 discovery pending |
 | UX-07 | M4/M6 | `A-UX-07` | Pending |
 | UX-08 | M5 | `A-UX-08` | Pending |

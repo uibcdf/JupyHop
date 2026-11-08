@@ -1,6 +1,8 @@
 # 12 — User experience and CLI contract
 
-> **Planned UX, not implemented commands.** The main quality bar is fewer steps than managing Jupyter and SSH tunnels manually.
+> **Planned session UX.** Only [M1 doctor diagnostics](15-m1-foundations.md) are
+> implemented. The main quality bar is fewer steps than managing Jupyter and SSH
+> tunnels manually.
 
 ## Two levels of experience
 

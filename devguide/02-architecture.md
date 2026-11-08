@@ -2,6 +2,11 @@
 
 ## Proposed system
 
+M1 implements the local package/CLI, bounded OpenSSH execution and read-only
+stdin doctor probe. See [15](15-m1-foundations.md). The lifecycle components in
+the diagram remain future design; M0 chose a no-install path for M1/M2 in
+[13](13-m0-validation.md).
+
 ```text
 Client machine
   jupyhop CLI

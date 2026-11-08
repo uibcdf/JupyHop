@@ -80,9 +80,7 @@ c.ServerApp.log_level = 'CRITICAL'
         f"--ServerApp.root_dir={root}",
     ]
     # Logs remain private and are never copied into result output.
-    shell_command = (
-        shlex.join(command) + " >" + shlex.quote(str(root / "server.log")) + " 2>&1"
-    )
+    shell_command = shlex.join(command) + " >" + shlex.quote(str(root / "server.log")) + " 2>&1"
     launched = lab.ssh(
         "destination",
         ["tmux", "-S", str(sock), "new-session", "-d", "-s", "fixture", shell_command],
@@ -107,9 +105,7 @@ c.ServerApp.log_level = 'CRITICAL'
                     pass
             time.sleep(0.1)
         else:
-            raise RuntimeError(
-                f"{label}: Jupyter readiness timeout; no secret logs emitted"
-            )
+            raise RuntimeError(f"{label}: Jupyter readiness timeout; no secret logs emitted")
         check(
             info["hostname"] == "127.0.0.1" and info["port"] > 0,
             f"{label}: Jupyter allocates loopback ephemeral port",
@@ -129,8 +125,7 @@ c.ServerApp.log_level = 'CRITICAL'
 
 def execute(base, token, kernel_id, code):
     url = (
-        base.replace("http:", "ws:")
-        + f"api/kernels/{kernel_id}/channels?session_id={uuid.uuid4()}"
+        base.replace("http:", "ws:") + f"api/kernels/{kernel_id}/channels?session_id={uuid.uuid4()}"
     )
     ws = websocket.create_connection(
         url,
@@ -154,10 +149,7 @@ def execute(base, token, kernel_id, code):
         observed = []
         while True:
             response = json.loads(ws.recv())
-            if (
-                response.get("parent_header", {}).get("msg_id")
-                != message["header"]["msg_id"]
-            ):
+            if response.get("parent_header", {}).get("msg_id") != message["header"]["msg_id"]:
                 continue
             if response["msg_type"] == "stream":
                 observed.append(response["content"]["text"])
@@ -202,9 +194,7 @@ def main():
         )
         with server(lab, sys.executable, "environment-a") as (info, runtime):
             token = info["token"]
-            check(
-                bool(token), "generated token present only in private runtime metadata"
-            )
+            check(bool(token), "generated token present only in private runtime metadata")
             # Different executable environments do not imply different runtime dirs.
             values = []
             for python in (sys.executable, args.second_python):
@@ -282,9 +272,7 @@ def main():
                 client = requests.Session()
                 client.get(base + "login", timeout=3)
                 xsrf = client.cookies.get("_xsrf")
-                r = client.post(
-                    base + "login", data={"_xsrf": xsrf, "password": token}, timeout=3
-                )
+                r = client.post(base + "login", data={"_xsrf": xsrf, "password": token}, timeout=3)
                 check(
                     r.status_code == 200
                     and client.get(base + "api/status", timeout=3).status_code == 200,
@@ -295,8 +283,7 @@ def main():
                 _, port_b = lab.tunnel("direct", info["port"])
                 base_b = f"http://127.0.0.1:{port_b}/science/"
                 check(
-                    "12345"
-                    in execute(base_b, token, kernel_id, "print(continuity_marker)"),
+                    "12345" in execute(base_b, token, kernel_id, "print(continuity_marker)"),
                     "independent client B transport retains same kernel ID and memory",
                 )
                 with socket.socket() as occupied:
@@ -405,9 +392,7 @@ def main():
                     capture_output=True,
                     timeout=5,
                 )
-        print(
-            "NOT TESTED: final OS logout/linger, real reboot, cross-user isolation, GUI browser"
-        )
+        print("NOT TESTED: final OS logout/linger, real reboot, cross-user isolation, GUI browser")
     print("M0 isolated spike complete; all fixture processes cleaned up")
 
 

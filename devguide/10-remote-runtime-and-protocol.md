@@ -1,6 +1,9 @@
 # 10 — Remote runtime and protocol
 
-> **Design specification, not implemented functionality.** The MVP must remain usable without root access, a mandatory always-on coordinator, or installing JupyterHub.
+> **Lifecycle design specification.** M1 implements only the no-install read-only
+> [doctor probe and protocol](15-m1-foundations.md). Lifecycle helpers/registries
+> are not implemented. The MVP must remain usable without root access, a mandatory
+> always-on coordinator, or installing JupyterHub.
 
 ## Goal and constraints
 
@@ -28,7 +31,7 @@ Specify a minimum Python version after testing; remote Jupyter installation may 
 
 ## Protocol contract (proposed)
 
-If a helper is used, its control channel is SSH **stdout** carrying versioned, bounded, machine-readable JSON, with human diagnostics on **stderr**. SSH exit code and a structured status together describe success/failure. The actual wire schema and transport are an **M0/M1 design decision**, not yet frozen.
+If a helper is used, its control channel is SSH **stdout** carrying versioned, bounded, machine-readable JSON, with human diagnostics on **stderr**. SSH exit code and a structured status together describe success/failure. M1 freezes only the doctor protocol in [15](15-m1-foundations.md); lifecycle wire schemas remain pending before M3/M4.
 
 Minimum operations: `capabilities`, `discover`, `status`; later `start`, `stop`, and managed-session reconciliation. A record must distinguish `managed`, `unmanaged`, `stale`, `unreachable`, and `unsupported` without conflating them.
 

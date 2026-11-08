@@ -40,7 +40,8 @@ only within the stated scope:
 | D16 | Attached, fresh owned forward for initial M2 | Independent transports preserve tested kernel state |
 | D17 | Capability-dependent supervision; no universal backend selected | tmux works in fixture; systemd context/logout needs further tests |
 | D18 | Version 1.0 bounded JSON probe; registry version separate | M1 must test malformed output and major mismatch |
-| D19 | Python >=3.11, Linux first; stdlib-only client runtime | Test floor in CI; observed local Python 3.14 |
+| D19 | Python 3.11–3.14, Linux first; stdlib-only client runtime | 67 tests pass on every supported minor version; CI matrix includes all four |
+| D20 | M1 doctor uses batch SSH, strict target trust and no shared master | Bounded process-group cleanup; no hidden prompts; test unknown/changed host keys |
 
 M0 design acceptance is met; later feature acceptance remains pending. See the
 [scenario ledger](14-acceptance-ledger.md).

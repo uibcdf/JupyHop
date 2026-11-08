@@ -21,7 +21,12 @@ Jupyter grants code execution as the account running its server. Risks include a
 
 JupyHop may inspect only Jupyter runtime data available to the authenticated remote Unix user. A discovered server is not automatically managed: users may connect if verified and authorized, but `stop`/restart must refuse it. Do not assume that a port or PID identifies an authorized Jupyter process. SSH tunnels must preserve remote and local loopback binding, supported base paths, and Jupyter authentication.
 
-## Authentication design decision pending
+## Authentication baseline and pending browser automation
+
+M0 selected normal Jupyter login through a token-free URL as the safe baseline.
+No JupyHop credential cache or automatic browser token transfer is implemented.
+The following requirements govern future automation; see the
+[M0 threat/tradeoff evaluation](13-m0-validation.md).
 
 Opening an existing server from a second client requires a legitimate way to authenticate without leaking a token. It must support a fall back to interactive login for servers whose credentials cannot be safely retrieved. Jupyter-auth URLs must not appear in shell history, diagnostics, JSON results or general logs; the browser flow has its own exposure considerations. Evaluate Jupyter Server's supported runtime/API behavior and restrictive remote-only token access before selecting a design. Do not claim this is solved simply by forwarding the port.
 

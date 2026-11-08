@@ -6,7 +6,7 @@ JupyHop is an open-source project for **discovering, opening, launching, managin
 
 It is designed for researchers, data scientists, developers, and small teams who already have SSH access to workstations or servers and want to work with their remote notebooks as easily as with local ones.
 
-> **Project status: early design.** The workflows, commands, and capabilities described below are **planned, not yet implemented**. JupyHop is not currently installable or published on PyPI. See the [development guide](devguide/README.md) for specifications and acceptance criteria.
+> **Project status: M0 and M1 foundations.** Source installation and the read-only `jupyhop doctor` diagnostic are implemented. Discovering, opening, launching and managing Jupyter sessions remain **planned**, beginning at M2. JupyHop is not published on PyPI. See the [M0 validation](devguide/13-m0-validation.md), [M1 report](devguide/15-m1-foundations.md) and [development guide](devguide/README.md).
 
 ## The problem
 
@@ -224,11 +224,63 @@ For detailed milestones, acceptance criteria, design decisions, and known constr
 
 ## Installation
 
-JupyHop is **not yet published on PyPI**, and there is no supported installation process. The command examples in this README describe planned behavior.
+For the implemented diagnostics, use Linux, Python 3.11–3.14 and the OpenSSH client.
+From a checkout, in your development environment:
+
+```console
+python -m pip install --no-deps -e .
+jupyhop --help
+jupyhop doctor workstation
+jupyhop doctor workstation --remote-python /absolute/remote/environment/bin/python --json
+```
+
+The client has **no Python runtime dependencies** and does not need local
+Jupyter. OpenSSH resolves the existing alias, remote user, keys, `Include`,
+`Match` and `ProxyJump`. Doctor uses strict host-key checking and `BatchMode`:
+first verify access with `ssh workstation`, establish host trust through the
+normal SSH workflow, and unlock keys in your agent if needed. Doctor does not
+prompt for passwords or edit SSH configuration. `--ssh-config PATH` passes a
+specific file to OpenSSH; `--timeout SECONDS` bounds the diagnostic (default 20).
+
+The selected remote Python must be >=3.11. Doctor reports its installed Jupyter
+Server/core versions, the runtime directory visible to that interpreter, the
+remote Unix identity, and process-manager availability. Missing Jupyter packages
+produce a diagnostic and exit 4; choose the existing environment using its
+absolute Python path. No remote package, helper, server or tunnel is installed
+or started. Environment activation is unnecessary. Runtime coverage is partial;
+doctor neither lists running servers nor proves their absence or readiness.
+
+Exit codes: 0 checks passed; 2 invalid input; 3 SSH/access/timeout failure;
+4 missing remote prerequisites or failed Python probe; 5 invalid/incompatible
+probe output; 130 interrupted. `--json` emits nonsecret structured results;
+errors go to stderr. Transport errors leave remote session state unknown.
+
+Only `doctor`, `--help` and `--version` are available. All session commands shown
+elsewhere in this README remain future workflows. Other client/remote operating
+systems and non-POSIX remote login shells are untested.
 
 ## Contributing
 
-The project is currently in its design stage. Suggestions, research computing workflows, reports of missing use cases, and comparisons with existing tools are welcome as design feedback.
+The project is in early development. Development tools can be installed with
+`mamba install -c conda-forge pytest ruff mypy python-build setuptools` or
+`python -m pip install -e '.[dev]'`. Experimental Jupyter dependencies are separate
+in `.[experiments]`; see the [M0 report](devguide/13-m0-validation.md).
+
+```console
+pytest                         # isolated unit tests; SSH integration skipped
+pytest --run-integration       # disposable loopback sshd, never real hosts
+ruff check .
+ruff format --check .
+mypy
+python -m build --no-isolation
+python -m experiments.package_smoke
+```
+
+Integration requires a non-root Unix user, OpenSSH server/client, an existing
+`/run/sshd`, permission to bind loopback sockets, and Jupyter Server in the
+test interpreter. It creates temporary keys/configuration and never uses your
+SSH hosts. See [test evidence and limits](devguide/15-m1-foundations.md).
+Suggestions and research-computing use cases remain welcome.
 
 Developed by the [Computational Biology and Drug Design Research Unit (UIBCDF)](https://www.uibcdf.org/).
 

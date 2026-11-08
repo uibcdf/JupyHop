@@ -1,6 +1,9 @@
 # 06 — Development roadmap
 
-**Status:** planning. Dependency-ordered milestones, **not** a release timeline. Each milestone has an independently demonstrable vertical slice; security is a gate at every stage. Never advertise proposed CLI syntax as implemented.
+**Status:** M0/M1 complete; M2 onward planned. Dependency-ordered milestones,
+**not** a release timeline. Each milestone has an independently demonstrable
+vertical slice; security is a gate at every stage. Never advertise proposed CLI
+syntax as implemented.
 
 See [product scope](01-product-scope.md), [scenario matrix](08-scenarios-and-acceptance.md), [lifecycle/authentication contracts](09-session-lifecycle-and-auth.md), [remote runtime](10-remote-runtime-and-protocol.md), [discovery/connectivity](11-discovery-and-connectivity.md), [UX](12-user-experience.md), and [open decisions](07-decisions.md). Existing tests and public docs must track shipped behavior.
 
@@ -15,6 +18,10 @@ browser, logout, reboot and lifecycle feature gates remain in their own mileston
 **Acceptance:** every essential scenario in [08](08-scenarios-and-acceptance.md) has a release gate, no hidden assumption that all machines connect both ways, and no unresolved security ambiguity blocks M1–M2 prototypes. Record architecture decisions and uncertainties transparently.
 
 ## M1 — SSH foundations and diagnostics
+
+**Completed 2026-11-07:** [implementation, tests and limits](15-m1-foundations.md).
+Only source installation and read-only `doctor` ship. No M2 session command is
+implemented.
 
 **Outputs:** initial package and command entrypoint; reuse OpenSSH host aliases and ProxyJump; safe remote command invocation; `doctor` checks for SSH, Jupyter Server, Python and relevant runtime dirs; actionable failures.
 

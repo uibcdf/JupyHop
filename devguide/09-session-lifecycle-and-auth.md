@@ -54,6 +54,11 @@ Multiple server versions, differing runtime dirs, custom base URLs, TLS, and pas
 
 ## Credential/authentication contract (security gate)
 
+M0 selected the normal token-free Jupyter login page as the baseline; protected
+automatic browser handoff remains an M2 experiment. See the
+[recorded alternatives and risks](13-m0-validation.md). No new credential cache
+is approved or implemented by M1.
+
 A remote Jupyter instance may authenticate through a generated token, configured token, password, or an extension. Tunnel establishment proves SSH authentication but **does not** remove Jupyter authentication.
 
 For managed sessions, select and document a supported strategy that allows an authorized second client to authenticate while keeping secrets out of public output and logs. Options to evaluate include remote-only, permission-restricted credential storage and Jupyter-supported runtime/service APIs. Tokens are secrets and must never become stable identifiers. If there is no safe way to retrieve or use credentials, JupyHop must request explicit login rather than disable authentication.

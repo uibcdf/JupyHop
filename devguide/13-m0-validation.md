@@ -143,6 +143,12 @@ explain why surviving one SSH command is weaker than surviving the last logout.
 
 ## M0 acceptance and deferred evidence
 
+M0 created `.gitignore`, `experiments/__init__.py`, `experiments/lab.py`,
+`experiments/m0_spike.py`, this report and `14-acceptance-ledger.md`; it updated
+the guide index, `06-roadmap.md` and `07-decisions.md`. Commit `a2434d0` contains
+that baseline. M1 subsequently synchronizes the public README, adds the
+implementation report and records expanded Python compatibility evidence.
+
 Every scenario has a release gate and planned test in the ledger. NET-08 is an
 explicit connectivity boundary: JupyHop cannot create an inbound authorized route
 to an unreachable client. Managed and unmanaged authorization remains distinct.

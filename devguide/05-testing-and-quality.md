@@ -2,6 +2,11 @@
 
 ## Test levels
 
+Current M1 commands, fixtures, observed counts and limitations are in the
+[M1 report](15-m1-foundations.md). Remaining matrix rows are release gates,
+not claims of existing test coverage. Integration is opt-in locally and enabled
+in the Linux CI definition.
+
 **Unit:** CLI parsing, session identifiers, config validation, state transitions, serialization, output redaction, launcher argument construction and error messaging.
 
 **Integration:** real OpenSSH to disposable Linux targets; launch/list/open/stop against Jupyter Server; detect WebSocket kernel connectivity; verify persistence after client SSH disconnection; discover manually started Jupyter Server through supported current-user runtime metadata.

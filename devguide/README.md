@@ -1,6 +1,6 @@
 # JupyHop Development Guide
 
-> **Status: design, not implementation.** This guide specifies intended behavior and acceptance criteria. Proposed commands are not yet available.
+> **Status: M0/M1 foundations implemented.** This guide specifies intended behavior and acceptance criteria. Only source installation and `doctor` diagnostics ship; session commands remain planned. See the milestone reports below.
 
 JupyHop is a lightweight, SSH-native tool to launch, discover, manage, and reconnect to remote Jupyter sessions without deploying JupyterHub.
 
@@ -49,3 +49,5 @@ This directory is the project's design source of truth. Update specifications an
   selected baseline, and explicit deferred evidence.
 - [Acceptance ledger](14-acceptance-ledger.md): every scenario's release gate and
   test target; feasibility is distinct from shipped acceptance.
+- [M1 foundations](15-m1-foundations.md): implemented CLI/transport/protocol,
+  tests, packaging and limitations.

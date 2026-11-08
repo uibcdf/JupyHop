@@ -1,6 +1,7 @@
 # 03 — CLI and configuration specification
 
-> Proposed commands: not implemented and subject to refinement.
+> `doctor` is implemented in M1; see [its exact contract](15-m1-foundations.md).
+> All session commands below remain proposed and subject to refinement.
 
 ## Proposed commands
 
@@ -37,7 +38,7 @@ Host gateway
     User researcher
 
 Host workstation
-    HostName 192.168.1.100
+    HostName workstation.example.org
     User researcher
     ProxyJump gateway
 ```
@@ -73,4 +74,6 @@ Before shipping, freeze an explicit local tunnel lifetime policy: whether `open`
 
 ## Packaging plan
 
-Python package and executable: `jupyhop`. Use `pyproject.toml` and a console-script entry point; target a documented minimum Python version chosen after dependency review. Avoid importing JupyterLab as a mandatory **local** dependency when remote launching is sufficient.
+Python package and executable: `jupyhop`. M1 implements `pyproject.toml` and a
+console-script entry point, with Python 3.11–3.14 support and zero mandatory
+Python runtime dependencies. JupyterLab is not a mandatory local dependency.

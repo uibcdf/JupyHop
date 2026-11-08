@@ -36,9 +36,7 @@ class SSHLab:
         self.stack = ExitStack()
         try:
             self.root = Path(
-                self.stack.enter_context(
-                    tempfile.TemporaryDirectory(prefix="jupyhop-lab-")
-                )
+                self.stack.enter_context(tempfile.TemporaryDirectory(prefix="jupyhop-lab-"))
             )
             self.root.chmod(0o700)
             self.key = self.root / "identity"
@@ -66,9 +64,7 @@ class SSHLab:
             # Offline pinning from keys we generated, never ssh-keyscan/TOFU.
             known = self.root / "known_hosts"
             public = self.hostkey.with_suffix(".pub").read_text().strip()
-            known.write_text(
-                "".join(f"[127.0.0.1]:{port} {public}\n" for port in self.ports)
-            )
+            known.write_text("".join(f"[127.0.0.1]:{port} {public}\n" for port in self.ports))
             for index, port in enumerate(self.ports):
                 cfg = self.root / f"sshd-{index}.conf"
                 cfg.write_text(f"""Port {port}
@@ -89,9 +85,7 @@ X11Forwarding no
 PrintMotd no
 LogLevel ERROR
 """)
-                log = self.stack.enter_context(
-                    open(self.root / f"sshd-{index}.log", "w+")
-                )
+                log = self.stack.enter_context(open(self.root / f"sshd-{index}.log", "w+"))
                 process = subprocess.Popen(
                     [
                         shutil.which("sshd") or "/usr/sbin/sshd",

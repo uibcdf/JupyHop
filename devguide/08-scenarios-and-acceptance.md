@@ -1,6 +1,8 @@
 # 08 — Scenario catalogue and acceptance matrix
 
-**Status:** specification; no scenario is claimed implemented. This is the acceptance contract for the real-world use cases motivating JupyHop. Each scenario must be mapped to a test ID before the corresponding milestone is considered complete.
+**Status:** specification with [per-scenario evidence](14-acceptance-ledger.md).
+M1 implements SSH diagnostics and its security controls; session scenarios remain
+pending. Each scenario must be mapped to a test ID before its milestone is complete.
 
 ## Topology and assumptions
 
