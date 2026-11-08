@@ -104,7 +104,21 @@ def worker(config, sid, request):
                 response.raise_for_status()
                 session = response.json()
                 kernel = session["kernel"]["id"]
-                code = "import threading, time, os\ncontinuity_marker = 42\nprogress = []\ndef compute():\n    time.sleep(1)\n    progress.append(continuity_marker)\nthreading.Thread(target=compute, daemon=True).start()\nprint(os.getpid())"
+                code = """import threading, os
+continuity_marker = 42
+progress = []
+compute_started = threading.Event()
+continue_compute = threading.Event()
+compute_done = threading.Event()
+def compute():
+    compute_started.set()
+    if continue_compute.wait(60):
+        progress.append(continuity_marker)
+        compute_done.set()
+threading.Thread(target=compute, daemon=True).start()
+assert compute_started.wait(5) and not compute_done.is_set()
+print(os.getpid())
+"""
             else:
                 sessions = client.get(base + "api/sessions", timeout=5)
                 sessions.raise_for_status()
@@ -115,7 +129,10 @@ def worker(config, sid, request):
                 code = (
                     "print(continuity_marker)"
                     if request.get("kernel")
-                    else "print(continuity_marker, progress)"
+                    # The first worker has exited with every connection closed.
+                    # Release its surviving background computation from this
+                    # independent client; no fixed reconnect duration is assumed.
+                    else "continue_compute.set()\nassert compute_done.wait(5)\nprint(continuity_marker, progress)"
                 )
             cookie = "; ".join(f"{c.name}={c.value}" for c in client.cookies)
             output = execute(base, "", kernel, code, cookie=cookie).strip()
