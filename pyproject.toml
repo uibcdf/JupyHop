@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "jupyhop"
-version = "0.1.0.dev0"
+version = "0.1.0b1"
 description = "Discover, launch and open user-owned remote Jupyter servers through OpenSSH"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -13,7 +13,7 @@ license-files = ["LICENSE"]
 authors = [{name = "JupyHop contributors, UIBCDF"}]
 dependencies = []
 classifiers = [
-  "Development Status :: 2 - Pre-Alpha",
+  "Development Status :: 4 - Beta",
   "Operating System :: POSIX :: Linux",
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3.11",
@@ -24,6 +24,11 @@ classifiers = [
 
 [project.scripts]
 jupyhop = "jupyhop.cli:main"
+
+[project.urls]
+Repository = "https://github.com/uibcdf/jupyhop"
+Documentation = "https://github.com/uibcdf/jupyhop/blob/main/docs/quickstart.md"
+Issues = "https://github.com/uibcdf/jupyhop/issues"
 
 [project.optional-dependencies]
 dev = ["pytest>=8,<10", "ruff>=0.16,<0.18", "mypy>=1.15,<3", "build>=1.2,<2"]
