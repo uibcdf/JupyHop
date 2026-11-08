@@ -59,7 +59,7 @@ Because Jupyter provides code execution on the remote machine, the intended impl
 - Bind remote Jupyter servers to loopback by default and access them through SSH forwarding.
 - Preserve Jupyter Server authentication; never disable it to simplify tunneling.
 - Avoid shared privileged execution accounts.
-- Avoid persisting or logging tokens, passwords, private keys, and secrets in plaintext.
+- Never log or expose tokens, passwords, private keys, and secrets; any credential persistence must follow the reviewed security policy and restricted permissions described in the development guide.
 - Store local host configuration outside the source repository, with sanitized examples.
 
 The security design must be reviewed and tested before recommending production deployments.
