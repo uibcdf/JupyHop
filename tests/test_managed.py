@@ -2,6 +2,8 @@ import io
 import json
 import os
 import sys
+import warnings
+from types import SimpleNamespace
 from unittest.mock import patch
 
 import pytest
@@ -114,6 +116,19 @@ def test_password_stdin_and_noninteractive_prompt_policy(monkeypatch):
         password_input(False)
 
 
+def test_password_prompt_refuses_echo_fallback(monkeypatch):
+    import getpass
+
+    def unavailable(prompt):
+        warnings.warn("Echo would be enabled", getpass.GetPassWarning, stacklevel=1)
+        pytest.fail("Password input continued after private prompt failed")
+
+    monkeypatch.setattr(sys.stdin, "isatty", lambda: True)
+    monkeypatch.setattr(getpass, "getpass", unavailable)
+    with pytest.raises(ValueError, match="private password prompt"):
+        password_input(False)
+
+
 @pytest.mark.parametrize("data", [b"short\n", b"x\0password\n", b"\xffpassword\n", b"x" * 4097])
 def test_invalid_password_input_is_not_reflected(monkeypatch, data):
     monkeypatch.setattr(sys, "stdin", io.TextIOWrapper(io.BytesIO(data)))
@@ -177,6 +192,34 @@ def test_atomic_write_failure_preserves_previous_record_and_cleans_temporary(tmp
         os.close(descriptor)
 
 
+@pytest.mark.parametrize("replacements", [1, 3])
+def test_atomic_record_replacement_during_open_is_retried_with_a_bound(tmp_path, replacements):
+    descriptor = remote._private_dir(str(tmp_path))
+    original = remote._checked_file
+    attempts = 0
+
+    def replace_before_check(fd):
+        nonlocal attempts
+        attempts += 1
+        if attempts <= replacements:
+            remote._save(descriptor, "record.json", {"generation": attempts})
+        original(fd)
+
+    try:
+        remote._save(descriptor, "record.json", {"generation": 0})
+        with patch.object(remote, "_checked_file", side_effect=replace_before_check):
+            if replacements == 3:
+                with pytest.raises(remote.ManagedProblem) as exc:
+                    remote._load(descriptor, "record.json")
+                assert exc.value.code == "registry_busy" and attempts == 3
+            else:
+                assert remote._load(descriptor, "record.json") == {"generation": 1}
+                assert attempts == 2
+        assert (tmp_path / "record.json").stat().st_mode & 0o777 == 0o600
+    finally:
+        os.close(descriptor)
+
+
 def test_shared_home_uses_distinct_host_account_scopes(monkeypatch, tmp_path):
     monkeypatch.setenv("XDG_STATE_HOME", str(tmp_path))
     with patch("builtins.open", return_value=io.StringIO("a" * 32)):
@@ -215,3 +258,25 @@ def test_unreachable_managed_record_is_not_proof_of_server_death():
     with patch.object(remote, "process_identity", side_effect=PermissionError):
         values = remote.missing_managed([record], set())
     assert values[0]["state"] == "unreachable"
+
+
+def test_unsupported_server_is_refused_before_registry_or_launch(tmp_path):
+    request = {
+        "protocol": {"major": 1, "minor": 2},
+        "id": "a" * 32,
+        "name": "old-server",
+        "server_python": sys.executable,
+        "workdir": str(tmp_path),
+        "password": "PRIVATE_SENTINEL",
+    }
+    with (
+        patch.object(remote.subprocess, "run", return_value=SimpleNamespace(returncode=5)),
+        patch.object(remote, "Registry") as registry,
+    ):
+        with pytest.raises(remote.ManagedProblem) as exc:
+            remote._prepare(request)
+        assert exc.value.code == "unsupported_server_version"
+        registry.assert_not_called()
+    assert not list(tmp_path.iterdir())
+    with pytest.raises(PrerequisiteError, match="2.20"):
+        require_ready({"id": "a" * 32, "state": "failed", "error": exc.value.code})

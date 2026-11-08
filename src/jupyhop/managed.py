@@ -5,6 +5,7 @@ import json
 import re
 import sys
 import uuid
+import warnings
 from importlib.resources import files
 from typing import Any
 
@@ -27,6 +28,7 @@ _ERRORS = {
     "missing_tmux",
     "missing_python",
     "server_prerequisites",
+    "unsupported_server_version",
     "invalid_workdir",
     "launch_failed",
     "readiness_timeout",
@@ -52,9 +54,16 @@ def password_input(from_stdin: bool) -> str:
             raise ValueError(
                 "Managed start requires a password. Use a terminal prompt or --password-stdin with a protected input source; never put passwords in argv."
             )
-        password = getpass.getpass("New Jupyter session password: ")
-        if password != getpass.getpass("Confirm password: "):
-            raise ValueError("Passwords did not match.")
+        with warnings.catch_warnings():
+            warnings.simplefilter("error", getpass.GetPassWarning)
+            try:
+                password = getpass.getpass("New Jupyter session password: ")
+                if password != getpass.getpass("Confirm password: "):
+                    raise ValueError("Passwords did not match.")
+            except getpass.GetPassWarning:
+                raise ValueError(
+                    "A private password prompt is unavailable. Use --password-stdin with a protected source."
+                ) from None
     if not 8 <= len(password) <= 1024 or any(ord(c) < 32 or ord(c) == 127 for c in password):
         raise ValueError("Password must have 8–1024 characters without control characters.")
     return password
@@ -218,6 +227,13 @@ def start(
 def require_ready(report: dict[str, Any]) -> None:
     error = report["error"]
     context = f"Session request {report['id']}: "
+    if error == "unsupported_server_version":
+        raise PrerequisiteError(
+            context
+            + "managed start requires Jupyter Server >=2.20,<3 for native ephemeral ports. "
+            + "Choose an existing compatible --server-python environment. "
+            + "No session was created and nothing was installed remotely."
+        )
     if error == "incompatible_registry":
         raise ProtocolError(
             context
@@ -239,7 +255,7 @@ def require_ready(report: dict[str, Any]) -> None:
             context
             + "remote launch prerequisites failed ("
             + error
-            + "). Verify tmux, an existing Jupyter Server 2 Python with kernels, and the remote directory. Nothing was installed remotely."
+            + "). Verify tmux, an existing Jupyter Server >=2.20,<3 Python with kernels, and the remote directory. Nothing was installed remotely."
         )
     if report["state"] != "ready":
         raise LaunchError(

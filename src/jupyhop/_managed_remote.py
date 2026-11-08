@@ -104,27 +104,37 @@ def _checked_file(fd: int) -> None:
 
 
 def _read(directory: int, name: str, limit: int = 16384) -> bytes:
-    fd = os.open(name, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK, dir_fd=directory)
-    try:
-        _checked_file(fd)
-        info = os.fstat(fd)
-        if info.st_size > limit:
-            raise ManagedProblem("corrupt_state")
-        data = bytearray()
-        while len(data) <= limit:
-            chunk = os.read(fd, min(4096, limit + 1 - len(data)))
-            if not chunk:
-                break
-            data.extend(chunk)
-        after = os.fstat(fd)
-        if len(data) > limit or (info.st_size, info.st_mtime_ns) != (
-            after.st_size,
-            after.st_mtime_ns,
-        ):
-            raise ManagedProblem("corrupt_state")
-        return bytes(data)
-    finally:
-        os.close(fd)
+    for _ in range(3):
+        fd = os.open(name, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK, dir_fd=directory)
+        try:
+            try:
+                _checked_file(fd)
+            except ManagedProblem:
+                # A concurrent atomic update can unlink the inode between open
+                # and fstat. Reopen the current name; never relax link/mode/UID
+                # checks or accept bytes from the retired inode.
+                if os.fstat(fd).st_nlink == 0:
+                    continue
+                raise
+            info = os.fstat(fd)
+            if info.st_size > limit:
+                raise ManagedProblem("corrupt_state")
+            data = bytearray()
+            while len(data) <= limit:
+                chunk = os.read(fd, min(4096, limit + 1 - len(data)))
+                if not chunk:
+                    break
+                data.extend(chunk)
+            after = os.fstat(fd)
+            if len(data) > limit or (info.st_size, info.st_mtime_ns) != (
+                after.st_size,
+                after.st_mtime_ns,
+            ):
+                raise ManagedProblem("corrupt_state")
+            return bytes(data)
+        finally:
+            os.close(fd)
+    raise ManagedProblem("registry_busy")
 
 
 def _load(directory: int, name: str) -> dict[str, Any]:
@@ -477,7 +487,10 @@ try:
     from jupyter_server.auth import passwd
     from jupyter_client.kernelspec import KernelSpecManager
     request=json.load(sys.stdin)
-    if sys.version_info < (3,11) or not __version__.startswith('2.') or not KernelSpecManager().find_kernel_specs():
+    version=__version__.split('.')
+    if len(version)<2 or version[0]!='2' or not version[1].isdigit() or int(version[1])<20:
+        sys.exit(5)
+    if sys.version_info < (3,11) or not KernelSpecManager().find_kernel_specs():
         sys.exit(4)
     print(json.dumps({'hash':passwd(request['password']), 'lab':importlib.util.find_spec('jupyterlab') is not None}))
 except Exception:
@@ -581,6 +594,8 @@ def _prepare(request: dict[str, Any]) -> dict[str, Any]:
         check=False,
     )
     del password
+    if result.returncode == 5:
+        raise ManagedProblem("unsupported_server_version")
     if result.returncode or len(result.stdout) > 4096:
         raise ManagedProblem("server_prerequisites")
     checked = json.loads(result.stdout)

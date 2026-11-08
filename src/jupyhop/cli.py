@@ -295,7 +295,10 @@ def main(argv: list[str] | None = None) -> int:
     parser = _parser()
     args = parser.parse_args(argv)
     launch_id = None
+    handlers = {number: signal.getsignal(number) for number in (signal.SIGTERM, signal.SIGHUP)}
     try:
+        for number in handlers:
+            signal.signal(number, _interrupted)
         config = load_config(args.config)
         if args.command == "list" or args.command == "open" and args.host is None:
             return _fleet(args, config)
@@ -435,4 +438,7 @@ def main(argv: list[str] | None = None) -> int:
         )
         print(message, file=sys.stderr)
         return 130
+    finally:
+        for number, handler in handlers.items():
+            signal.signal(number, handler)
     return 2
