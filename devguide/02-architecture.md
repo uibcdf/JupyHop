@@ -25,7 +25,7 @@ No central service or inter-user privileged daemon is required.
 
 **SSH transport:** delegate authentication, host verification, proxy jumps, and crypto settings to OpenSSH. Use subprocess argument arrays rather than shell-interpolated user input.
 
-**Remote helper (design pending):** start/list/status/stop owned JupyHop processes and emit machine-readable, versioned output. It runs with the existing remote user's permissions.
+**Remote helper (design pending):** start/list/status/stop owned JupyHop processes, plus best-effort discovery of authorized unmanaged Jupyter Servers and emit machine-readable, versioned output. It runs with the existing remote user's permissions.
 
 **Process manager (design pending):** keep servers running after SSH closes. Compare `systemd --user` (user service availability, linger constraints) with `tmux` or a controlled detached process strategy. Do not assume `loginctl enable-linger` is allowed.
 
@@ -33,19 +33,19 @@ No central service or inter-user privileged daemon is required.
 
 ## State, ownership, and discovery
 
-Remote host is the source of truth for managed sessions; clients keep only optional local convenience state. Use the authenticated SSH identity as the remote principal. Neither session IDs nor PID files alone establish ownership. Handle stale entries after crashes and distinguish managed/unmanaged processes.
+Remote host is the source of truth for managed sessions; clients keep only optional local convenience state. Existing manually launched Jupyter servers may be discovered via supported current-user Jupyter runtime metadata, and must remain read-only for lifecycle operations. Discovery is not exhaustive across independent Jupyter runtime directories/environments. Use the authenticated SSH identity as the remote principal. Neither session IDs nor PID files alone establish ownership. Handle stale entries after crashes and distinguish managed/unmanaged processes.
 
-A session has states such as `starting`, `running`, `unreachable`, `stopping`, `stopped`, and `stale`. Define state transitions, timeouts and idempotent recovery before implementation.
+A **managed server** has states such as `starting`, `running`, `unreachable`, `stopping`, `stopped`, and `stale`. Define state transitions, timeouts and idempotent recovery before implementation.
 
 ## Network and forwarding
 
 Jupyter binds to remote `127.0.0.1` and a dynamically allocated remote port. The client creates a local forward bound to local loopback. OpenSSH should report failures promptly (`ExitOnForwardFailure=yes`). Avoid a naive 'check free port, then use it' race; verify the actual tunnel listener and resolve collisions safely. Two clients can connect to the same remote session through distinct local ports.
 
-SSH forwarding and WebSocket traffic must be tested with JupyterLab, kernels, and ProxyJump.
+SSH forwarding and WebSocket traffic must be tested with JupyterLab, kernels, and ProxyJump. The lifecycle of the client tunnel, remote Jupyter server and kernel are independent. A forward closing must not stop the server; a host reboot cannot preserve in-memory kernel state. See [09](09-session-lifecycle-and-auth.md).
 
 ## Environments
 
-Separate the environment running the JupyHop helper from the environment running Jupyter. A configured remote launcher (e.g. absolute environment Python plus `-m jupyterlab`) can avoid relying on interactive shell initialization. Explicitly check whether Jupyter Server and the selected kernels are installed.
+Separate the environment running the JupyHop helper from the environment running Jupyter. A user-selected `--workdir` must be validated and interpreted on the remote machine, never the client. Support literal whitespace/Unicode paths and define remote tilde expansion. A configured remote launcher (e.g. absolute environment Python plus `-m jupyterlab`) can avoid relying on interactive shell initialization. Explicitly check whether Jupyter Server and the selected kernels are installed.
 
 ## Platform assumptions
 
@@ -55,6 +55,10 @@ Initial supported target: Linux remote hosts with OpenSSH and Python. Client sup
 
 Define a transport interface and a launcher/process-manager interface only when there are at least two real implementations or clear tests demonstrating the need. A future Slurm backend is responsible for job submission, cancellation, node allocation and forwarding through cluster topology; it must not treat a login node as the compute node.
 
+## Reference scenarios
+
+The topology, LAN vs bastion routing, concurrent clients, manually launched Jupyter, and failure expectations are specified in [08 — Scenario catalogue](08-scenarios-and-acceptance.md). Implementations must treat reachability as directional and rely on the actual client's OpenSSH configuration, not assumptions about network location.
+
 ## Open architecture questions
 
-See [07 — Decisions](07-decisions.md): remote helper bootstrap, process manager, registry schema, Jupyter auth URL handling, local tunnel lifecycle, and concurrency model.
+See [07 — Decisions](07-decisions.md): remote helper bootstrap, process manager (systemd --user vs tmux fallback), registry schema, Jupyter auth URL handling, local tunnel lifecycle, and concurrency model. No process manager may require automatic elevation or enabling linger.
