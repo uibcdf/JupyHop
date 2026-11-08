@@ -1,6 +1,6 @@
 # 14 — Acceptance ledger
 
-Created: 2026-11-07; updated through M5: 2026-11-08. Every scenario in [08](08-scenarios-and-acceptance.md)
+Created: 2026-11-07; updated through M6: 2026-11-08. Every scenario in [08](08-scenarios-and-acceptance.md)
 has a gate and a test target below. `A-<scenario>` is a **planned acceptance
 test ID**, not an existing automated test. M0 spikes are feasibility evidence;
 they do not satisfy later product gates. Details, versions and isolation:
@@ -9,6 +9,7 @@ Current existing-server acceptance: [M2 report](16-m2-existing-servers.md).
 Managed launch evidence: [M3 report](17-m3-managed-launch.md).
 Lifecycle/kernel/legacy-runner evidence: [M4 report](18-m4-lifecycle.md).
 Profiles/multi-host/real-account/archive evidence: [M5 report](19-m5-scientific-workflows.md).
+Beta compatibility/security/artifact evidence: [M6 report](20-m6-beta-readiness.md).
 
 For future gates the fixture, assertions and failure output follow the expected
 behavior of the corresponding row in 08. Real infrastructure is never a fixture.
@@ -57,20 +58,20 @@ SEC gates apply from the first relevant prototype onward, not only at release.
 | SEC-06 | M2 | Browser availability unit tests; actual no-browser/signal CLI integration | M2 verified |
 | SEC-07 | M2/M5 | Schema/atomic/ownership checks plus archive live/uncertain/start-time/symlink refusal | Explicit inactive move preserves recovery evidence; permanent deletion unimplemented |
 | SEC-08 | M1 | `test_remote_shell_injection_is_literal`; unit input/quoting tests | M1 satisfied (SSH arguments) |
-| NET-09 | M2/M6 | 16 documents IPv4-only policy; strict address validation | M2 explicit unsupported boundary; IPv6 support M6 pending |
+| NET-09 | M2/M6 | Strict metadata address gate; reviewed IPv4-only policy in beta compatibility guide | Explicit unsupported boundary; no IPv6 transport support claimed |
 | NET-10 | M2 | Custom /science/ HTTP/WS integration and real browser smoke | M2 simple ASCII base paths verified |
-| NET-11 | M2/M6 | 16 documents HTTPS/complex URL refusal; strict metadata scheme gate | M2 explicit unsupported boundary; TLS compatibility M6 pending |
+| NET-11 | M2/M6 | Strict metadata HTTPS gate; reviewed beta compatibility guide | Explicit unsupported boundary; no TLS-verification bypass or HTTPS support claimed |
 | NET-12 | M4/M5 | Lost replies, fresh forwards and changed OpenSSH route test | Broken-connection/config-route mechanisms verified; actual suspend/OS network move remains manual |
 | NET-13 | M4 | M2 owned-master collision; M4 simultaneous tunnels/same-kernel test | Independent owned forwards verified; unrelated SSH never reused/killed |
 | NET-14 | M5 | Changed-route/duplicate-alias test plus same-name conflict through alternate alias | Distinct routes reach one registry/UUID; no silent duplicate managed process |
-| NET-15 | M5/M6 | `A-NET-15` | Pending |
+| NET-15 | M5/M6 | `test_large_contents_and_sustained_websocket_through_jump` | 8 MiB API roundtrip with SHA256, 64 requests/64 KiB output each on one WebSocket; bounded loopback smoke, not a WAN endurance claim |
 | DISC-09 | M2/M5 | Custom-runtime integration, per-host runtime_dirs config and explicit path merging | Known-path coverage verified; another client needs the same custom path preference where not in remote state |
 | DISC-10 | M2 | Empty JSON discovery test; complete=false invariant | M2 honest partial result verified; arbitrary endpoint override unimplemented |
 | DISC-11 | M2 | `test_multiple_servers_custom_paths_and_duplicate_runtime_metadata` | M2 verified |
-| DISC-12 | M2/M4 | Invalid-auth and fresh-login integration; no credential cache | M2 baseline verified; live rotation remains unvalidated for M6 compatibility review |
+| DISC-12 | M2/M6 | `test_live_password_rotation_requires_fresh_authorized_login` | Same live server, fresh client/tunnel; old password denied, new password accepted; existing cookies follow upstream policy |
 | LIFE-13 | M4 | Reused PID/start/socket refusal and M2 changed-server open guard | Replacement identity cannot authorize old-session stop/open; no continuity claim |
-| LIFE-14 | M4/M6 | `experiments.m4_compatibility --legacy-ref 729aa30`; incompatible-schema integration | Unchanged M3 runner works with M4; migration/version-range matrix remains M6 |
-| LIFE-15 | M4/M6 | M3 runner/current RPC; additive intent retention; strict schema refusal | Tested M3/M4 compatibility; arbitrary versions/migrations remain M6 |
+| LIFE-14 | M4/M6 | Legacy experiment against trusted M3 and M5 sources; incompatible-schema integration | Beta status/idempotent stop preserves immutable historical runner/hash; no migration/replacement |
+| LIFE-15 | M4/M6 | Historical runners/current source RPC, additive intent, strict parser/schema refusal | Tested combinations and refusal policy documented; arbitrary client versions/future migrations not promised |
 | LIFE-16 | M4 | CLI SIGINT/SIGHUP/SIGTERM cleanup and independent-client memory acceptance | Attached lifetime/kernel survival verified; no attached-forward survival promise after SIGKILL/network failure |
 | LIFE-17 | M4 | Lost start reply after spawn/checkpoint; status promotes starting to ready | Recovery verified without duplicate launch; pre-PID unconfirmed intent remains starting |
 | UX-01 | M2 | Zero-config direct/jump integration; browser smoke | M2 verified for supported defaults |
@@ -79,5 +80,5 @@ SEC gates apply from the first relevant prototype onward, not only at release.
 | UX-04 | M4/M5 | Exact UUID confirmation for stop/archive, no-SSH guard, live archive refusal | Neither lifecycle action guesses a selection; archive never authorizes stopping a live server |
 | UX-05 | M2 | No-browser/signal CLI integration; browser-unavailable unit case | M2 verified; URL limited to current client |
 | UX-06 | M1/M2 | M2 stdlib discovery helper; M3 separate stdlib start/open helper | M1–M3 no remote package installation verified; per-session runner written only by start |
-| UX-07 | M4/M6 | Status/stop incompatible-schema refusal; M3 legacy runner acceptance | Tested compatibility/refusal; broad migration/rollout remains M6 |
+| UX-07 | M4/M6 | Strict protocol/schema refusal, M3/M5 runner acceptance and version policy | Tested rollout/refusal and actionable errors; installed-helper upgrades and migrations are outside beta scope |
 | UX-08 | M5 | Actual CLI/profile launch validates remote relative/tilde/symlink/Unicode/metacharacter paths | Literal path behavior verified without shell activation or injection |

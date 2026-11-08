@@ -6,7 +6,11 @@ JupyHop is an open-source project for **discovering, opening, launching, managin
 
 It is designed for researchers, data scientists, developers, and small teams who already have SSH access to workstations or servers and want to work with their remote notebooks as easily as with local ones.
 
-> **Project status: M5 — profiles, multiple hosts and account isolation.** Existing-server access, managed launch/lifecycle, named profiles, multi-host inventory and safe record archiving are implemented for supported Linux Jupyter servers. Independent clients can reconnect to the same surviving kernel; two real Unix accounts were tested separately. Persistence depends on remote OS policy; reboot/crash does not preserve kernel memory. JupyHop is not published on PyPI. See the [M5 report](devguide/19-m5-scientific-workflows.md) and [development guide](devguide/README.md).
+> **Project status: M6 — beta candidate 0.1.0b1.** Existing-server access, managed lifecycle/reconnection, profiles, multi-host inventory and safe record archiving are implemented for supported Linux servers and CPython 3.11–3.14 clients. Persistence depends on remote OS policy; reboot/crash does not preserve kernel memory. The beta is prepared locally and **not published on PyPI**. See the [M6 evidence and limits](devguide/20-m6-beta-readiness.md).
+
+Start with the [quickstart](docs/quickstart.md), [compatibility matrix](docs/compatibility.md)
+and [troubleshooting](docs/troubleshooting.md). Development instructions are in
+[CONTRIBUTING](CONTRIBUTING.md); vulnerability reporting is in [SECURITY](SECURITY.md).
 
 ## The problem
 
@@ -30,7 +34,7 @@ jupyhop list workstation
 jupyhop open workstation --no-browser
 ```
 
-`open` opens the normal Jupyter login page. Enter your existing password/token;
+`open` opens the normal Jupyter login page. Enter your existing password/token.
 Opening existing servers does not retrieve their credentials. Keep the command running.
 Ctrl-C closes its tunnel, leaving the remote server alone. Multiple candidates
 require a terminal selection or an exact ID from `discover`; scripting never
@@ -52,7 +56,8 @@ SSH stdin; only an Argon2 password hash is retained in a private remote Jupyter
 settings file. No password/token enters argv, ordinary JSON or diagnostics. Use
 a strong session password rather than your SSH password. Scripts may supply one
 line from a protected credential source with `--password-stdin`; no `--password`
-argument exists. `--no-open` returns verified launch information without creating
+argument exists. If a private prompt cannot hide input, it refuses safely.
+`--no-open` returns verified launch information without creating
 a local tunnel; otherwise the same attached browser/no-browser flow is used.
 
 `discover`/`list` label verified owned servers as `managed` and preserve a stable
@@ -223,7 +228,7 @@ that interpreter; the server may run in a different Conda environment.
 | Archive inactive registry evidence / release name | Explicit verified move to private archive | **Not allowed** |
 | Preserve kernel state after remote reboot | **Not possible by default** | **Not possible by default** |
 
-M5 manages **the route**, creates owned servers, reconciles readiness and
+JupyHop manages **the route**, creates owned servers, reconciles readiness and
 observes process loss, gracefully stops verified identities and archives inactive
 records without deleting recovery evidence.
 JupyHop does not replace Jupyter's kernel manager or
@@ -241,7 +246,7 @@ make kernels persistent across crashes and reboots.
 - **Minimal setup first:** common existing-server access should need no additional JupyHop configuration when SSH and remote prerequisites are already sufficient.
 - **General-purpose:** no hard-coded organization-specific hostnames, networks, environments, or credentials.
 
-## Proposed architecture
+## Architecture
 
 ```text
 Local client
@@ -291,7 +296,7 @@ See [security and reliability](devguide/04-security-and-reliability.md), [discov
 
 ## Development roadmap
 
-M0–M5 are implemented in dependency order; M6 is the next proposed milestone.
+M0–M5 are implemented; M6 prepares and validates the local beta candidate.
 The full roadmap is:
 
 1. **M0 — Validate design assumptions:** discovery, auth handoff, process managers, tunnel lifetime, and remote helper.
@@ -364,12 +369,15 @@ to the printed URL on this client. There is no detached tunnel daemon or shared
 connection reuse. The original launcher remains responsible for server/kernel
 persistence. See [the M2 contract](devguide/16-m2-existing-servers.md).
 
-Managed launching requires an existing Python >=3.11 with Jupyter Server 2,
+Managed launching requires an existing Python >=3.11 with Jupyter Server >=2.20,<3,
 available kernels, `tmux` and a readable stable Linux machine ID. JupyterLab is
 enabled when installed; otherwise the server provides its normal server/API
 view. `--server-python` selects the server environment; `--remote-python` selects
 the helper and is the server default if no separate path is supplied. Neither
-path depends on shell activation. Relative workdirs resolve against remote HOME;
+path depends on shell activation. Native ephemeral-port reporting requires Server
+2.20 or later; 2.21.1 is the recommended tested stack. Older existing servers are
+validated separately; see [compatibility](docs/compatibility.md).
+Relative workdirs resolve against remote HOME;
 `~` means the remote account, and workdir symlinks are canonicalized.
 
 State lives under `$XDG_STATE_HOME/jupyhop/hosts/<host-account-scope>/sessions/ID`

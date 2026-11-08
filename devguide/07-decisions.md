@@ -98,6 +98,16 @@ Context, experiments and limits: [19](19-m5-scientific-workflows.md).
 | D36 | Archive inactive directories atomically, retain forensic settings/runtime files, release active name/budget | Resolves 128-entry operational bound without deleting orphaned-kernel recovery data or scientific files; refuse live/uncertain identities; RPC 1.4, schema unchanged |
 | D37 | Operator-provisioned temporary real accounts and a separate loopback sshd for isolation acceptance | Actual UID/auth boundaries are verified; privileged fixture is separate from the non-root product; namespace restriction/VM attempt did not establish acceptance |
 
+## M6 decisions (2026-11-08)
+
+Experiments, internal review and release limits: [20](20-m6-beta-readiness.md).
+
+| ID | Decision | Rationale / consequence |
+| --- | --- | --- |
+| D38 | Managed start requires Server >=2.20,<3; existing-open remains a separate capability | Native 2.17 advertises zero for a nonzero bound port; 2.20 fixes this upstream. Refuse before registry creation instead of introducing an allocator; recommend tested 2.21.1. |
+| D39 | Command-wide SIGTERM/SIGHUP unwind; refuse getpass echo fallback; bounded retry of atomically replaced reads | Close owned transport during any phase, preserve unknown remote-write outcome and private input; reopen retired inodes without relaxing file/UID/mode/link checks. |
+| D40 | Prepare reviewed 0.1.0b1 artifacts and explicit compatibility/security/release policy; publication stays separate | Stdlib artifact/version/license/entrypoint/source checks supplement clean-wheel/browser tests; no mandatory dependencies or automated upload to package registries. |
+
 ## Decisions remaining for their implementation milestones
 
 | Topic | Options / questions | Evidence needed |
@@ -110,12 +120,12 @@ Context, experiments and limits: [19](19-m5-scientific-workflows.md).
 | Future port customization | M3 fixes native ephemeral allocation; explicit port policy is separate scope | No manual remote-port coordinator is needed for M3 |
 | Background/shared tunnel extension | Detached SSH or verified reuse/control socket | Foreground owned cleanup, independent forwards and reconnection are verified through M5; no background mode is needed |
 | Additional environment behavior | Activation hooks or kernel-selection UX | M5 executable/workdir profiles are verified; arbitrary shell activation is intentionally absent |
-| Minimum versions | Python, Jupyter Server, OpenSSH, Linux distros | Dependency testing and CI |
+| Broader version/platform matrix | Extend the explicit beta observations | M6 fixes Python 3.11–3.14 and managed Server >=2.20,<3; unknown OS/dependency combinations require new evidence |
 | Broader identity reconciliation | Additional shared-filesystem/site identity policies | M5 verifies actual UID isolation, duplicate aliases, changed routes and archived-name reuse; broader site coverage remains M6 |
 | Broader scientific filesystem cases | Long network-filesystem workloads and special activation policy | M5 Conda/venv, relative/tilde/symlink/Unicode paths verified; broader site matrix remains M6 |
 | Physical reboot/site logout policy | Controlled reboot and PAM/cgroup acceptance | Changed boot identity is detected as stale; physical reboot and last-logout behavior remain unmeasured |
 | Installed helper extension | Optional installation/update strategy | Source-only bootstrap is verified without remote installation; an installed helper has no demonstrated need |
-| Lifecycle compatibility/migrations | Schema 1.0 and per-operation wire minors are fixed; incompatible writes fail | State migrations and installed lifecycle upgrades remain M6 review |
+| Lifecycle compatibility/migrations | Schema 1.0 and per-operation wire minors are fixed; incompatible writes fail | M6 tests M3/M5 runners without migration; future stored-schema changes require a separate migration decision |
 | Broader URL variants | IPv6, HTTPS and TLS hostname mismatch | IPv4 HTTP/simple ASCII base paths and browser WebSockets pass; additional variants require live tests |
 | Broader discovery coverage | Additional Conda layouts and legacy runtime formats | Explicit multiple runtime dirs/interpreters and deduplication pass; exhaustive inventory is outside MVP |
 | Browser/tunnel edge cases | Suspend/resume and CLI upgrade during an attached session | Browser/tunnel closure and independent reconnect pass; physical client transitions remain unmeasured |

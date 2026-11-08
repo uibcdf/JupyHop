@@ -10,6 +10,13 @@ browser flows. M4 implements managed status and verified stop with exact UUIDs;
 M5 adds named executable/workdir profiles, multi-host inventory/selection and
 inactive-record archive. Name-based session resolution remains unimplemented.
 
+M6's [quickstart](../docs/quickstart.md), [troubleshooting](../docs/troubleshooting.md)
+and [compatibility policy](../docs/compatibility.md) give the beta's current user
+workflow. Private password prompts refuse echo fallback. SIGTERM/SIGHUP closes
+owned transport during probes as well as attached open; interrupted remote writes
+still require reconciliation. No port or tunnel configuration is added to the
+normal existing-server flow.
+
 ## Two levels of experience
 
 ### Simple mode: open an existing server

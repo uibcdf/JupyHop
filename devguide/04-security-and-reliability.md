@@ -89,3 +89,13 @@ If a remote helper is needed, it must have authenticated/verified bootstrap, com
 ## Security release gate
 
 Before any stable release, run a security review covering host-key enforcement, auth handling, session ownership, port binding, subprocess quoting, file permissions, logging redaction, and cleanup under signal/connection failure.
+
+M6's [internal review and evidence](20-m6-beta-readiness.md) covers these boundaries
+for the beta. Command-wide SIGTERM/SIGHUP unwinds owned probes as well as forwards;
+password prompts refuse echo fallback. Atomic record replacement has a bounded
+reopen path; no bytes from an unlinked inode are accepted and all checks apply
+again. This is not an independent audit. The installed client, local OpenSSH
+configuration, chosen remote Python and authenticated account are trusted; root
+and malicious same-UID processes are outside this boundary. See
+[SECURITY](../SECURITY.md) for reporting and [compatibility](../docs/compatibility.md)
+for the supported scope. Publication is separate from preparing tested artifacts.

@@ -1,6 +1,6 @@
 # JupyHop Development Guide
 
-> **Status: M0–M5 implemented.** SSH diagnostics, existing-server access, managed
+> **Status: M0–M6 local acceptance passed; beta candidate unpublished.** SSH diagnostics, existing-server access, managed
 > lifecycle/reconnection, profiles, multi-host inventory and archive ship.
 > Real Unix account isolation and test-fixture cleanup are verified. OS logout
 > policy, physical reboot and wider compatibility are bounded in the reports.
@@ -65,3 +65,6 @@ This directory is the project's design source of truth. Update specifications an
 - [M5 scientific and multi-host workflows](19-m5-scientific-workflows.md): local
   profiles, route inventory, simultaneous scientific kernels, safe archive/name
   reuse and two real Unix accounts; privileged test-fixture instructions.
+- [M6 beta readiness](20-m6-beta-readiness.md): native server-version evidence,
+  internal security review, interrupted probe/input/atomic-read hardening,
+  sustained data/authentication gates and reviewed unpublished beta artifacts.

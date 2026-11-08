@@ -14,6 +14,12 @@ schema 1.0; it atomically moves inactive evidence into `archive/UUID`, without
 rewriting records/runners or deleting data. List inventory and local TOML each
 have separate version-1 contracts. Migrations and automatic deletion remain absent.
 
+M6 retains these contracts. Managed start now requires Server >=2.20,<3 and can
+return allowlisted `unsupported_server_version` before registry creation. Existing
+server access is validated separately. The package version 0.1.0b1 does not update
+live runners; M3/M5 runner compatibility is exercised without migration. See
+[the compatibility policy](../docs/compatibility.md) and [M6](20-m6-beta-readiness.md).
+
 ## Goal and constraints
 
 A user who can run `ssh workstation` should be able to discover and open a current-user Jupyter Server with minimal additional setup. The implementation must explicitly separate what is needed for **discovery/open (M2)** from what is needed for **managed launch/lifecycle (M3–M4)**.
