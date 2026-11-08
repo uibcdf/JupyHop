@@ -22,6 +22,11 @@ def pytest_collection_modifyitems(config, items):
                 )
 
 
+def pytest_ignore_collect(collection_path, config):
+    # Unit-only development does not import optional Jupyter/browser dependencies.
+    return collection_path.name == "integration" and not config.getoption("--run-integration")
+
+
 @pytest.fixture(scope="session")
 def ssh_lab():
     if os.getuid() == 0:

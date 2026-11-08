@@ -54,7 +54,7 @@ class SSHTransport:
         if not math.isfinite(self.timeout) or not 1 <= self.timeout <= 300:
             raise ValueError("Timeout must be between 1 and 300 seconds.")
 
-    def command(self, argv: Sequence[str]) -> list[str]:
+    def options(self, *, control_path: Path | None = None) -> list[str]:
         options = [
             "ssh",
             "-T",
@@ -73,9 +73,9 @@ class SSHTransport:
             "-o",
             "RemoteCommand=none",
             "-o",
-            "ControlMaster=no",
+            "ControlMaster=no" if control_path is None else "ControlMaster=yes",
             "-o",
-            "ControlPath=none",
+            "ControlPath=none" if control_path is None else f"ControlPath={control_path}",
             "-o",
             "ControlPersist=no",
             "-o",
@@ -87,7 +87,10 @@ class SSHTransport:
         ]
         if self.config is not None:
             options.extend(["-F", str(self.config.expanduser().resolve())])
-        return [*options, self.host, remote_command(argv)]
+        return options
+
+    def command(self, argv: Sequence[str]) -> list[str]:
+        return [*self.options(), self.host, remote_command(argv)]
 
     def run(self, argv: Sequence[str], *, stdin: bytes = b"") -> CommandResult:
         if len(stdin) > STDIN_LIMIT:

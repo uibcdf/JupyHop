@@ -1,6 +1,7 @@
 """Strict version negotiation and allowlisted nonsecret doctor fields."""
 
 import json
+import re
 import unicodedata
 from typing import Any
 
@@ -109,4 +110,141 @@ def parse_doctor(raw: bytes) -> dict[str, Any]:
     except (ValueError, TypeError, KeyError, RecursionError, UnicodeError):
         raise ProtocolError(
             "Malformed remote probe response. Expected versioned JSON only; check remote shell startup banners and interpreter configuration."
+        ) from None
+
+
+DISCOVERY_STATES = {"ready", "stale", "unsupported", "unreachable"}
+DISCOVERY_REASONS = {
+    "verified",
+    "invalid_metadata",
+    "legacy_metadata",
+    "https_or_unix_socket",
+    "unsupported_address",
+    "unverified_process_or_listener",
+    "endpoint_unavailable",
+    "unsupported_jupyter_or_auth",
+    "process_or_file_gone",
+}
+
+
+def parse_discovery(raw: bytes) -> dict[str, Any]:
+    """Rebuild the response, excluding tokens/URLs and any future unknown fields."""
+    from jupyhop._discovery_probe import valid_base
+
+    if len(raw) > STDOUT_LIMIT:
+        raise ProtocolError("Remote discovery response exceeds 64 KiB.")
+    try:
+        envelope = json.loads(
+            raw.decode("utf-8"), object_pairs_hook=_unique_object, parse_constant=_invalid_constant
+        )
+        version = envelope["protocol"]
+        major, minor = _integer(version["major"]), _integer(version["minor"])
+        if major != 1:
+            raise ProtocolError(
+                "Incompatible discovery protocol major; no remote update was attempted."
+            )
+        if envelope["operation"] != "discover":
+            raise ValueError
+        data = envelope["data"]
+        identity = data["identity"]
+        scope = _text(identity["scope"])
+        if re.fullmatch(r"[0-9a-f]{24}", scope) is None or data["complete"] is not False:
+            raise ValueError
+        if not isinstance(data["paths"], list) or len(data["paths"]) > 17:
+            raise ValueError
+        paths = []
+        for entry in data["paths"]:
+            path = _text(entry["path"])
+            if len(path) > 1024 or not path.startswith("/"):
+                raise ValueError
+            if entry["source"] not in {"jupyter-core", "linux-default", "explicit"} or entry[
+                "status"
+            ] not in {"ok", "missing", "unsafe", "limited"}:
+                raise ValueError
+            paths.append({"path": path, "source": entry["source"], "status": entry["status"]})
+        if not isinstance(data["servers"], list) or len(data["servers"]) > 64:
+            raise ValueError
+        servers = []
+        for entry in data["servers"]:
+            identifier = _text(entry["id"])
+            if re.fullmatch(r"[0-9a-f]{24}", identifier) is None or entry["origin"] != "unmanaged":
+                raise ValueError
+            if entry["state"] not in DISCOVERY_STATES or entry["reason"] not in DISCOVERY_REASONS:
+                raise ValueError
+            port = None if entry["port"] is None else _integer(entry["port"])
+            pid = None if entry["pid"] is None else _integer(entry["pid"])
+            if port is not None and not 1 <= port <= 65535 or pid == 0:
+                raise ValueError
+            base = entry["base_url"]
+            if base is not None and not valid_base(base):
+                raise ValueError
+            if entry["address"] not in (None, "127.0.0.1"):
+                raise ValueError
+            sources = entry["sources"]
+            if (
+                not isinstance(sources, list)
+                or not 1 <= len(sources) <= 17
+                or any(
+                    not isinstance(path, str) or path not in {p["path"] for p in paths}
+                    for path in sources
+                )
+            ):
+                raise ValueError
+            server_version = _version(entry["version"])
+            if (
+                server_version is not None
+                and re.fullmatch(r"2\.[0-9][A-Za-z0-9.!+_-]{0,62}", server_version) is None
+            ):
+                raise ValueError
+            if entry["state"] == "ready" and (
+                entry["address"] != "127.0.0.1"
+                or pid is None
+                or port is None
+                or base is None
+                or server_version is None
+                or entry["reason"] != "verified"
+            ):
+                raise ValueError
+            servers.append(
+                {
+                    "id": identifier,
+                    "origin": "unmanaged",
+                    "state": entry["state"],
+                    "reason": entry["reason"],
+                    "pid": pid,
+                    "port": port,
+                    "address": entry["address"],
+                    "base_url": base,
+                    "version": server_version,
+                    "sources": list(dict.fromkeys(sources)),
+                }
+            )
+        issues = data["issues"]
+        if (
+            not isinstance(issues, list)
+            or len(issues) > 32
+            or any(
+                issue not in ("entry_limit", "time_limit", "output_limit", "probe_failed")
+                for issue in issues
+            )
+        ):
+            raise ValueError
+        return {
+            "protocol": {"major": major, "minor": minor},
+            "operation": "discover",
+            "data": {
+                "identity": {
+                    "uid": _integer(identity["uid"]),
+                    "user": _text(identity["user"]),
+                    "scope": scope,
+                },
+                "complete": False,
+                "paths": paths,
+                "servers": servers,
+                "issues": issues,
+            },
+        }
+    except (KeyError, ValueError, TypeError, UnicodeError, RecursionError):
+        raise ProtocolError(
+            "Malformed discovery response; raw remote output was suppressed."
         ) from None

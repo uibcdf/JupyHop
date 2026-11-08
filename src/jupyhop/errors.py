@@ -15,3 +15,19 @@ class PrerequisiteError(JupyHopError):
 
 class ProtocolError(JupyHopError):
     exit_code = 5
+
+
+class DiscoveryError(JupyHopError):
+    exit_code = 6
+
+
+class SelectionError(JupyHopError):
+    exit_code = 7
+
+
+class TunnelError(JupyHopError):
+    exit_code = 8
+
+
+class OwnershipError(JupyHopError):
+    exit_code = 11

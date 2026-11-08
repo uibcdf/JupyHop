@@ -7,6 +7,7 @@ import shutil
 import signal
 import socket
 import subprocess
+import sys
 import tempfile
 import time
 import uuid
@@ -32,6 +33,9 @@ def stop(process):
 
 
 class SSHLab:
+    def __init__(self, *, allow_target_forwarding=True):
+        self.allow_target_forwarding = allow_target_forwarding
+
     def __enter__(self):
         self.stack = ExitStack()
         try:
@@ -39,6 +43,26 @@ class SSHLab:
                 self.stack.enter_context(tempfile.TemporaryDirectory(prefix="jupyhop-lab-"))
             )
             self.root.chmod(0o700)
+            self.home = self.root / "home"
+            self.home.mkdir(mode=0o700)
+            self.runtime = self.home / "runtime"
+            self.runtime.mkdir(mode=0o700)
+            wrapper = self.root / "session.sh"
+            wrapper.write_text(
+                "#!/bin/sh\n"
+                + "\n".join(
+                    f"export {key}={shlex.quote(str(value))}"
+                    for key, value in {
+                        "HOME": self.home,
+                        "JUPYTER_RUNTIME_DIR": self.runtime,
+                        "JUPYTER_CONFIG_DIR": self.home / "config",
+                        "JUPYTER_DATA_DIR": self.home / "data",
+                        "PATH": str(Path(sys.executable).parent) + ":/usr/bin:/bin",
+                    }.items()
+                )
+                + '\nexec /bin/sh -c "$SSH_ORIGINAL_COMMAND"\n'
+            )
+            wrapper.chmod(0o700)
             self.key = self.root / "identity"
             self.hostkey = self.root / "hostkey"
             for key in (self.key, self.hostkey):
@@ -80,7 +104,8 @@ KbdInteractiveAuthentication no
 UsePAM no
 PermitRootLogin no
 AllowUsers {getpass.getuser()}
-AllowTcpForwarding local
+ForceCommand {wrapper}
+AllowTcpForwarding {"local" if index == 0 or self.allow_target_forwarding else "no"}
 X11Forwarding no
 PrintMotd no
 LogLevel ERROR

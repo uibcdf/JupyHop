@@ -141,8 +141,8 @@ def test_remote_python_path_policy_and_safe_source_transport(envelope):
 @pytest.mark.parametrize(
     "argv",
     [
-        ["discover", "workstation"],
-        ["open", "workstation"],
+        ["start", "workstation"],
+        ["status", "workstation"],
         ["doctor", "-oProxyCommand=id"],
         ["doctor", "workstation", "--timeout", "nan"],
     ],
