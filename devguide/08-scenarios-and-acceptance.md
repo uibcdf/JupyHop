@@ -78,6 +78,45 @@ Discovery is **best-effort** and limited to the authenticated remote user's acce
 | SEC-07 | Remote registry stale or hostile | Validate metadata and ownership before using or deleting it |
 | SEC-08 | SSH command/path injection attempts | Treat inputs as data, reject unsafe values |
 
+## Additional network, URL and browser scenarios
+
+| ID | Case | Expected behavior | Gate |
+| --- | --- | --- | --- |
+| NET-09 | Remote Jupyter listening on IPv6 loopback `::1` | Forward supported address family correctly or explicitly reject unsupported transport | M2/M6 |
+| NET-10 | Custom Jupyter `base_url` | Preserve paths, static assets, API and WebSocket routes | M2 |
+| NET-11 | Remote Jupyter HTTPS / mismatched certificate hostname | Preserve TLS checks; report unsupported or require explicit reviewed mechanism, never silent insecure mode | M2/M6 |
+| NET-12 | Laptop suspend and resume | Broken tunnel does not stop remote server; reconnection is explicit or a documented opt-in | M4/M5 |
+| NET-13 | Repeated `open` / unrelated local listener | Reuse only verified owned forward or create separate one; never kill unrelated SSH process | M4 |
+| NET-14 | Same remote machine via multiple SSH aliases | Do not conflate distinct remote identities or silently duplicate managed server state | M5 |
+| NET-15 | Transfer large notebook data / sustained kernel WebSockets | Tunnel and jump host preserve data and kernel communication; failures surface clearly | M5/M6 |
+
+## Additional discovery, authentication and recovery scenarios
+
+| ID | Case | Expected behavior | Gate |
+| --- | --- | --- | --- |
+| DISC-09 | Custom `JUPYTER_RUNTIME_DIR` in another Conda environment | Use supported configured paths; report incomplete discovery if not visible | M2/M5 |
+| DISC-10 | Server metadata missing but server running | Never claim complete absence; offer safe documented explicit endpoint option where supported | M2 |
+| DISC-11 | Duplicate metadata for same server | Deduplicate without merging distinct live Jupyter instances | M2 |
+| DISC-12 | Token rotation/password change | Require fresh authorized login or credential retrieval, never bypass auth | M2/M4 |
+| LIFE-13 | Server restarts and reuses a previous port | Revalidate identity; do not imply old kernel is alive | M4 |
+| LIFE-14 | CLI upgraded while remote managed sessions run | Existing work persists; incompatible protocol gives actionable error without data corruption | M4/M6 |
+| LIFE-15 | Remote helper versions diverge across two clients | Version negotiation, no destructive automatic update, safe state interpretation | M4/M6 |
+| LIFE-16 | `open` command process/terminal exits | Forward lifetime is well-defined; no accidental remote process termination | M4 |
+| LIFE-17 | SSH start interrupted after process spawn | Discover/reconcile pending managed record; no duplicated untracked service | M4 |
+
+## Usability and configuration scenarios
+
+| ID | Case | Expected behavior | Gate |
+| --- | --- | --- | --- |
+| UX-01 | User has only working SSH alias and one discoverable Jupyter Server | `open host` works without mandatory JupyHop configuration | M2 |
+| UX-02 | No servers; discovery was incomplete | Distinguish unknown from empty result and explain next action | M2 |
+| UX-03 | Multiple server candidates | TTY selection, or non-interactive ambiguity error; never guess | M2 |
+| UX-04 | `stop host` with multiple managed sessions | Require explicit identification/confirmation; never arbitrarily stop one | M4 |
+| UX-05 | Headless computer with no browser | Provide useful no-browser flow without leaking credentials in diagnostics | M2 |
+| UX-06 | Remote environment lacks JupyHop helper | Supported no-install discovery path or clear safe bootstrap instruction | M1/M2 |
+| UX-07 | Local and remote helper incompatible versions | Actionable diagnostic and safe upgrade path | M4/M6 |
+| UX-08 | Remote directory contains spaces, Unicode or tilde | Predictable validated remote path resolution, no argument injection | M5 |
+
 ## Acceptance workflow
 
 For each row define a test fixture, command invocation, expected state changes, observable assertions and failure artifacts **without secrets**. Release gates in the table are minimum targets, not permission to skip earlier security controls. The first end-to-end success metric is **Aleph -> Nauta (existing manual Jupyter) with SSH jump and automatic browser access, followed by disconnect/reconnect**; kernel continuity is an M4 test, not guaranteed by the first M2 prototype.
