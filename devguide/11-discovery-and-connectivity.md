@@ -8,6 +8,11 @@ ASCII base paths and attached owned forwards. Coverage is always partial.
 IPv6-only, HTTPS, legacy Notebook metadata and complex auth/proxies remain
 unsupported; the broader requirements below retain their future release gates.
 
+M3 extends discovery with private registry runtime paths and verified managed
+UUIDs/names. A registry entry alone cannot establish managed provenance. Unknown
+managed state versions are reported as unavailable; unmanaged search stays
+partial. See [17](17-m3-managed-launch.md).
+
 ## Sources of truth and scope
 
 - **Connectivity:** OpenSSH aliases, configuration and trust store on the **current client**, including `Host`, `Include`, `Match`, `ProxyJump`, user identities and host-key validation. Do not build a second SSH parser or select LAN vs external route through guesswork.

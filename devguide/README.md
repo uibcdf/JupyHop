@@ -1,7 +1,7 @@
 # JupyHop Development Guide
 
-> **Status: M0–M2 implemented.** SSH diagnostics and read-only discovery/open of
-> existing current-user servers ship. Managed launching/lifecycle remain planned.
+> **Status: M0–M3 implemented.** SSH diagnostics, existing-server access and
+> managed launch/readiness ship. Persistent lifecycle and managed stop remain M4.
 > See the milestone reports below for exact acceptance evidence and limits.
 
 JupyHop is a lightweight, SSH-native tool to launch, discover, manage, and reconnect to remote Jupyter sessions without deploying JupyterHub.
@@ -55,3 +55,5 @@ This directory is the project's design source of truth. Update specifications an
   tests, packaging and limitations.
 - [M2 existing-server access](16-m2-existing-servers.md): discovery, verified
   forwarding, normal Jupyter login, browser/Conda tests and remaining limits.
+- [M3 managed launch](17-m3-managed-launch.md): private tmux, native password auth,
+  versioned per-host state, launch readiness/failures and M4 boundaries.

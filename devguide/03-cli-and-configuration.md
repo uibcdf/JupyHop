@@ -1,8 +1,14 @@
 # 03 — CLI and configuration specification
 
 > `doctor` ships in M1; `discover`, `list HOST` and foreground `open` ship in M2.
-> See [the current exact contract](16-m2-existing-servers.md). Managed launching,
-> status and stop below remain proposed; the M2 `stop` guard only refuses control.
+> M3 adds `start` and managed provenance; see [the current exact contract](17-m3-managed-launch.md).
+> Managed status/stop remain proposed; the stop guard only refuses control.
+
+M3 now implements `start` using `--server-python`, `--workdir`, `--name`,
+`--password-stdin`, `--no-open` and the attached browser/no-browser flow. Its
+[exact contract](17-m3-managed-launch.md) supersedes proposed `start` examples
+below. Named `--env` profiles, managed status/stop and name-based open remain
+planned. Discovery/list/open now distinguish verified managed provenance.
 
 ## Proposed commands
 

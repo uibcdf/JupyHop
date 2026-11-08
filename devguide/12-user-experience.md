@@ -2,7 +2,11 @@
 
 > **Session UX contract.** [M2](16-m2-existing-servers.md) implements existing-server
 > discovery/open with normal Jupyter login and attached foreground tunnels.
-> Managed workflows below remain planned.
+> M3 adds managed launch; persistent lifecycle workflows remain planned.
+
+M3 implements [managed start/readiness](17-m3-managed-launch.md) with password
+prompt/protected stdin, explicit server Python/workdir, no-open and attached
+browser flows. Managed status/stop/reconciliation and profile UX remain planned.
 
 ## Two levels of experience
 

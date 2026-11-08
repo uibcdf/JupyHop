@@ -8,6 +8,11 @@ release gates, not claims of existing coverage. Integration is opt-in locally
 and enabled in Linux CI. Default unit collection does not import optional
 Jupyter dependencies; browser smoke additionally requires Chrome/Chromium.
 
+Current managed launch evidence is in [M3](17-m3-managed-launch.md): native
+password auth, state safety, concurrent reservations, failure records, kernel
+execution and the four Python versions. Full M4 continuity/stop/logout/reboot
+acceptance must still be demonstrated independently.
+
 **Unit:** CLI parsing, session identifiers, config validation, state transitions, serialization, output redaction, launcher argument construction and error messaging.
 
 **Integration:** real OpenSSH to disposable Linux targets; launch/list/open/stop against Jupyter Server; detect WebSocket kernel connectivity; verify persistence after client SSH disconnection; discover manually started Jupyter Server through supported current-user runtime metadata.

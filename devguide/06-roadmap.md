@@ -1,6 +1,6 @@
 # 06 — Development roadmap
 
-**Status:** M0–M2 complete; M3 onward planned. Dependency-ordered milestones,
+**Status:** M0–M3 complete; M4 onward planned. Dependency-ordered milestones,
 **not** a release timeline. Each milestone has an independently demonstrable
 vertical slice; security is a gate at every stage. Never advertise proposed CLI
 syntax as implemented.
@@ -40,6 +40,10 @@ managed lifecycle is implemented. Stop after M2 for review before M3.
 **Scope limit:** discovered servers are read-only for lifecycle actions. Discovering arbitrary user processes or all Conda environments is not promised. Initial kernel continuity after reconnection is tested separately in M4.
 
 ## M3 — Managed launch and readiness
+
+**Completed 2026-11-08:** [launch contract, tests and limits](17-m3-managed-launch.md).
+Private tmux is the initial launch backend; full logout/linger, reconciliation,
+stop and cross-client live-kernel guarantees remain M4. Stop here for review.
 
 **Outputs:** `start` launches a current-user Jupyter Server on remote loopback, selects safe remote port, verifies readiness/auth, registers stable session ID/owner/provenance, and connects through SSH. Specify remote helper installation/bootstrap and remote workdir/launcher contract.
 

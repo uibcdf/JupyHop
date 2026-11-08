@@ -2,6 +2,7 @@
 
 **Status:** specification with [per-scenario evidence](14-acceptance-ledger.md).
 M1/M2 implement diagnostics and verified read-only existing-server access.
+M3 implements managed launch/readiness with the [evidence in 17](17-m3-managed-launch.md).
 Managed lifecycle, physical topology and additional compatibility scenarios remain
 pending as recorded in the ledger; a feasibility spike alone is not acceptance.
 

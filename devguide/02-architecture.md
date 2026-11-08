@@ -8,6 +8,10 @@ checks and foreground-owned forwarding/open. See [16](16-m2-existing-servers.md)
 The lifecycle components in the diagram remain future design; neither a remote
 installed helper nor a managed registry is needed by M2.
 
+M3 adds an immutable per-session runner, private tmux launch and a versioned
+per-host/account registry. See [17](17-m3-managed-launch.md) for the exact state,
+auth and bootstrap contract. Managed stop/reconciliation remains M4.
+
 ```text
 Client machine
   jupyhop CLI

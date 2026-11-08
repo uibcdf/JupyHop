@@ -6,7 +6,7 @@ JupyHop is an open-source project for **discovering, opening, launching, managin
 
 It is designed for researchers, data scientists, developers, and small teams who already have SSH access to workstations or servers and want to work with their remote notebooks as easily as with local ones.
 
-> **Project status: M2 — existing-server access.** `doctor`, `discover`, `list` and foreground `open` are implemented for supported current-user Linux Jupyter servers. Managed launching and lifecycle control remain **planned**, beginning at M3. JupyHop is not published on PyPI. See the [M2 report](devguide/16-m2-existing-servers.md) and [development guide](devguide/README.md).
+> **Project status: M3 — managed launch and readiness.** Existing-server access and `start` are implemented for supported current-user Linux Jupyter servers. Full persistent lifecycle, reconciliation and managed `stop` remain **planned for M4**. JupyHop is not published on PyPI. See the [M3 report](devguide/17-m3-managed-launch.md) and [development guide](devguide/README.md).
 
 ## The problem
 
@@ -31,36 +31,41 @@ jupyhop open workstation --no-browser
 ```
 
 `open` opens the normal Jupyter login page. Enter your existing password/token;
-JupyHop does not retrieve or cache credentials. Keep the command running.
+Opening existing servers does not retrieve their credentials. Keep the command running.
 Ctrl-C closes its tunnel, leaving the remote server alone. Multiple candidates
 require a terminal selection or an exact ID from `discover`; scripting never
 chooses arbitrarily. No JupyHop TOML configuration is required.
 
-The following managed-session commands are **future workflows**:
+To launch a new owned server, select an existing remote Jupyter Python and
+directory. The remote host needs `tmux` on its noninteractive SSH PATH:
 
 ```console
-
-# Start a JupyHop-managed server in a remote Python environment and directory
-jupyhop start workstation --env research --workdir '~/projects/analysis' --name analysis
-
-# Reconnect or inspect a particular managed session
-jupyhop open workstation analysis
-jupyhop status workstation analysis
-
-# Stop only a JupyHop-managed session
-jupyhop stop workstation analysis
+jupyhop start workstation --server-python /absolute/remote/env/bin/python --workdir '~/projects/analysis' --name analysis
+jupyhop start workstation --name analysis-batch --no-open --json
+jupyhop open workstation SESSION_ID
 ```
 
-**Managed commands are illustrative and subject to change.** M2's `stop` guard
-refuses all lifecycle control without sending SSH commands. Discovered servers
-are never silently adopted, stopped or restarted.
+`start` prompts privately for a new Jupyter session password. It crosses encrypted
+SSH stdin; only an Argon2 password hash is retained in a private remote Jupyter
+settings file. No password/token enters argv, ordinary JSON or diagnostics. Use
+a strong session password rather than your SSH password. Scripts may supply one
+line from a protected credential source with `--password-stdin`; no `--password`
+argument exists. `--no-open` returns verified launch information without creating
+a local tunnel; otherwise the same attached browser/no-browser flow is used.
+
+`discover`/`list` label verified owned servers as `managed` and preserve a stable
+session ID. `open` accepts that exact ID. Named environment profiles, managed
+`status`/`stop`, cleanup, and full kernel-continuity guarantees remain future work.
+The `stop` guard refuses all lifecycle control without sending SSH commands.
+Use Jupyter's own authenticated shutdown action for a newly launched server until
+M4. Discovered servers are never silently adopted, stopped or restarted.
 
 A host such as `workstation` would be an existing alias in the user's `~/.ssh/config`; SSH can connect directly or via a jump host using `ProxyJump`.
 
 ## Use cases and scenarios
 
-Existing-server discovery/open and SSH diagnostics ship in M2. Managed launch,
-persistent lifecycle guarantees and broader platform/network support below are
+Existing-server access, diagnostics and managed launch/readiness ship in M3.
+Persistent lifecycle guarantees and broader platform/network support below are
 intended workflows; their acceptance gates remain in the roadmap.
 
 ### 1. Open a Jupyter server that is already running
@@ -75,13 +80,15 @@ From a laptop, create a server on a remote workstation with `jupyhop start works
 
 ### 3. Choose the remote Python environment and working directory
 
-Launch Jupyter with a selected environment profile and a project directory on the **remote** host:
+Launch Jupyter with an explicit existing Python and project directory on the **remote** host:
 
 ```console
-jupyhop start workstation --env research --workdir '~/projects/analysis'
+jupyhop start workstation --server-python /absolute/remote/env/bin/python --workdir '~/projects/analysis'
 ```
 
-The selected environment must exist on the remote machine; the Jupyter server's environment and available notebook kernels are distinct concepts.
+The environment must already exist; it is not installed or activated by JupyHop.
+Named `--env` profiles remain planned for M5. Server and kernel environments are
+distinct concepts; JupyHop checks that kernel specifications are available.
 
 ### 4. Continue work from another computer
 
@@ -166,15 +173,16 @@ that interpreter; the server may run in a different Conda environment.
 
 | Capability | JupyHop-managed server | Existing/discovered server |
 | --- | --- | --- |
-| Discover and list | Planned | Implemented, partial coverage |
-| Open through SSH | Planned | Implemented for verified IPv4 loopback / HTTP servers |
-| Start with chosen environment/workdir | Planned | Started outside JupyHop |
-| Reconnect to a still-running server | Planned lifecycle guarantees | Fresh tunnel and normal login; full kernel continuity gate remains M4 |
-| Stop through JupyHop | Planned | **Not allowed in MVP** |
+| Discover and list | Implemented with verified ownership | Implemented, partial coverage |
+| Open through SSH | Implemented | Implemented for verified IPv4 loopback / HTTP servers |
+| Start with chosen Python/workdir | Implemented, private tmux launcher | Started outside JupyHop |
+| Reconnect to a still-running server | Fresh tunnel/login; full lifecycle gate M4 | Fresh tunnel/login; full kernel continuity gate M4 |
+| Stop through JupyHop | Planned for M4; currently refused | **Not allowed in MVP** |
 | Preserve kernel state after remote reboot | **Not possible by default** | **Not possible by default** |
 
-M2 manages **the route to a server**. Managing remote processes and a session
-registry is future work. JupyHop does not replace Jupyter's kernel manager or
+M3 manages **the route**, creates owned servers and records their launch identity
+in private remote state. Full reconciliation and stop are future work.
+JupyHop does not replace Jupyter's kernel manager or
 make kernels persistent across crashes and reboots.
 
 ## Design principles
@@ -202,11 +210,13 @@ Local client
                                                +-- managed session metadata
 ```
 
-M2 reads supported runtime metadata, verifies current-account process/socket
-ownership and HTTP/authentication behavior, creates an owned loopback forward,
-then opens Jupyter's normal login page. Read-only probes travel through SSH
-stdin; no remote JupyHop installation is needed. A lifecycle helper may be needed
-in M3/M4. No central daemon is required.
+M2/M3 read supported runtime metadata, verify current-account process/socket
+ownership and HTTP/authentication behavior, create an owned loopback forward,
+then open Jupyter's normal login page. Read-only probes travel through SSH
+stdin; no remote JupyHop package installation is needed. Managed start writes
+an immutable versioned runner and private state for its new session, then uses
+a dedicated tmux socket. Client upgrades do not rewrite running launchers or
+scientific environments. No central daemon is required.
 
 See the [architecture](devguide/02-architecture.md), [session and authentication contracts](devguide/09-session-lifecycle-and-auth.md), and [remote runtime design](devguide/10-remote-runtime-and-protocol.md).
 
@@ -309,14 +319,38 @@ to the printed URL on this client. There is no detached tunnel daemon or shared
 connection reuse. The original launcher remains responsible for server/kernel
 persistence. See [the M2 contract](devguide/16-m2-existing-servers.md).
 
+Managed launching requires an existing Python >=3.11 with Jupyter Server 2,
+available kernels, `tmux` and a readable stable Linux machine ID. JupyterLab is
+enabled when installed; otherwise the server provides its normal server/API
+view. `--server-python` selects the server environment; `--remote-python` selects
+the helper and is the server default if no separate path is supplied. Neither
+path depends on shell activation. Relative workdirs resolve against remote HOME;
+`~` means the remote account, and workdir symlinks are canonicalized.
+
+State lives under `$XDG_STATE_HOME/jupyhop/hosts/<host-account-scope>/sessions/ID`
+(default `~/.local/state`). Host scope hashes the Linux machine ID and account
+UID so shared HOME directories do not merge different hosts. State directories
+are private 0700; files are 0600. Registry schema 1.0 and wire protocol 1.2 are
+separate; incompatible state is refused without automatic migration. No existing
+Jupyter configuration, scientific environment or SSH config is rewritten.
+
+Failed or interrupted starts may leave a running server and a recoverable launch
+record. Note the request ID and run `discover` before retrying. Names stay reserved
+until future reconciliation/cleanup. Do not infer server death from a timeout.
+Private tmux detachment is verified for the tested SSH context; last-logout/linger
+policy, host reboot and complete cross-client kernel continuity remain M4 gates.
+See [the M3 contract and evidence](devguide/17-m3-managed-launch.md).
+
 Exit codes: 0 checks passed; 2 invalid input; 3 SSH/access/timeout failure;
 4 missing remote prerequisites or failed Python probe; 5 invalid/incompatible
 probe output; 6 no verified candidate (partial search); 7 ambiguous/invalid
-selection; 8 forwarding failure; 11 unmanaged lifecycle refusal; 130 interrupted.
+selection; 8 forwarding failure; 11 lifecycle refusal; 12 unconfirmed/failed
+managed launch; 130 interrupted. Managed-start transport failure also uses 12
+because the remote write/process outcome may be unknown.
 `--json` emits nonsecret structured results;
 errors go to stderr. Transport errors leave remote session state unknown.
 
-`start` and managed `status`/`stop` remain future work. Other client/remote
+Managed `status`/`stop` remain future work. Other client/remote
 operating systems and non-POSIX remote login shells are untested.
 
 ## Contributing
@@ -335,13 +369,14 @@ mypy
 python -m build --no-isolation
 python -m experiments.package_smoke
 python -m experiments.browser_smoke  # optional Chrome + JupyterLab acceptance
+python -m experiments.browser_smoke --managed
 ```
 
 Integration requires a non-root Unix user, OpenSSH server/client, an existing
-`/run/sshd`, permission to bind loopback sockets, and Jupyter Server in the
-test interpreter. It creates temporary keys/configuration and never uses your
+`/run/sshd`, permission to bind loopback sockets, tmux, and Jupyter Server/kernels
+in the test interpreter. It creates temporary keys/configuration and never uses your
 SSH hosts; their HOME/runtime are isolated too. See
-[test evidence and limits](devguide/16-m2-existing-servers.md).
+[test evidence and limits](devguide/17-m3-managed-launch.md).
 Suggestions and research-computing use cases remain welcome.
 
 Developed by the [Computational Biology and Drug Design Research Unit (UIBCDF)](https://www.uibcdf.org/).

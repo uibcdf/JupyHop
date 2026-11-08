@@ -31,6 +31,12 @@ verified IPv4 loopback forwarding. Read the
 The following requirements govern future automation; see the
 [M0 threat/tradeoff evaluation](13-m0-validation.md).
 
+M3's [reviewed new-session policy](17-m3-managed-launch.md) uses a separately
+chosen password over encrypted stdin and a native Argon2 hash in private remote
+settings (0600 under 0700 directories). No plaintext password cache or token
+handoff is introduced. Registry provenance and compatible schema are verified
+before managed state is trusted or written; CLI stop remains refused until M4.
+
 Opening an existing server from a second client requires a legitimate way to authenticate without leaking a token. It must support a fall back to interactive login for servers whose credentials cannot be safely retrieved. Jupyter-auth URLs must not appear in shell history, diagnostics, JSON results or general logs; the browser flow has its own exposure considerations. Evaluate Jupyter Server's supported runtime/API behavior and restrictive remote-only token access before selecting a design. Do not claim this is solved simply by forwarding the port.
 
 ## Separate lifetimes

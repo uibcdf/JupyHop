@@ -2,6 +2,9 @@
 
 **Status:** proposed specification. Decisions requiring prototypes are marked *open*.
 
+M3 implements only the [initial launch/state/auth slice](17-m3-managed-launch.md).
+The full persistent lifecycle and stop/reconciliation states below remain M4.
+
 ## Vocabulary
 
 - **Client:** machine invoking JupyHop.
@@ -58,6 +61,11 @@ M0 selected the normal token-free Jupyter login page as the baseline; protected
 automatic browser handoff remains an M2 experiment. See the
 [recorded alternatives and risks](13-m0-validation.md). No new credential cache
 is approved or implemented by M1.
+
+For new managed servers M3 selects a prompted password sent through encrypted
+stdin and stored only as a native Argon2 hash in private remote settings. This
+permits normal login from another authorized client without restoring old local
+state. Read the threat/tradeoff review in [17](17-m3-managed-launch.md).
 
 A remote Jupyter instance may authenticate through a generated token, configured token, password, or an extension. Tunnel establishment proves SSH authentication but **does not** remove Jupyter authentication.
 

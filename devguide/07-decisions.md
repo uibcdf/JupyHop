@@ -62,25 +62,38 @@ stdin policy D13 is now demonstrated with a stdlib-only helper interpreter and
 a Jupyter server in another environment. Lifecycle helper/process manager/state
 questions remain M3/M4 decisions, not resolved by M2 discoverability.
 
+## M3 decisions (2026-11-08)
+
+The [M3 report](17-m3-managed-launch.md) records evidence, alternatives, security
+review and limits for the launch baseline:
+
+| ID | Decision | Rationale / consequence |
+| --- | --- | --- |
+| D24 | Dedicated private tmux socket/session for initial launch | Reuses tested user-level process separation; no global tmux/systemd/linger changes; final persistence backend remains M4 |
+| D25 | New session password via encrypted stdin, native Argon2 hash in private remote settings | Normal Jupyter login from another client without token argv/URLs or plaintext persistence |
+| D26 | Versioned per-host/account registry, UUIDs, atomic writes and flock | Shared HOME isolation, unique names, process/socket/runner provenance and recoverable launch records |
+| D27 | Immutable per-session source bootstrap; wire 1.2 separate from registry 1.0 | No remote package install, no implicit migration or replacement of running launchers |
+| D28 | Native Jupyter ephemeral port + verified readiness; uncertain starts retain evidence | No guessed port or automatic restart/cleanup; reconciliation remains M4 |
+
 ## Decisions remaining for their implementation milestones
 
 | Topic | Options / questions | Evidence needed |
 | --- | --- | --- |
-| Lifecycle helper deployment (M3/M4) | Copy/execute helper on demand vs install package on remote | M1/M2 use stdin without installation; lifecycle needs separate evidence |
-| Process manager | systemd --user, tmux fallback, or another mechanism | Linger/login behavior, portability, process identity; no automatic admin changes |
-| Remote state | XDG state directory, versioned JSON, lock strategy | Atomicity, concurrent starts, stale state |
+| Lifecycle rollout (M4) | Extend immutable per-session runners vs installed lifecycle helper | M3 requires no remote package; reconciliation/upgrade evidence still needed |
+| Persistent process manager (M4) | systemd --user, tested tmux policy, or other backend | M3 tmux launch works; final logout/linger/OS policy remains unvalidated |
+| Reconciliation/state migration (M4) | Explicit migration, stale-state handling, safe cleanup | Initial schema/atomic locking are implemented; stop/recovery remain pending |
 | Automatic browser authentication (M2) | Protected token handoff beyond selected normal-login baseline | Real browser cookie/history exposure tests |
 | Manually started server discovery | Runtime dir enumeration, supported versions, probe ownership/liveness, custom base URL | Prototype in multiple Conda environments |
-| Remote port allocation | Jupyter-assigned port vs helper-managed allocation | Race-free selection and verification |
+| Future port customization | M3 fixes native ephemeral allocation; explicit port policy is separate scope | No manual remote-port coordinator is needed for M3 |
 | Local tunnel lifetime | Foreground CLI, detached SSH, or reuse/control socket | Reliable cleanup and reconnection |
 | Environment launcher | Explicit Python path, profile command, kernel selection | Safe quoting, reproducibility, cross-env UX |
 | Minimum versions | Python, Jupyter Server, OpenSSH, Linux distros | Dependency testing and CI |
-| Session identity | Stable random ID, display name, host association | Collision and cross-client behavior |
+| Full session identity reconciliation | M3 UUID/host-account scope/provenance exist; recovery needs stronger lifecycle evidence | Cross-client continuity, stop and name reuse remain M4 |
 | Workdir / launch profiles | Explicit remote working directory, environment Python path and safe quoting | Conda/venv and Unicode-path tests |
 | Multi-client forward | Foreground/background tunnel tracking and cleanup | Port collisions, process ownership, WebSocket tests |
 | Reboot behavior | Mark stale vs optional user-requested restart | Predictability and policy |
 | Runtime/helper rollout | No-install discovery vs minimal helper vs on-demand helper | Security, remote Python requirements, updates, installation UX |
-| Wire compatibility | Version negotiation and state schema migrations | Cross-client upgrade and concurrent execution tests |
+| Lifecycle compatibility/migrations | M3 wire 1.2/schema 1.0 are fixed; incompatible writes fail | State migrations and installed lifecycle upgrades remain M4/M6 |
 | URL variants | IPv6/HTTP/HTTPS, base paths and TLS hostname mismatch | Live Jupyter and browser/WebSocket tests |
 | Discovery coverage | Multiple Jupyter runtime dirs, deduplication and explicit paths | Multi-Conda environment prototypes |
 | Browser/tunnel contract | Attached vs supervised background forward, repeat open, close behavior | UX and recovery tests |
