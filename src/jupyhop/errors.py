@@ -31,3 +31,7 @@ class TunnelError(JupyHopError):
 
 class OwnershipError(JupyHopError):
     exit_code = 11
+
+
+class LaunchError(JupyHopError):
+    exit_code = 12

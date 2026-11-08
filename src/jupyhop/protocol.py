@@ -113,7 +113,7 @@ def parse_doctor(raw: bytes) -> dict[str, Any]:
         ) from None
 
 
-DISCOVERY_STATES = {"ready", "stale", "unsupported", "unreachable"}
+DISCOVERY_STATES = {"ready", "stale", "unsupported", "unreachable", "starting", "failed"}
 DISCOVERY_REASONS = {
     "verified",
     "invalid_metadata",
@@ -124,6 +124,10 @@ DISCOVERY_REASONS = {
     "endpoint_unavailable",
     "unsupported_jupyter_or_auth",
     "process_or_file_gone",
+    "managed_starting",
+    "managed_failed",
+    "managed_stale",
+    "managed_unreachable",
 }
 
 
@@ -150,24 +154,45 @@ def parse_discovery(raw: bytes) -> dict[str, Any]:
         scope = _text(identity["scope"])
         if re.fullmatch(r"[0-9a-f]{24}", scope) is None or data["complete"] is not False:
             raise ValueError
-        if not isinstance(data["paths"], list) or len(data["paths"]) > 17:
+        if not isinstance(data["paths"], list) or len(data["paths"]) > 145:
             raise ValueError
         paths = []
         for entry in data["paths"]:
             path = _text(entry["path"])
             if len(path) > 1024 or not path.startswith("/"):
                 raise ValueError
-            if entry["source"] not in {"jupyter-core", "linux-default", "explicit"} or entry[
-                "status"
-            ] not in {"ok", "missing", "unsafe", "limited"}:
+            if entry["source"] not in {
+                "jupyter-core",
+                "linux-default",
+                "explicit",
+                "managed",
+            } or entry["status"] not in {"ok", "missing", "unsafe", "limited"}:
                 raise ValueError
             paths.append({"path": path, "source": entry["source"], "status": entry["status"]})
-        if not isinstance(data["servers"], list) or len(data["servers"]) > 64:
+        if not isinstance(data["servers"], list) or len(data["servers"]) > 192:
             raise ValueError
         servers = []
         for entry in data["servers"]:
             identifier = _text(entry["id"])
-            if re.fullmatch(r"[0-9a-f]{24}", identifier) is None or entry["origin"] != "unmanaged":
+            origin = entry["origin"]
+            if (
+                origin not in ("managed", "unmanaged")
+                or re.fullmatch(
+                    r"[0-9a-f]{32}" if origin == "managed" else r"[0-9a-f]{24}", identifier
+                )
+                is None
+            ):
+                raise ValueError
+            observed = entry.get("observed_id", identifier if origin == "unmanaged" else None)
+            if observed is not None and (
+                not isinstance(observed, str) or re.fullmatch(r"[0-9a-f]{24}", observed) is None
+            ):
+                raise ValueError
+            name = entry.get("name")
+            if origin == "managed" and (
+                not isinstance(name, str)
+                or re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_.-]{0,63}", name) is None
+            ):
                 raise ValueError
             if entry["state"] not in DISCOVERY_STATES or entry["reason"] not in DISCOVERY_REASONS:
                 raise ValueError
@@ -183,7 +208,7 @@ def parse_discovery(raw: bytes) -> dict[str, Any]:
             sources = entry["sources"]
             if (
                 not isinstance(sources, list)
-                or not 1 <= len(sources) <= 17
+                or not 1 <= len(sources) <= 145
                 or any(
                     not isinstance(path, str) or path not in {p["path"] for p in paths}
                     for path in sources
@@ -203,12 +228,15 @@ def parse_discovery(raw: bytes) -> dict[str, Any]:
                 or base is None
                 or server_version is None
                 or entry["reason"] != "verified"
+                or observed is None
             ):
                 raise ValueError
             servers.append(
                 {
                     "id": identifier,
-                    "origin": "unmanaged",
+                    "origin": origin,
+                    "observed_id": observed,
+                    "name": name if origin == "managed" else None,
                     "state": entry["state"],
                     "reason": entry["reason"],
                     "pid": pid,
@@ -224,7 +252,14 @@ def parse_discovery(raw: bytes) -> dict[str, Any]:
             not isinstance(issues, list)
             or len(issues) > 32
             or any(
-                issue not in ("entry_limit", "time_limit", "output_limit", "probe_failed")
+                issue
+                not in (
+                    "entry_limit",
+                    "time_limit",
+                    "output_limit",
+                    "probe_failed",
+                    "managed_state_unavailable",
+                )
                 for issue in issues
             )
         ):

@@ -283,6 +283,8 @@ def _candidate(directory: int, name: str, path: str, scope: str) -> dict[str, An
                 "address": "127.0.0.1",
                 "base_url": base,
                 "version": version,
+                "_process_start": started,
+                "_socket_inode": inode,
             }
         )
     except (FileNotFoundError, ProcessLookupError):
@@ -332,7 +334,12 @@ def discover(request: dict[str, Any], report: dict[str, Any]) -> None:
         "user": pwd.getpwuid(os.getuid()).pw_name,
         "scope": scope,
     }
-    for path, source in _paths(request["runtime_dirs"]):
+    records, managed_issues = (
+        globals()["managed_context"]() if "managed_context" in globals() else ([], [])
+    )
+    report["issues"].extend(managed_issues)
+    paths = _paths(request["runtime_dirs"]) + [(r["runtime"], "managed") for r in records]
+    for path, source in list(dict.fromkeys(paths)):
         entry = {"path": path, "source": source, "status": "unsafe"}
         report["paths"].append(entry)
         if not os.path.isabs(path) or len(path) > 1024 or ".." in PurePosixPath(path).parts:
@@ -353,9 +360,16 @@ def discover(request: dict[str, Any], report: dict[str, Any]) -> None:
                         report["issues"].append("entry_limit")
                         break
                     if _FILE.fullmatch(item.name):
-                        report["servers"].append(_candidate(directory, item.name, path, scope))
+                        candidate = _candidate(directory, item.name, path, scope)
+                        if "mark_managed" in globals():
+                            candidate = globals()["mark_managed"](candidate, records)
+                        report["servers"].append(candidate)
         finally:
             os.close(directory)
+    if records:
+        report["servers"].extend(
+            globals()["missing_managed"](records, {s["id"] for s in report["servers"]})
+        )
 
 
 def main() -> None:
@@ -380,7 +394,7 @@ def main() -> None:
     if report["identity"] is None:
         print("Discovery needs Linux /proc and Python >=3.11.", file=sys.stderr)
         sys.exit(4)
-    envelope = {"protocol": {"major": 1, "minor": 1}, "operation": "discover", "data": report}
+    envelope = {"protocol": {"major": 1, "minor": 2}, "operation": "discover", "data": report}
     while len(json.dumps(envelope).encode()) > 60 * 1024:
         if report["servers"]:
             report["servers"].pop()
