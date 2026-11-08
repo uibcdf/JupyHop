@@ -1,7 +1,7 @@
 # 06 — Development roadmap
 
-**Status:** M0–M4 complete; M5 acceptance verified, operator fixture cleanup
-pending; M6 onward planned. Dependency-ordered milestones,
+**Status:** M0–M5 complete, including operator fixture cleanup; M6 onward
+planned. Dependency-ordered milestones,
 **not** a release timeline. Each milestone has an independently demonstrable
 vertical slice; security is a gate at every stage. Never advertise proposed CLI
 syntax as implemented.
@@ -67,7 +67,8 @@ Stop here for review before M5.
 
 **Acceptance verified 2026-11-08:** [profiles, two-target kernels, archive, real
 Unix accounts, tests and limits](19-m5-scientific-workflows.md). Operator cleanup
-of the explicitly provisioned account fixture is pending. Stop before M6.
+of the explicitly provisioned account fixture is confirmed and verified.
+Stop before M6.
 
 **Outputs:** remote environment profiles (Conda/venv/system Python), validated `--workdir`, multi-host listing and selection, multiple simultaneous independent local forwards, clearer error and headless/JSON UX, testing across LAN/direct and external/ProxyJump routes, account isolation.
 

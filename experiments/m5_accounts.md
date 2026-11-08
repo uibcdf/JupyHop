@@ -43,4 +43,7 @@ provisioning was performed explicitly by the operator, and the real-account
 acceptance passed. Run `experiments.m5_account_acceptance --root PATH_FROM_PREPARE
 --server-python ABSOLUTE_SHARED_PYTHON` as the ordinary user for that check;
 the chosen Jupyter environment must be readable/executable by both accounts.
-Operator cleanup still requires sudo and remains explicit.
+Operator cleanup requires sudo and remains explicit. For the recorded M5 run,
+the operator completed cleanup; absence of both users/groups, their processes,
+the private listener and privileged state was verified. The remaining temporary
+keys/configuration and dedicated shared server environment were also removed.

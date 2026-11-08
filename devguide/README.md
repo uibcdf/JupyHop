@@ -2,8 +2,8 @@
 
 > **Status: M0–M5 implemented.** SSH diagnostics, existing-server access, managed
 > lifecycle/reconnection, profiles, multi-host inventory and archive ship.
-> Real Unix account isolation is verified; see M5 for operator cleanup status. OS logout policy,
-> physical reboot and wider M5/M6 compatibility are bounded in the reports.
+> Real Unix account isolation and test-fixture cleanup are verified. OS logout
+> policy, physical reboot and wider compatibility are bounded in the reports.
 > See the milestone reports below for exact acceptance evidence and limits.
 
 JupyHop is a lightweight, SSH-native tool to launch, discover, manage, and reconnect to remote Jupyter sessions without deploying JupyterHub.

@@ -1,6 +1,6 @@
 # 19 — M5: scientific, multi-host and account workflows
 
-Date: 2026-11-08. **Product acceptance verified; operator fixture cleanup pending.**
+Date: 2026-11-08. **M5 complete; product acceptance and fixture cleanup verified.**
 M6 has not started. This report records work, experiments, decisions, changed
 files, tests, acceptance, limits and the next milestone.
 
@@ -201,7 +201,7 @@ M5's bounded software acceptance is demonstrated: selected existing Python and
 project directory, two destinations/forwards/kernels operating simultaneously,
 reconnection without manual ports, per-route failures without unsafe relays,
 and isolation between two actual Unix accounts. All code/test acceptance gates
-pass. Operator account-fixture cleanup remains pending confirmation. Stop before M6.
+pass. Operator account-fixture cleanup is confirmed and verified. Stop before M6.
 
 Physical LAN/WAN moves, laptop suspend, host reboot/PAM last-logout policy,
 hours-long scientific loads and additional platforms remain unmeasured. The two
@@ -230,12 +230,14 @@ python -m experiments.m5_account_acceptance --root PATH_FROM_PREPARE --server-py
 sudo /usr/bin/python3 -m experiments.m5_accounts cleanup --root PATH_FROM_PREPARE
 ```
 
-The operator has provisioned the accounts and check/acceptance passed. All test
-sessions were stopped/archived. The privileged cleanup step still awaits operator
-confirmation; no cleanup success is claimed yet. It removes only the generated
-accounts/homes/groups and pinned private sshd, and prints the ordinary-user
-command for deleting remaining temporary client keys. This is test infrastructure,
-not a feature or privilege requirement of the installed product.
+The operator provisioned the accounts and check/acceptance passed. All test
+sessions were stopped/archived. The operator then ran privileged cleanup and
+confirmed its success. Independent checks verified that both generated users
+and groups, their processes, the private loopback listener and privileged fixture
+state were absent. Remaining temporary client keys/configuration and the dedicated
+shared server environment were removed. Temporary compatibility environments were
+also removed; the development 3.14 environment is preserved. This is test
+infrastructure, not a feature or privilege requirement of the installed product.
 
 ## Next recommended milestone
 
