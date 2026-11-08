@@ -12,6 +12,7 @@ from jupyhop import __version__
 from jupyhop.discovery import discover, select_server
 from jupyhop.doctor import diagnose
 from jupyhop.errors import JupyHopError, OwnershipError
+from jupyhop.managed import new_id, password_input, require_ready, start
 from jupyhop.opening import open_connection
 from jupyhop.ssh import SSHTransport
 
@@ -54,6 +55,37 @@ def _parser() -> argparse.ArgumentParser:
                 action="store_true",
                 help="Print a token-free login URL and keep the tunnel attached.",
             )
+    launch = commands.add_parser(
+        "start", help="Launch a password-authenticated owned Jupyter server using private tmux."
+    )
+    _connection_arguments(launch, multiple=False)
+    launch.add_argument(
+        "--server-python",
+        help="Absolute remote Jupyter Python executable; defaults to --remote-python.",
+    )
+    launch.add_argument(
+        "--workdir",
+        default="~",
+        help="Remote working directory; relative paths resolve against remote home.",
+    )
+    launch.add_argument(
+        "--name", help="Unique managed session display name (1–64 simple characters)."
+    )
+    launch.add_argument(
+        "--password-stdin",
+        action="store_true",
+        help="Read one password line from a protected stdin source instead of prompting. Never supply passwords in argv.",
+    )
+    launch.add_argument(
+        "--no-open",
+        action="store_true",
+        help="Return the launch result without a local tunnel/browser.",
+    )
+    launch.add_argument(
+        "--no-browser",
+        action="store_true",
+        help="Print the login URL and keep the tunnel attached.",
+    )
     stop = commands.add_parser(
         "stop",
         help="Refuse lifecycle control of discovered servers (managed stop is not implemented).",
@@ -145,7 +177,7 @@ def _open(args: argparse.Namespace, transport: SSHTransport, report: dict[str, A
                         {
                             "host": transport.host,
                             "id": server["id"],
-                            "origin": "unmanaged",
+                            "origin": server["origin"],
                             "url": url,
                             "authentication": "jupyter-login",
                             "tunnel": "attached",
@@ -181,12 +213,44 @@ def _open(args: argparse.Namespace, transport: SSHTransport, report: dict[str, A
 def main(argv: list[str] | None = None) -> int:
     parser = _parser()
     args = parser.parse_args(argv)
+    launch_id = None
     try:
         if args.command == "stop":
             raise OwnershipError(
-                "Discovered servers are unmanaged: JupyHop cannot stop, restart or adopt them. Managed lifecycle commands are not implemented. No SSH command was sent."
+                "M3 does not implement stop: unmanaged servers can never be stopped or adopted by JupyHop, and managed stop is deferred to M4. No SSH command was sent."
             )
         transport = SSHTransport(args.host, config=args.ssh_config, timeout=args.timeout)
+        if args.command == "start":
+            password = password_input(args.password_stdin)
+            launch_id = new_id()
+            print(
+                f"Starting managed session {launch_id}…",
+                file=sys.stderr,
+            )
+            report = start(
+                transport,
+                server_python=args.server_python or args.remote_python,
+                helper_python=args.remote_python,
+                workdir=args.workdir,
+                name=args.name,
+                password=password,
+                session_id=launch_id,
+            )
+            del password
+            if args.no_open or report["state"] != "ready":
+                if args.json:
+                    print(json.dumps(report, ensure_ascii=True))
+                else:
+                    print(f"{report['id']}  managed  {report['state']}")
+                require_ready(report)
+                return 0
+            require_ready(report)
+            args.session = launch_id
+            pythons = [args.remote_python]
+            args.remote_python = pythons
+            return _open(
+                args, transport, {"identity": report["identity"], "servers": [report["server"]]}
+            )
         if args.command != "doctor":
             report = discover(transport, args.remote_python, args.runtime_dir)
             _coverage(report)
@@ -197,7 +261,7 @@ def main(argv: list[str] | None = None) -> int:
             else:
                 for server in report["servers"]:
                     print(
-                        f"{server['id']}  unmanaged  {server['state']}  port={server['port']}  {server['reason']}"
+                        f"{server['id']}  {server['origin']}  {server.get('name') or ''}  {server['state']}  port={server['port']}  {server['reason']}"
                     )
             ready = any(s["state"] == "ready" for s in report["servers"])
             if not ready:
@@ -226,9 +290,11 @@ def main(argv: list[str] | None = None) -> int:
         print(f"jupyhop: {exc}", file=sys.stderr)
         return exc.exit_code
     except KeyboardInterrupt:
-        print(
-            "jupyhop: interrupted; owned tunnel closed, remote sessions were not modified.",
-            file=sys.stderr,
+        message = (
+            f"jupyhop: interrupted; session request {launch_id} may remain running. Owned tunnel closed; use discover before retrying start."
+            if launch_id
+            else "jupyhop: interrupted; owned tunnel closed, remote sessions were not modified."
         )
+        print(message, file=sys.stderr)
         return 130
     return 2

@@ -45,7 +45,9 @@ def probe(
     request = json.dumps({"runtime_dirs": paths, "budget": min(10, max(0.5, timeout - 1))})
     result = connection.run(
         [validate_python(python), "-I", "-B", "-", request],
-        stdin=files("jupyhop").joinpath("_discovery_probe.py").read_bytes(),
+        stdin=files("jupyhop").joinpath("_managed_remote.py").read_bytes()
+        + b"\n"
+        + files("jupyhop").joinpath("_discovery_probe.py").read_bytes(),
     )
     if result.returncode == 255:
         raise ssh_failure(result.stderr)

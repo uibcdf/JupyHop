@@ -47,6 +47,8 @@ class SSHLab:
             self.home.mkdir(mode=0o700)
             self.runtime = self.home / "runtime"
             self.runtime.mkdir(mode=0o700)
+            self.run = self.root / "run"
+            self.run.mkdir(mode=0o700)
             wrapper = self.root / "session.sh"
             wrapper.write_text(
                 "#!/bin/sh\n"
@@ -57,6 +59,8 @@ class SSHLab:
                         "JUPYTER_RUNTIME_DIR": self.runtime,
                         "JUPYTER_CONFIG_DIR": self.home / "config",
                         "JUPYTER_DATA_DIR": self.home / "data",
+                        "XDG_STATE_HOME": self.home / "state",
+                        "XDG_RUNTIME_DIR": self.run,
                         "PATH": str(Path(sys.executable).parent) + ":/usr/bin:/bin",
                     }.items()
                 )

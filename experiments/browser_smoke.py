@@ -5,17 +5,20 @@ a private temporary profile and loopback DevTools. No real user profile is read.
 Only synthetic fixture credentials are entered; CDP payloads are never printed.
 """
 
+import argparse
 import json
 import shutil
 import subprocess
 import time
 import uuid
+from contextlib import contextmanager
 
 import requests
 import websocket
 
 from experiments.jupyter_fixture import JupyterFixture
 from experiments.lab import SSHLab, stop
+from experiments.managed_fixture import ManagedFixture
 from jupyhop.discovery import discover, select_server
 from jupyhop.opening import open_connection
 from jupyhop.ssh import SSHTransport
@@ -55,14 +58,26 @@ class DevTools:
         raise RuntimeError("Browser readiness timed out")
 
 
+@contextmanager
+def _server(lab, managed):
+    if managed:
+        with ManagedFixture(lab, name="browser-managed") as fixture:
+            yield fixture.password
+    else:
+        with JupyterFixture(lab.root / "browser-server", runtime=lab.runtime, lab=True) as fixture:
+            yield fixture.info["token"]
+
+
 def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--managed", action="store_true", help="Exercise M3 password-authenticated managed launch."
+    )
+    args = parser.parse_args()
     binary = shutil.which("google-chrome") or shutil.which("chromium")
     if binary is None:
         raise RuntimeError("Install Chrome/Chromium for this optional browser experiment")
-    with (
-        SSHLab() as lab,
-        JupyterFixture(lab.root / "browser-server", runtime=lab.runtime, lab=True) as fixture,
-    ):
+    with SSHLab() as lab, _server(lab, args.managed) as credential:
         transport = SSHTransport("destination", config=lab.config)
         report = discover(transport)
         server = select_server(report, None, interactive=False)
@@ -111,22 +126,27 @@ def main():
                 # Credentials go in the existing login form, never a URL/argv.
                 devtools.evaluate(
                     "document.querySelector('input[name=password]').value = "
-                    + json.dumps(fixture.info["token"])
+                    + json.dumps(credential)
                     + "; document.querySelector('form').submit(); true"
                 )
                 devtools.until(
-                    "location.pathname === '/science/lab' && !!document.querySelector('.jp-LabShell')"
+                    "location.pathname === "
+                    + json.dumps(server["base_url"] + "lab")
+                    + " && !!document.querySelector('.jp-LabShell')"
                 )
                 print("PASS: Chrome login form, cookie auth and JupyterLab shell through ProxyJump")
-                kernel_id = devtools.evaluate("""(async () => {
+                kernel_id = devtools.evaluate(
+                    """(async () => {
                     const xsrf = decodeURIComponent(document.cookie.split('; ').find(c => c.startsWith('_xsrf=')).split('=').slice(1).join('='));
-                    const r = await fetch('/science/api/kernels', {method:'POST', headers:{'Content-Type':'application/json', 'X-XSRFToken':xsrf}, body:JSON.stringify({name:'python3'})});
+                    const r = await fetch(BASE + 'api/kernels', {method:'POST', headers:{'Content-Type':'application/json', 'X-XSRFToken':xsrf}, body:JSON.stringify({name:'python3'})});
                     if (r.status !== 201) throw Error('fixture kernel');
                     return (await r.json()).id;
-                })()""")
+                })()""".replace("BASE", json.dumps(server["base_url"]))
+                )
                 message_id = uuid.uuid4().hex
-                code = """new Promise((resolve, reject) => {
-                    const ws = new WebSocket('ws://' + location.host + '/science/api/kernels/' + KERNEL + '/channels?session_id=browser-fixture');
+                code = (
+                    """new Promise((resolve, reject) => {
+                    const ws = new WebSocket('ws://' + location.host + BASE + 'api/kernels/' + KERNEL + '/channels?session_id=browser-fixture');
                     const timer = setTimeout(() => { ws.close(); reject(Error('timeout')); }, 15000);
                     let output = '';
                     ws.onopen = () => ws.send(JSON.stringify({header:{msg_id:MESSAGE,msg_type:'execute_request',username:'fixture',session:'browser-fixture',date:new Date().toISOString(),version:'5.3'},parent_header:{},metadata:{},channel:'shell',content:{code:'print(6 * 7)',silent:false,store_history:false,user_expressions:{},allow_stdin:false,stop_on_error:true}}));
@@ -135,8 +155,9 @@ def main():
                         if(m.msg_type === 'status' && m.content.execution_state === 'idle') { clearTimeout(timer); ws.close(); resolve(output.trim()); }
                     };
                     ws.onerror = () => { clearTimeout(timer); reject(Error('websocket')); };
-                })""".replace("KERNEL", json.dumps(kernel_id)).replace(
-                    "MESSAGE", json.dumps(message_id)
+                })""".replace("KERNEL", json.dumps(kernel_id))
+                    .replace("MESSAGE", json.dumps(message_id))
+                    .replace("BASE", json.dumps(server["base_url"]))
                 )
                 if devtools.evaluate(code) != "42":
                     raise RuntimeError("Browser WebSocket kernel result differs")

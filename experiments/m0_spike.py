@@ -123,13 +123,14 @@ c.ServerApp.log_level = 'CRITICAL'
         lab.ssh("direct", ["tmux", "-S", str(sock), "kill-server"])
 
 
-def execute(base, token, kernel_id, code):
+def execute(base, token, kernel_id, code, *, cookie=None):
     url = (
         base.replace("http:", "ws:") + f"api/kernels/{kernel_id}/channels?session_id={uuid.uuid4()}"
     )
     ws = websocket.create_connection(
         url,
-        header=[f"Authorization: token {token}"],
+        header=[f"Authorization: token {token}"] if token else [],
+        cookie=cookie,
         origin=base.rstrip("/"),
         timeout=15,
     )

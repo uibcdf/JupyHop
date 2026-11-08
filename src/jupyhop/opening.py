@@ -31,7 +31,12 @@ def open_connection(
                 raise DiscoveryError(
                     "The forwarding connection resolved to a different remote account/host. No browser was opened."
                 )
-            if any(s["id"] == server["id"] and s["state"] == "ready" for s in data["servers"]):
+            if any(
+                s["id"] == server["id"]
+                and s["state"] == "ready"
+                and s.get("observed_id", s["id"]) == server.get("observed_id", server["id"])
+                for s in data["servers"]
+            ):
                 found = True
                 break
         if not found:
