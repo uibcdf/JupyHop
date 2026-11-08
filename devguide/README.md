@@ -13,6 +13,8 @@ JupyHop is a lightweight, SSH-native tool to launch, discover, manage, and recon
 5. [Testing and quality](05-testing-and-quality.md) — tests, CI and release requirements
 6. [Roadmap](06-roadmap.md) — sequential milestones and acceptance criteria
 7. [Decisions](07-decisions.md) — agreed constraints and unresolved questions
+8. [Scenario catalogue](08-scenarios-and-acceptance.md) — real network, user and failure cases with acceptance gates
+9. [Session lifecycle and authentication](09-session-lifecycle-and-auth.md) — independent lifetimes, discovery, reconnection and process-manager choices
 
 ## Product promise
 
@@ -30,7 +32,7 @@ From an authorized computer, reconnect to your own Jupyter session running on an
 
 ## Definition of the first useful release
 
-A user can start a managed Jupyter session on a remote host, disconnect, reconnect from another authorized client, list sessions, and explicitly stop one session. Local ports are allocated as needed; remote servers remain loopback-only and authenticated.
+A user can discover and open an already-running, authorized Jupyter Server over SSH, without manual forwarding; then start a managed Jupyter session, disconnect, reconnect from another authorized client, list sessions, and explicitly stop a managed session. Discovery is best-effort and must never imply cross-user visibility or control. Local ports are allocated as needed; remote servers remain loopback-only and authenticated.
 
 JupyHop is developed by UIBCDF and is licensed under the [MIT License](../LICENSE).
 
