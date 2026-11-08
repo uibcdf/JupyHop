@@ -22,8 +22,16 @@ def main():
     if len(wheels) != 1:
         raise RuntimeError("Expected exactly one built JupyHop wheel in dist")
     with SSHLab() as lab, JupyterFixture(lab.root / "manual", runtime=lab.runtime) as fixture:
+        environment = dict(os.environ)
+        environment.pop("PYTHONPATH", None)
+        environment.pop("PYTHONHOME", None)
         venv = lab.root / "clean-client"
-        subprocess.run([sys.executable, "-m", "venv", str(venv)], check=True, capture_output=True)
+        subprocess.run(
+            [sys.executable, "-m", "venv", str(venv)],
+            check=True,
+            capture_output=True,
+            env=environment,
+        )
         python = venv / "bin" / "python"
         subprocess.run(
             [
@@ -37,10 +45,8 @@ def main():
             ],
             check=True,
             capture_output=True,
+            env=environment,
         )
-        environment = dict(os.environ)
-        environment.pop("PYTHONPATH", None)
-        environment.pop("PYTHONHOME", None)
         cli = str(venv / "bin" / "jupyhop")
         for argv in ([cli, "--help"], [cli, "--version"]):
             subprocess.run(argv, cwd=lab.root, env=environment, check=True, capture_output=True)
@@ -168,6 +174,31 @@ def main():
                 if managed_open.poll() is None:
                     os.killpg(managed_open.pid, signal.SIGKILL)
                     managed_open.communicate(timeout=5)
+            for operation, extra, expected in (
+                ("status", [], "ready"),
+                ("stop", ["--yes"], "stopped"),
+                ("stop", ["--yes"], "stopped"),
+            ):
+                result = subprocess.run(
+                    [
+                        cli,
+                        operation,
+                        "destination",
+                        launched["id"],
+                        "--ssh-config",
+                        str(lab.config),
+                        "--json",
+                    ]
+                    + extra,
+                    cwd=lab.root,
+                    env=environment,
+                    capture_output=True,
+                    check=True,
+                    timeout=30,
+                )
+                report = json.loads(result.stdout)
+                if report["error"] is not None or report["servers"][0]["state"] != expected:
+                    raise RuntimeError("Installed wheel managed lifecycle failed")
         finally:
             if managed_snapshot is not None:
                 subprocess.run(
@@ -178,7 +209,7 @@ def main():
                     timeout=5,
                 )
     print(
-        "PASS: clean wheel client without local Jupyter, existing-server access, managed start/open via ProxyJump and owned tunnel cleanup"
+        "PASS: clean wheel client without local Jupyter, existing-server access, managed start/open/status/idempotent stop via ProxyJump and owned tunnel cleanup"
     )
 
 

@@ -18,6 +18,7 @@ import websocket
 
 from experiments.jupyter_fixture import JupyterFixture
 from experiments.lab import SSHLab, stop
+from experiments.m4_reconnect import independent_client, worker_client
 from experiments.managed_fixture import ManagedFixture
 from jupyhop.discovery import discover, select_server
 from jupyhop.opening import open_connection
@@ -73,7 +74,14 @@ def main():
     parser.add_argument(
         "--managed", action="store_true", help="Exercise M3 password-authenticated managed launch."
     )
+    parser.add_argument(
+        "--reconnect",
+        action="store_true",
+        help="After closing Chrome and its tunnel, verify the same kernel from an independent client (requires --managed).",
+    )
     args = parser.parse_args()
+    if args.reconnect and not args.managed:
+        parser.error("--reconnect requires --managed")
     binary = shutil.which("google-chrome") or shutil.which("chromium")
     if binary is None:
         raise RuntimeError("Install Chrome/Chromium for this optional browser experiment")
@@ -149,7 +157,7 @@ def main():
                     const ws = new WebSocket('ws://' + location.host + BASE + 'api/kernels/' + KERNEL + '/channels?session_id=browser-fixture');
                     const timer = setTimeout(() => { ws.close(); reject(Error('timeout')); }, 15000);
                     let output = '';
-                    ws.onopen = () => ws.send(JSON.stringify({header:{msg_id:MESSAGE,msg_type:'execute_request',username:'fixture',session:'browser-fixture',date:new Date().toISOString(),version:'5.3'},parent_header:{},metadata:{},channel:'shell',content:{code:'print(6 * 7)',silent:false,store_history:false,user_expressions:{},allow_stdin:false,stop_on_error:true}}));
+                    ws.onopen = () => ws.send(JSON.stringify({header:{msg_id:MESSAGE,msg_type:'execute_request',username:'fixture',session:'browser-fixture',date:new Date().toISOString(),version:'5.3'},parent_header:{},metadata:{},channel:'shell',content:{code:'continuity_marker = 6 * 7; print(continuity_marker)',silent:false,store_history:false,user_expressions:{},allow_stdin:false,stop_on_error:true}}));
                     ws.onmessage = e => { const m=JSON.parse(e.data); if(m.parent_header.msg_id !== MESSAGE) return;
                         if(m.msg_type === 'stream') output += m.content.text;
                         if(m.msg_type === 'status' && m.content.execution_state === 'idle') { clearTimeout(timer); ws.close(); resolve(output.trim()); }
@@ -170,6 +178,14 @@ def main():
                 if devtools is not None:
                     devtools.socket.close()
                 stop(browser)
+        if args.reconnect:
+            config = independent_client(lab, "browser-second-client", jump=False)
+            recovered = worker_client(config, server["id"], credential, kernel=kernel_id)
+            assert recovered["kernel"] == kernel_id and recovered["pid"] == server["pid"]
+            assert recovered["output"] == "42"
+            print(
+                "PASS: after Chrome/tunnel exit, independent key/HOME/client reauthenticates and recovers the same live kernel memory"
+            )
     print("Browser acceptance complete; fixture server, kernel, tunnel and profile cleaned")
 
 
