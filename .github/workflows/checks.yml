@@ -15,6 +15,8 @@ jobs:
         python: ['3.11', '3.12', '3.13', '3.14']
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # The installed-client upgrade builds its trusted baseline commit.
       - uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python }}
@@ -26,6 +28,8 @@ jobs:
       - run: python -m build
       - run: python -m experiments.release_check
       - run: python -m experiments.package_smoke
+      - name: Verify installed client upgrade with a temporary 0.2.0 preview
+        run: python -m experiments.client_upgrade --preview-version 0.2.0
       - if: matrix.python == '3.14'
         uses: actions/upload-artifact@v4
         with:
