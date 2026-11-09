@@ -11,6 +11,7 @@ import signal
 import subprocess
 import tempfile
 import time
+from contextlib import ExitStack
 from dataclasses import replace
 from pathlib import Path
 from typing import Self
@@ -226,6 +227,8 @@ class ConnectionPool:
         return self.connections[raw]
 
     def close(self) -> None:
-        for connection in reversed(list(self.connections.values())):
-            connection.close()
+        connections = list(self.connections.values())
         self.connections.clear()
+        with ExitStack() as cleanup:
+            for connection in connections:
+                cleanup.callback(connection.close)
