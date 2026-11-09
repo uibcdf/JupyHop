@@ -1,8 +1,8 @@
 # 26 — Public documentation review
 
 Date: 2026-11-09.
-Status: local content, example, browser and link acceptance passed; hosted
-publication of this revision remains to be observed.
+Status: published at https://www.uibcdf.org/jupyhop/. Local content/example,
+browser/link, hosted build/deployment and independent HTTPS checks passed.
 
 ## Assessment and scope
 
@@ -110,5 +110,19 @@ documentation alongside each behavioral change. M7 features remain separate.
 
 ## Publication closeout
 
-Pending: observe this revision's hosted documentation/source checks and verify
-the new pages at the canonical HTTPS site before declaring publication complete.
+Reviewed candidate ee4d4b408e80df03e0bed931fc912f02b48c770c passes the
+[documentation workflow](https://github.com/uibcdf/jupyhop/actions/runs/42642182999):
+strict build checks all 27 pages and 1381 local references; official Pages
+artifact deployment succeeds. Independent receiving checks validate HTTPS
+normally for all 27 public pages and confirm the four new guides plus updated
+configuration, scripting and troubleshooting content.
+
+The same candidate's [source workflow](https://github.com/uibcdf/jupyhop/actions/runs/42642183001)
+passes all six jobs. Each Python 3.11–3.14 runs 310 tests; lint/types, artifacts,
+installed-client upgrades, server comparisons, browser workflows and real Unix
+account/password acceptance with fixture cleanup pass their configured gates.
+
+The subsequent documentary closeout records these observations without changing
+the deployed HTML inputs, relabeling the tested candidate, replacing Conda bytes
+or creating a release. The scoped documentation review is complete; future
+platform/site-policy claims still require their separate evidence.
