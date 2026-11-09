@@ -17,6 +17,9 @@ def test_site_driver_continuity_and_cleanup_on_confirmed_preflight_refusal(
     ssh_lab, tmp_path, missing_server_python
 ):
     evidence = tmp_path / "private-pilot.json"
+    original_runtime = {
+        path.name: path.read_bytes() for path in ssh_lab.runtime.iterdir() if path.is_file()
+    }
     with evidence.open("w") as stream:
         kwargs = {
             "ssh_config": ssh_lab.config,
@@ -34,6 +37,9 @@ def test_site_driver_continuity_and_cleanup_on_confirmed_preflight_refusal(
     )
     assert not observed["cleanup_errors"]
     assert all(not Path(root).exists() for root, _ in observed["manual"])
+    assert {
+        path.name: path.read_bytes() for path in ssh_lab.runtime.iterdir() if path.is_file()
+    } == original_runtime
     if not missing_server_python:
         first, second = observed["observations"]["first"], observed["observations"]["second"]
         assert first["kernel"] == second["kernel"] and first["session"] == second["session"]

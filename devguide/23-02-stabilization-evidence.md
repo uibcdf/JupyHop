@@ -46,6 +46,10 @@ identify institutional infrastructure.
   native OpenSSH prompt. JSON reported the correct non-root identity and system
   Python 3.14.4, with tmux and systemd user support. Missing Jupyter packages in
   that system Python are an environment selection result, not an SSH failure.
+- Operator CLI open through the same real password route authenticated and
+  completed discovery, then reported the ordinary runtime directory missing.
+  No compatible server was found in that partial search; no browser/server
+  operation on that target is claimed from that result.
 
 ## D43 — Obsolete metadata must not hide live endpoints
 
@@ -103,11 +107,9 @@ Primary references: [OpenSSH ssh](https://man.openbsd.org/ssh.1) and
 
 ## Verification and remaining gates
 
-Observed local CPython 3.14 checks before the final fixture-password additions:
-288 tests pass (220 unit, 68 integration); ruff and strict mypy pass. The isolated
-installed preview upgrade passes. Hosted CI is being extended for the upgrade
-and native Unix-password acceptance on its disposable generated accounts; a new
-hosted result is not yet claimed complete. The first
+Local CPython 3.14 observes 294 passing tests (225 unit, 69 integration), ruff and
+strict mypy. The isolated installed preview upgrade and clean-wheel smoke pass.
+The first
 [hosted run](https://github.com/uibcdf/jupyhop/actions/runs/42550984022) observes
 293 passing tests on every Python, clean-wheel acceptance and both server-version
 comparisons. Python 3.11 also passes the installed preview upgrade. The other
@@ -115,14 +117,48 @@ three jobs stop before account/password acceptance because the offline baseline
 wheel build lacks its global backend. A fresh Python 3.14 venv reproduces that
 failure; adding the declared setuptools backend alone makes the build pass.
 The dev extra now explicitly includes setuptools>=77. No runtime dependency is
-added; password-account acceptance awaits the corrected hosted run.
+added. The corrected [hosted run](https://github.com/uibcdf/jupyhop/actions/runs/42552049065)
+at ed2a80a completes all six jobs: all four Python versions, actual installed
+preview upgrades, clean wheels, both server comparisons, normal-sandbox Chrome,
+two actual Unix accounts/isolation/reconnection, native Unix SSH passwords and
+mandatory privileged fixture cleanup. Password acceptance forces password auth
+on the target and verifies direct/jump open, once-per-invocation prompts, native
+retry, cancellation, timeout, terminal restoration and headless refusal. Random
+fixture passwords stay private and are removed with the generated accounts/client
+fixture; ordinary users/services and real scientific accounts are not modified.
+
+## Site-fixture cleanup audit
+
+An OS-only midpoint audit found the owned server and its ipykernel child alive,
+without sending Jupyter HTTP/WebSocket requests. It also found four metadata JSON
+files and four native HTML redirects left by earlier completed manual fixtures:
+tmux HUP shutdown need not remove Jupyter's ordinary runtime files.
+
+The one-off cleanup selected only the recorded exclusive toy-project nonces,
+verified absent PIDs, private ownership/mode/single-link files, matching JSON
+identity and HTML loopback port/path, close creation timestamps and unchanged
+inodes before removal. Native HTML uses /pilot without the trailing slash, so the
+guard parses the URL rather than assuming a byte prefix. All eight own artifacts
+were removed; normal runtime entries returned to the original 495 plus the four
+files belonging to the still-active endurance manual fixtures. No pre-existing
+metadata was deleted or modified.
+
+The reproducible driver now places manual metadata/redirects in its exclusive
+private runtime and supplies that explicit known path during discovery. Its
+integration tests assert the original runtime file names/bytes remain unchanged
+on success and definitive preflight failure. This fixture correction adds no
+product adoption or automatic unmanaged metadata cleanup feature.
+
+An additional password-fixture case is being added to start via CLI with a piped
+new Jupyter password while native OpenSSH reads its separate password from the
+controlling terminal. That test actor, not JupyHop, types only a synthetic secret.
 
 A 7200-second real-site toy workload is in progress, with no Jupyter/tunnel
 connection to that workload during the hold. Brief unrelated read-only host/
 route diagnostics do not establish a controlled last-logout test. Completion,
 reconnection and cleanup remain pending until observed.
 
-Remaining: finish endurance and final CI, review/rebuild actual 0.2.0 artifacts
+Remaining: finish endurance and final CI after fixture changes, review/rebuild actual 0.2.0 artifacts
 and repeat installed-wheel acceptance; reconcile all current docs/contracts.
 Physical home/laptop suspend/network moves, a second physical client and actual
 last-logout/reboot policy remain unmeasured. The real password route's doctor

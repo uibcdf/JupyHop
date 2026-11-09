@@ -34,7 +34,7 @@ assert root.parent == Path('/tmp') and re.fullmatch(r'jupyhop-site-[0-9a-f]{32}'
 os.umask(0o077)
 root.mkdir(mode=0o700)
 (root / '.fixture').write_text(root.name)
-for name in ('config', 'data', 'project'):
+for name in ('config', 'data', 'project', 'runtime'):
     (root / name).mkdir(mode=0o700)
 with socket.socket() as channel:
     channel.bind(('127.0.0.1', 0))
@@ -56,8 +56,7 @@ configuration.write_text("\n".join([
 ]) + "\n")
 environment = {key: value for key, value in os.environ.items() if not key.startswith('JUPYTER_')}
 environment.update(JUPYTER_CONFIG_DIR=str(root / 'config'), JUPYTER_DATA_DIR=str(root / 'data'))
-data = os.environ.get('JUPYTER_DATA_DIR') or str(Path(os.environ.get('XDG_DATA_HOME') or Path.home() / '.local/share') / 'jupyter')
-environment['JUPYTER_RUNTIME_DIR'] = os.environ.get('JUPYTER_RUNTIME_DIR') or str(Path(data) / 'runtime')
+environment['JUPYTER_RUNTIME_DIR'] = str(root / 'runtime')
 command = 'exec ' + shlex.join([sys.executable, '-m', 'jupyter_server', '--config=' + str(configuration)])
 command += ' >' + shlex.quote(str(root / 'server.log')) + ' 2>&1'
 subprocess.run(['tmux', '-S', str(root / 'manual.sock'), 'new-session', '-d', '-s', 'pilot', command], env=environment, check=True, capture_output=True)
@@ -210,7 +209,7 @@ def run_pilot(
             )
             deadline = time.monotonic() + 50
             while True:
-                report = discover(transport, [helper_python])
+                report = discover(transport, [helper_python], runtime_dirs=[root + "/runtime"])
                 candidate = next(
                     (
                         s

@@ -69,8 +69,10 @@ an optional existing or reviewed private route config to native OpenSSH.
 The evidence file must not exist and is created 0600. It contains private host/
 resource identities, not passwords. New session passwords are generated only in
 memory and cross encrypted stdin; manual settings retain only a private hash.
-Manual fixtures use exclusive marked 0700 /tmp directories and the normal runtime
-path, even when their configuration/data directories are isolated. Cleanup refuses
+Manual fixtures use exclusive marked 0700 /tmp directories, including a private
+runtime supplied as an explicit known discovery path. Native Jupyter metadata and
+browser redirect files stay inside that owned root; normal user runtime files are
+preserved byte-for-byte. Cleanup refuses
 symlinks/unmatched markers and never signals an arbitrary PID. Managed stop/archive
 requires its exact newly generated UUID. Unknown launch/cleanup retains evidence
 and workdirs for explicit recovery; definitive preflight refusal cleans its own
