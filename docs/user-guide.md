@@ -11,4 +11,5 @@ ssh
 environments
 configuration
 recovery
+upgrading
 ```

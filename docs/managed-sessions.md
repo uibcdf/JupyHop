@@ -11,6 +11,9 @@ kernel and your desired frontend, such as JupyterLab. Version 2.21.1 is the test
 recommended server stack. tmux must be available on the remote noninteractive
 PATH, and the project directory must already exist.
 
+See [Prepare the remote host](remote-setup.md) if you need to install an
+environment or check which Python/runtime is being used.
+
 Find the interpreter path in your chosen environment on the remote computer:
 
 ```console
@@ -34,6 +37,11 @@ OpenSSH handles any SSH password/passphrase prompt. JupyHop separately prompts
 for a **new Jupyter session password** and retains only its hash in private remote
 settings. Remember that password for later clients. It must be independent of your
 SSH password. Log in normally in the browser.
+
+Passwords must contain 8–1024 characters without ASCII control characters. The private
+prompt asks for confirmation; `--password-stdin` reads one UTF-8 line from a
+protected source. [Scripting](scripting.md#start-with-a-protected-password-source)
+shows the noninteractive form. There is no Jupyter password reset command.
 
 The returned UUID is the session's stable identifier. Copy it, or find it with
 `jupyhop list workstation`. A new server and local forward receive ports
@@ -59,6 +67,10 @@ jupyhop open workstation SESSION_ID
 Use the exact UUID returned by start. `status workstation` can inspect the managed
 registry without selecting a UUID. `open` revalidates the chosen server and makes
 a fresh forward; it does not restart a healthy server or create a new kernel.
+
+An exit-0 status query means observation succeeded, not that the server is ready.
+Read the [state meanings and storage reference](sessions.md); only `ready`
+candidates can be opened. Status can reconcile an interrupted launch record.
 
 Closing the browser or pressing Ctrl-C in `open` leaves the remote server under
 its private tmux launcher. Persistence is subject to site logout/cgroup policy.
@@ -92,3 +104,7 @@ Archive requires confirmation, moves private records/settings/recovery evidence
 and releases the old display name. It does not delete notebooks, scientific
 files or possible orphaned kernels. Live or uncertain records are refused.
 There is no automatic or permanent archive deletion command.
+
+Archive releases the name and one of the registry's 128 active-record slots.
+Archived UUIDs are no longer returned by status/discovery and cannot be reopened
+or restored by an archive command. Preserve the private archive path if needed.

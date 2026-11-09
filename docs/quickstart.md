@@ -39,6 +39,10 @@ Terminal authentication has its own `--ssh-auth-timeout` (default 120 seconds);
 still act as the stdlib discovery helper for servers in Conda/venv environments;
 Jupyter does not need installing into that system Python just to open one.
 
+If none is running yet, follow [Prepare the remote host](remote-setup.md) for a
+manual example, or skip to [Start and recover an owned server](#start-and-recover-an-owned-server).
+`open` searches for an existing server; it never creates one.
+
 With your current-user Jupyter server already running remotely:
 
 ```console
@@ -114,6 +118,10 @@ explicitly authorizes it in scripts). Stop terminates that server and its kernel
 Archive requires observed inactivity and moves private records/settings/recovery
 evidence, releasing the old name. It does not delete scientific files or stop
 orphaned kernels. Neither action can control a manually launched server.
+
+The [session reference](sessions.md) explains identifiers, observed states and
+where active/archived records live. An exit-0 status query can describe a stale
+or failed session; inspect its state before trying to open it.
 
 If an SSH/start/stop request is interrupted, the remote outcome can be unknown:
 inspect `status`/`discover` before starting again. Retry an interrupted archive

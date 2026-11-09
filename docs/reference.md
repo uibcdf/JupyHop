@@ -8,6 +8,8 @@ diagnose a failed connection without guessing the state of a remote computation.
 
 cli
 scripting
+json-reference
+sessions
 compatibility
 troubleshooting
 security

@@ -50,7 +50,10 @@ Design `start` to print session ID and browser URL only when requested/appropria
   owned state; explicit archive requires observed inactivity and moves evidence.
 - `archive`: exact managed UUID plus confirmation/--yes; refuse live/unconfirmed
   identities, preserve evidence and release the active name/budget. No deletion.
-- `doctor`: diagnose SSH access, remote helper, Jupyter availability, process-manager support and network forwarding.
+- `doctor`: diagnose SSH access, one remote Python/Jupyter environment, visible
+  runtime paths and process-manager availability. It does not create a forward,
+  test Jupyter login/kernel execution, or prove persistence. Use discover/open
+  and the separate lifecycle acceptance for those observations.
 
 ## SSH host configuration
 

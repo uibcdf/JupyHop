@@ -9,6 +9,7 @@ Managed launch adds explicit ownership and lifecycle control for a new server.
 
 installation
 quickstart
+remote-setup
 existing-servers
 managed-sessions
 ```

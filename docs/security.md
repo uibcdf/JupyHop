@@ -30,6 +30,11 @@ private records/settings and possible kernel recovery files. Keep archives
 private; they may contain sensitive material. Neither operation acts on an
 unmanaged server or provides cross-user sharing.
 
+Loopback prevents public listening but is not an account-authentication boundary:
+other processes/users on the same computer may be able to reach a loopback
+listener. Keep Jupyter authentication enabled on both the remote endpoint and
+the locally forwarded route. A printed token-free URL alone is not a credential.
+
 An invocation owns its private SSH connections and explicit forwards. Unrelated
 listeners or arbitrary shared masters are not adopted. SSH agent/X11 forwarding,
 host-key bypass and automatic credential handoff are not introduced.

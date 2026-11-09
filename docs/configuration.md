@@ -35,6 +35,26 @@ final symlink or group/other write permission. Mode 0600 is recommended. An abse
 default file is optional; an explicit missing file or invalid config is an error
 before SSH access. Unknown fields and unsupported schema versions are refused.
 
+Place connection/application options after the command name, for example
+`jupyhop discover workstation --config /path/to/config.toml`. A profile requires
+`server_python`; its optional `workdir` defaults to the remote home. A host entry
+can be empty if all defaults are suitable. Profile/host names are case-sensitive.
+
+Aliases containing dots need quoted TOML keys; otherwise TOML creates nested
+tables that JupyHop refuses:
+
+```toml
+version = 1
+
+[hosts."workstation.example.org"]
+remote_python = "/opt/conda/envs/analysis/bin/python"
+```
+
+The corresponding alias must already work in OpenSSH. CLI hosts use letters,
+digits, underscores, dots and hyphens, starting with a letter, digit or underscore.
+Use an alias instead of `user@host`, a URL or an IPv6 literal; set User/HostName
+in OpenSSH config.
+
 ## Launch preferences and overrides
 
 ```console
@@ -57,6 +77,12 @@ is the remote home. Workdir choices affect new launches, not an existing server.
 The configuration allows up to 32 profiles, 16 hosts and 16 merged extra runtime
 paths. These limits bound client work; discovery remains partial.
 
+Discovery/open/list accept at most eight selected helper interpreters. Repeating
+`--remote-python` replaces the host's helper preference; it does not add the
+default `python3` automatically. Runtime paths must be absolute remote paths or
+`~/...`, without `..` components. Local shell variables and `~otheruser` are not
+remote-path expansion features.
+
 ## Inventory several routes
 
 ```console
@@ -68,6 +94,11 @@ jupyhop list
 Without aliases, `list` uses the hosts in your JupyHop TOML. It does not enumerate
 every SSH configuration entry. Results retain each route's success or error so a
 failed host does not hide a successful one.
+
+Inventory visits routes sequentially with per-operation deadlines; `--timeout`
+is not a total fleet deadline. Password authentication may prompt separately for
+each route. Duplicate aliases to the same host/account can produce separate
+route entries and an open-selection ambiguity; choose `open HOST ID` explicitly.
 
 The same remote host/account can be reached through different configured routes;
 managed UUIDs belong to its remote registry. Separate hosts or Unix accounts have

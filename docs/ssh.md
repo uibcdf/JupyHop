@@ -93,3 +93,23 @@ connection. Per-command `Match` rules cannot switch the destination between RPCs
 on that connection. Configured unrelated forwarding and arbitrary pre-existing
 shared masters are not adopted. See [Compatibility](compatibility.md) and
 [Security](security.md).
+
+## Replace a fixed LocalForward workflow
+
+You can keep the existing SSH alias, User, HostName, IdentityFile and ProxyJump
+settings. Use `jupyhop discover workstation`, then `jupyhop open workstation`
+instead of a separate `ssh -L ...` command. JupyHop allocates its own local port
+and prints its own login URL each time.
+
+Configured `LocalForward`/`RemoteForward`, `RemoteCommand` and arbitrary shared
+control sockets are not reused by JupyHop. It clears configured forwards on its
+own connection. Existing independent SSH tunnels remain under their original
+owner; JupyHop does not close them. A custom SSH port belongs in the alias's
+`Port` setting. There is no JupyHop option to attach to an arbitrary URL/port or
+adopt an existing server for stop/archive.
+
+If JupyHop runs inside an SSH shell on a gateway, its `127.0.0.1` login URL is on
+that gateway. `--no-browser` does not make it reachable from a laptop. Install
+and run JupyHop on the laptop/browser computer, using ProxyJump to reach the
+destination. SSH forwarding policy must permit the connection through every
+required hop.

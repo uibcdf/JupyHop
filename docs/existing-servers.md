@@ -19,6 +19,9 @@ The remote server must have a supported authenticated IPv4 loopback HTTP endpoin
 and private runtime metadata. See [Compatibility](compatibility.md). Its existing
 Jupyter password/token must be available through your authorized private workflow.
 
+To find the environment/runtime or launch a first manual server, follow
+[Prepare the remote host](remote-setup.md). `open` does not start a missing server.
+
 ## Discover and open
 
 On your local client:
@@ -36,7 +39,9 @@ To select explicitly, copy the exact ID shown by discovery:
 jupyhop open workstation SERVER_ID
 ```
 
-Names and PIDs are not selectors. In scripts, ambiguous selection is an error.
+Names and PIDs are not selectors. The [session reference](sessions.md) explains
+managed UUIDs and unmanaged observation IDs. In scripts or with `--json`,
+ambiguous selection is an error even when a controlling terminal is available.
 No JupyHop TOML file, remote JupyHop installation or manual forwarding-port
 selection is needed for this workflow.
 
@@ -75,7 +80,9 @@ jupyhop open workstation --remote-python /opt/conda/envs/analysis/bin/python
 Replace the example interpreter with an existing path on the remote host.
 Discovery/open accept repeated `--remote-python` and `--runtime-dir` options.
 The [environment guide](environments.md) explains interpreter selection; profiles
-can retain known paths for future invocations.
+and host preferences can retain known paths for future invocations. Profiles'
+server Python/workdir settings affect new launches; use host `remote_python` and
+`runtime_dirs` to extend later discovery.
 
 Runtime directories/files must be current-user-owned, private (0700/0600) and
 without symlinks. Discovery never removes stale metadata. Unsupported metadata,

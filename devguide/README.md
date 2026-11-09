@@ -85,3 +85,5 @@ This directory is the project's design source of truth. Update specifications an
   staging/installed qualification/promotion, Linux support and publication evidence.
 - [Public documentation](25-public-documentation.md): Sphinx/MyST guides, current CLI
   reference, browser/link acceptance and Pages artifact deployment.
+- [Documentation review](26-documentation-review.md): remote onboarding, JSON/state
+  contracts, client updates, executable examples and observed publication checks.

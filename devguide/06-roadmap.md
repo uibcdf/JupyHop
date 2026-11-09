@@ -1,7 +1,9 @@
 # 06 — Development roadmap
 
 **Status:** M0–M6 local and GitHub CI gates passed, including account-fixture
-cleanup; candidate unpublished. M7 is optional. Dependency-ordered milestones,
+cleanup. Version 0.2.0 is published on the uibcdf Conda channel and its public
+documentation is live; PyPI is unpublished. See the [distribution report](24-conda-publication.md)
+and [documentation report](25-public-documentation.md). M7 is optional. Dependency-ordered milestones,
 **not** a release timeline. Each milestone has an independently demonstrable
 vertical slice; security is a gate at every stage. Never advertise proposed CLI
 syntax as implemented.
@@ -21,8 +23,8 @@ browser, logout, reboot and lifecycle feature gates remain in their own mileston
 ## M1 — SSH foundations and diagnostics
 
 **Completed 2026-11-07:** [implementation, tests and limits](15-m1-foundations.md).
-Only source installation and read-only `doctor` ship. No M2 session command is
-implemented.
+At this milestone's completion, only source installation and read-only `doctor`
+shipped; session commands followed in M2 and later milestones.
 
 **Outputs:** initial package and command entrypoint; reuse OpenSSH host aliases and ProxyJump; safe remote command invocation; `doctor` checks for SSH, Jupyter Server, Python and relevant runtime dirs; actionable failures.
 
@@ -31,8 +33,9 @@ implemented.
 ## M2 — Discover and open an existing Jupyter server
 
 **Completed 2026-11-08:** [implementation, acceptance and limits](16-m2-existing-servers.md).
-Normal login is the authentication baseline; no credential handoff/cache or
-managed lifecycle is implemented. Stop after M2 for review before M3.
+Normal login is the authentication baseline; no credential handoff/cache ships.
+Managed lifecycle followed in M3/M4; the M2 completion checkpoint required review
+before proceeding.
 
 **Outputs:** best-effort, current-user discovery using supported Jupyter runtime information (including multiple environment paths where known); candidate verification; `discover`/`list` and `open`; dynamic loopback-only SSH forwarding; browser/no-browser UX; explicit password/login fallback; labeling of unsupported runtime directories and base URL variants.
 
@@ -85,7 +88,8 @@ locally; four-version regression/clean-wheel and actual-browser gates pass.
 The [GitHub CI follow-up](21-m6-github-ci.md) verifies all four Python versions,
 server comparisons, Chrome, two actual Unix accounts/cleanup and downloaded
 artifact/source checksums. Maintainers use direct coherent commits/pushes to main.
-No package publication or M7 extension has been performed.
+Package publication followed separately in the Conda work below; no M7 extension
+has been performed.
 
 **Outputs:** test matrix, security review, docs with actual commands, quickstart, troubleshooting, contribution instructions, package metadata and MIT license, clean install/build, CI for supported platforms, versioned state/protocol compatibility strategy, release notes.
 

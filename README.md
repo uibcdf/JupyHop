@@ -12,6 +12,9 @@ Start with the [public documentation](https://www.uibcdf.org/jupyhop/).
 Its sources include the [quickstart](docs/quickstart.md), [compatibility matrix](docs/compatibility.md)
 and [troubleshooting](docs/troubleshooting.md). Development instructions are in
 [CONTRIBUTING](CONTRIBUTING.md); vulnerability reporting is in [SECURITY](SECURITY.md).
+The guides also cover [remote preparation](docs/remote-setup.md),
+[session identities/states](docs/sessions.md), [CLI JSON](docs/json-reference.md)
+and [updating a client](docs/upgrading.md).
 The [0.2.0 operational scope](devguide/22-02-stabilization.md) and
 [acceptance evidence](devguide/23-02-stabilization-evidence.md) distinguish tested
 workflows from the remaining physical-client/site observations.
@@ -321,7 +324,19 @@ For detailed milestones, acceptance criteria, design decisions, and known constr
 ## Installation
 
 Use Linux, Python 3.11–3.14 and the OpenSSH client.
-From a checkout, in your development environment:
+For the published client:
+
+```console
+mamba create -n jupyhop -c uibcdf -c conda-forge python=3.14 jupyhop=0.2.0
+mamba activate jupyhop
+jupyhop --version
+```
+
+Conda includes OpenSSH. Follow the [quickstart](docs/quickstart.md); see
+[remote preparation](docs/remote-setup.md) for the Jupyter environment and
+[updating](docs/upgrading.md) for an existing client. Version 0.2.0 is not on PyPI.
+
+For development from a source checkout:
 
 ```console
 python -m pip install --no-deps -e .
@@ -438,6 +453,11 @@ when all failed. Discovery remains partial. Managed-start transport failure also
 because the remote write/process outcome may be unknown.
 `--json` emits nonsecret structured results;
 errors go to stderr. Transport errors leave remote session state unknown.
+An explicit ID absent from a single-host open search returns 6; hostless open
+selection failures, including zero fleet candidates, return 7. A successful
+status observation can return 0 for stale/failed/unreachable entries: inspect
+their states. The [JSON reference](docs/json-reference.md) describes each CLI
+result shape separately from the internal remote wire protocol.
 
 Automatic deletion of archived state, profile activation hooks, custom supervision
 backends, other operating systems and non-POSIX remote login shells are untested

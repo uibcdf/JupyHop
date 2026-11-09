@@ -78,3 +78,7 @@ concurrent old/new clients and unchanged remote runner/registry bytes. A client
 update does not reinstall remote environments or rewrite running launchers.
 Unknown state/protocol versions are refused; arbitrary future migrations are not
 promised. Keep [compatible clients and helpers](compatibility.md).
+
+[Update the client](upgrading.md) gives the Conda procedure and reconnection
+checks. [Session identities, states and storage](sessions.md) explains how to
+distinguish an observed stale/unreachable session from a failed SSH request.

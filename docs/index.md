@@ -21,11 +21,14 @@ Ctrl-C closes its tunnel; it does not stop the remote server.
 | You want to… | Start here |
 | --- | --- |
 | Install the Linux client and open your first server | [Quickstart](quickstart.md) |
+| Set up remote Jupyter or locate its environment/runtime | [Prepare the remote host](remote-setup.md) |
 | Open a server someone already started under your remote account | [Existing servers](existing-servers.md) |
 | Start a server with a chosen Python and project directory | [Managed sessions](managed-sessions.md) |
 | Continue the same computation from another client | [Reconnection and recovery](recovery.md) |
 | Reach a workstation through a gateway | [SSH and gateways](ssh.md) |
 | Fix an empty search or a connection error | [Troubleshooting](troubleshooting.md) |
+| Understand a UUID, session state or registry location | [Session reference](sessions.md) |
+| Update an existing local client | [Update the client](upgrading.md) |
 
 ## Existing and managed servers
 

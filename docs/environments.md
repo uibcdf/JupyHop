@@ -61,3 +61,22 @@ selects a JupyHop profile, not a Conda environment name or activation command.
 Prepare any scientific environment activation requirements outside JupyHop.
 Changing a profile affects later starts; it does not modify existing servers or
 their immutable runners.
+
+## Make another Python available as a notebook kernel
+
+Run the following **remotely**, using an existing scientific environment with
+ipykernel installed. Registering a kernelspec makes that Python selectable by
+Jupyter; it does not change the server's Python:
+
+```console
+mamba activate analysis-env
+python -m ipykernel install --user --name analysis-env --display-name 'Python (analysis-env)'
+```
+
+Choose a kernelspec name not already in use: registering the same name replaces
+that specification. Inspect available entries from the server environment with
+`python -m jupyter kernelspec list`. Then select the kernel in JupyterLab when
+creating a notebook. To continue an existing computation, reconnect to its
+original kernel/session; switching or restarting kernels loses that connection
+to its memory. The [IPython kernel guide](https://ipython.readthedocs.io/en/stable/install/kernel_install.html)
+also describes registering a kernel into a particular server environment.

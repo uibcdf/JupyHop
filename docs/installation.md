@@ -51,4 +51,7 @@ notebooks. JupyHop does not install scientific environments, run activation hook
 or install a remote JupyHop package. For managed start it writes a private runner
 and state for that new session.
 
+For commands to locate or create the remote environment, see
+[Prepare the remote host](remote-setup.md). To replace a client installation
+while retaining a live remote session, follow [Update the client](upgrading.md).
 Check [Compatibility](compatibility.md), then follow the [Quickstart](quickstart.md).
