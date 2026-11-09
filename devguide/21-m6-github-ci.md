@@ -109,6 +109,36 @@ Local validation for 0.1.0 passes: 210 unit tests, lint/format/types, version-fo
 refusal checks, wheel/sdist inspection and clean-wheel SSH lifecycle acceptance.
 The editable CLI and installed metadata both report 0.1.0.
 
+## Isolated account homes (D42)
+
+The provisioning timeout recurred on a later numeric-version run. A temporary
+two-runner diagnostic recorded native defaults and measured `/etc/skel` at
+833208 KiB (about 814 MiB). The fixture had used `useradd --create-home`, which
+copies that system skeleton into each new home; see the
+[official useradd manual](https://manpages.ubuntu.com/manpages/resolute/man8/useradd.8.html).
+The failure also occurred in a fresh diagnostic runner without the browser, so
+it was not necessary to change the browser or production transport.
+
+The fixture now calls `useradd --no-create-home` with an explicit generated home
+path, then creates an empty mode-0700 directory owned by the verified new UID/GID.
+It refuses existing home paths before account creation and never copies host
+profiles/caches. Existing directories/symlinks are never reused. Four additional
+unprivileged cases verify empty ownership/permissions, existing-path preservation
+and refusal before native account commands. The full suite is now 270 cases:
+214 unit and 56 integration. Native command deadlines remain 30 seconds.
+
+The [corrected acceptance run](https://github.com/uibcdf/jupyhop/actions/runs/42541145668)
+on `1f2fa73` passes all six jobs, including four Python suites, clean-wheel/build,
+Chrome and actual UID isolation/cleanup. Preparing both users and the private
+sshd took about 0.45 seconds, compared with an earlier 28-second successful
+preparation and the repeated 30-second useradd failures. This supports the
+skeleton-copy diagnosis without relaxing or skipping a gate.
+
+Temporary tracing was removed after diagnosis. Whole-provision strace also
+follows the long-lived fixture sshd; those exploratory jobs are diagnostic
+evidence, not passing acceptance runs. No tracing dependency is added to the
+client or the standard workflow.
+
 ## Decisions, files and limits
 
 The correction strengthens the original independent-client acceptance instead of

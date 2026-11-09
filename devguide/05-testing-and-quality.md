@@ -18,8 +18,9 @@ fixture. [M5](19-m5-scientific-workflows.md) adds profiles, two-target simultane
 kernel/reconnection tests, config isolation and nondeleting archive/name reuse.
 Two real temporary Unix accounts separately verify authentication and lifecycle
 isolation with a private loopback sshd. M5 recorded 258 cases (206 unit, 52
-integration). [M6](20-m6-beta-readiness.md) extends this to 266 cases (210 unit,
-56 integration), adding bounded atomic-replacement recovery, signal cleanup
+integration). [M6](20-m6-beta-readiness.md) initially extends this to 266 cases.
+The [hosted CI follow-up](21-m6-github-ci.md) has 270 cases (214 unit,
+56 integration), adding isolated account-home guards, bounded atomic-replacement recovery, signal cleanup
 during probes, private-input refusal, data transfer and live authentication change.
 Real-account, browser, legacy-runner and artifact experiments are additional.
 All default local config is isolated from developer preferences. Physical

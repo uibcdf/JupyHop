@@ -108,6 +108,7 @@ Experiments, internal review and release limits: [20](20-m6-beta-readiness.md).
 | D39 | Command-wide SIGTERM/SIGHUP unwind; refuse getpass echo fallback; bounded retry of atomically replaced reads | Close owned transport during any phase, preserve unknown remote-write outcome and private input; reopen retired inodes without relaxing file/UID/mode/link checks. |
 | D40 | Prepare reviewed candidate artifacts and explicit compatibility/security/release policy; publication stays separate | Stdlib artifact/version/license/entrypoint/source checks supplement clean-wheel/browser tests; no mandatory dependencies or automated upload to package registries. |
 | D41 | Package versions and release tags use only x.y.z; current candidate 0.1.0 | Explicit maintainer preference: no prefixes or suffixes. Pre-1.0 uses 0.y.z; the artifact inspector enforces the format. Wire/state contracts stay independent and building creates no tag. |
+| D42 | Disposable Unix accounts receive exclusively created empty private homes | Hosted /etc/skel measured 833208 KiB; copying it exceeded useradd's 30-second bound. Explicit no-create-home plus verified UID/GID ownership avoids host files/caches and existing paths; deadlines and rollback stay strict. |
 
 ## Decisions remaining for their implementation milestones
 

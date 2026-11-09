@@ -21,6 +21,10 @@ The fixture creates two uniquely named users/groups and private homes, generated
 SSH keys and a separate sshd listening only on loopback. It uses its own config
 and pinned host key; the normal SSH service/configuration is unchanged. The
 accounts have password authentication disabled and keys limited to loopback.
+Each generated home starts empty and private; the fixture uses explicit
+`--no-create-home` and creates only its own directories. It never copies the
+host's skeleton files, profiles or caches. Pre-existing home paths are refused
+before any account command runs.
 Root-owned state under `/run` records exact account and daemon identities.
 `/run/sshd` is created if absent for OpenSSH privilege separation.
 
@@ -36,8 +40,9 @@ identities or unrelated root state. It then prints the command for removing your
 remaining temporary client keys. Existing users, data and SSH services are outside
 its cleanup scope. Do not use the generated homes for work you intend to retain.
 
-Thirteen unprivileged tests cover preparation/privacy, path constraints, refusal
-without sudo, changed account identity/PID refusal and symlink rejection. Native
+Seventeen unprivileged tests cover preparation/privacy, path constraints, refusal
+without sudo, changed account identity/PID refusal, symlink rejection and exclusive
+empty-home creation/ownership. Native
 pidfd termination was exercised only on an owned disposable child. Actual account
 provisioning was performed explicitly by the operator, and the real-account
 acceptance passed. Run `experiments.m5_account_acceptance --root PATH_FROM_PREPARE
