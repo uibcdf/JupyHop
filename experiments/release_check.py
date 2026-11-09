@@ -93,6 +93,10 @@ def main():
             ("tests", "*.py"),
             ("experiments", "*.py"),
             ("experiments", "*.md"),
+            ("devtools", "*.yaml"),
+            ("devtools", "*.sh"),
+            (".github", "*.yml"),
+            (".github", "*.yaml"),
         ):
             required.extend(Path(root).rglob(pattern))
         for path in required:

@@ -1,0 +1,45 @@
+{% set project = load_file_data('../../pyproject.toml', from_recipe_dir=True)['project'] %}
+{% set build_number = environ.get('JUPYHOP_CONDA_BUILD_NUMBER', '0') %}
+
+package:
+  name: jupyhop
+  version: "{{ project['version'] }}"
+
+source:
+  path: ../../
+
+build:
+  number: {{ build_number }}
+  string: "py_{{ build_number }}"
+  noarch: python
+  entry_points:
+    - jupyhop = jupyhop.cli:main
+
+requirements:
+  host:
+    - python >=3.11,<3.15
+    - pip
+    - setuptools >=77
+    - wheel
+  run:
+    - python >=3.11,<3.15
+    - __linux
+    - openssh
+
+test:
+  imports:
+    - jupyhop
+  commands:
+    - python -c "import importlib.metadata as m, os, jupyhop; assert m.version('jupyhop') == jupyhop.__version__ == os.environ['PKG_VERSION']"
+    - python -c "import importlib.util; assert importlib.util.find_spec('jupyter_server') is None"
+    - jupyhop --version
+    - jupyhop --help
+    - ssh -V
+
+about:
+  home: https://github.com/uibcdf/jupyhop
+  license: MIT
+  license_file: LICENSE
+  summary: "Discover, launch and open user-owned remote Jupyter servers through OpenSSH"
+  dev_url: https://github.com/uibcdf/jupyhop
+  doc_url: https://github.com/uibcdf/jupyhop/blob/main/docs/quickstart.md

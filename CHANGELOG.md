@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.2.0 — prepared for pre-1.0 stabilization, unpublished
+## 0.2.0 — pre-1.0 stabilization
 
 - Support native terminal SSH passwords/passphrases and keys/agent through one
   invocation-owned foreground master per route. Add --batch and a bounded
@@ -18,6 +18,10 @@
   followed by the same kernel/session/PID/memory/progress and verified own cleanup.
 - Add native terminal/password, guarded site-fixture and cleanup regressions;
   CI covers Python 3.11–3.14, actual Unix passwords/accounts and browser kernels.
+- Add a Linux-constrained Conda recipe and reuse UIBCDF's exact-file build,
+  staging upload and promotion actions, with four installed-client gates.
+  [Publication evidence](devguide/24-conda-publication.md) records channel status;
+  no PyPI publication is included.
 
 Supported operation remains bounded by the [compatibility matrix](docs/compatibility.md).
 Physical home-client network moves, forced last logout/reboot, other client OSes

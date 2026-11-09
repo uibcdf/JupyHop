@@ -95,13 +95,15 @@ No package publication or M7 extension has been performed.
 
 **Operational candidate prepared:** [scope, acceptance gates and safe pilot](22-02-stabilization.md)
 and [observed evidence](23-02-stabilization-evidence.md).
-The current package is 0.2.0, unpublished. Real manual/managed sessions, a
+The current package is 0.2.0, unpublished on PyPI. Real manual/managed sessions, a
 7200-second disconnected workload, native terminal/password workflows and the
 installed-client upgrade are covered by the recorded experiments. The maintainer
 requires both native SSH passwords and keys/agent; headless/--batch requires
 noninteractive access. Candidate packaging uses the actual wheel. Physical home
 client/network moves and forced logout/reboot remain unmeasured; their limits are
 explicit and are not counted as passed observations.
+The [Conda report](24-conda-publication.md) tracks the separately authorized
+uibcdf channel workflow and observed publication status.
 
 This is stabilization of M0–M6, not a dependency on optional M7 features. Keep the
 finite acceptance matrix distinct from a claim of universal compatibility.

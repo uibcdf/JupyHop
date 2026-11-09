@@ -45,3 +45,28 @@ The standard workflow builds/tests/uploads downloadable CI artifacts but holds
 no publishing credentials. Keep signing/tokens outside this repository and
 follow the chosen registry's current secure publishing procedure when a release
 is explicitly approved.
+
+## Conda packages on uibcdf
+
+The maintainer authorized publishing the tested 0.2.0 candidate to uibcdf.
+The [Conda report](../devguide/24-conda-publication.md) records the reused UIBCDF
+actions, Linux-only noarch decision and observed publication status. This route
+does not publish PyPI, create a tag or create a GitHub Release.
+
+After the exact main commit's six source jobs pass, dispatch:
+
+```console
+gh workflow run build_and_upload_conda_packages.yaml --ref main --field candidate_sha=FULL_COMMIT_SHA --field version=0.2.0 --field build_number=0
+```
+
+Use the configured ANACONDA_UIBCDF_TOKEN repository/organization secret. The
+workflow builds/tests, inspects and stages one file, qualifies four clean installed
+Python clients, then promotes those same bytes to main and verifies visibility.
+Download and retain its receipts; independently install the exact public build
+before marking publication complete.
+
+For a failed downstream job, inspect its receipt and rerun only failed jobs to
+retain the already staged file. Do not blindly rebuild/re-upload an occupied
+coordinate. A defective artifact needs a reviewed new candidate and higher Conda
+build number; source versions remain plain x.y.z. Never move a source tag or use
+force upload. A manual credential/API fix cannot be treated as a passing run.

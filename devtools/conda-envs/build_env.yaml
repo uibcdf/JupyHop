@@ -1,0 +1,9 @@
+channels:
+  - conda-forge
+dependencies:
+  - python=3.14
+  - pip
+  - setuptools>=77
+  - wheel
+  - conda-build
+  - anaconda-client

@@ -1,10 +1,12 @@
-"""Install the built wheel in a fresh venv and diagnose a disposable SSH target.
+"""Exercise a clean installed client against a disposable SSH/Jupyter target.
 
 Run `python -m build --no-isolation` first, then
 `python -m experiments.package_smoke`. Requires ssh/sshd and loopback access.
-The new local client has no Jupyter dependency; remote Python is this interpreter.
+Alternatively use --client-prefix for an already installed Conda client. That
+client must have no local Jupyter; the remote fixture uses this interpreter.
 """
 
+import argparse
 import json
 import os
 import selectors
@@ -17,37 +19,43 @@ from experiments.jupyter_fixture import JupyterFixture
 from experiments.lab import SSHLab
 
 
-def main():
-    wheels = list(Path("dist").glob("jupyhop-*.whl"))
-    if len(wheels) != 1:
+def exercise(client_prefix=None):
+    wheels = list(Path("dist").glob("jupyhop-*.whl")) if client_prefix is None else []
+    if client_prefix is None and len(wheels) != 1:
         raise RuntimeError("Expected exactly one built JupyHop wheel in dist")
     with SSHLab() as lab, JupyterFixture(lab.root / "manual", runtime=lab.runtime) as fixture:
         environment = dict(os.environ)
         environment.pop("PYTHONPATH", None)
         environment.pop("PYTHONHOME", None)
         environment["XDG_CONFIG_HOME"] = str(lab.root / "isolated-client-config")
-        venv = lab.root / "clean-client"
-        subprocess.run(
-            [sys.executable, "-m", "venv", str(venv)],
-            check=True,
-            capture_output=True,
-            env=environment,
+        venv = (
+            lab.root / "clean-client"
+            if client_prefix is None
+            else client_prefix.resolve(strict=True)
         )
+        if client_prefix is None:
+            subprocess.run(
+                [sys.executable, "-m", "venv", str(venv)],
+                check=True,
+                capture_output=True,
+                env=environment,
+            )
         python = venv / "bin" / "python"
-        subprocess.run(
-            [
-                str(python),
-                "-m",
-                "pip",
-                "install",
-                "--no-index",
-                "--no-deps",
-                str(wheels[0].resolve()),
-            ],
-            check=True,
-            capture_output=True,
-            env=environment,
-        )
+        if client_prefix is None:
+            subprocess.run(
+                [
+                    str(python),
+                    "-m",
+                    "pip",
+                    "install",
+                    "--no-index",
+                    "--no-deps",
+                    str(wheels[0].resolve()),
+                ],
+                check=True,
+                capture_output=True,
+                env=environment,
+            )
         cli = str(venv / "bin" / "jupyhop")
         for argv in ([cli, "--help"], [cli, "--version"]):
             subprocess.run(argv, cwd=lab.root, env=environment, check=True, capture_output=True)
@@ -264,8 +272,18 @@ def main():
                     timeout=5,
                 )
     print(
-        "PASS: clean wheel without local Jupyter, profiles/fleet inventory, existing-server access, start/open/status/stop/archive via ProxyJump and owned tunnel cleanup"
+        "PASS: clean installed client without local Jupyter, profiles/fleet inventory, existing-server access, start/open/status/stop/archive via ProxyJump and owned tunnel cleanup"
     )
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--client-prefix",
+        type=Path,
+        help="Use an already installed clean client, e.g. a Conda prefix",
+    )
+    exercise(parser.parse_args().client_prefix)
 
 
 if __name__ == "__main__":

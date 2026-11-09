@@ -1,0 +1,247 @@
+name: Build and publish Conda package
+
+on:
+  workflow_dispatch:
+    inputs:
+      candidate_sha:
+        description: Full main commit SHA with successful source acceptance
+        required: true
+        type: string
+      version:
+        description: Numeric package version, for example 0.2.0
+        required: true
+        type: string
+      build_number:
+        description: New Conda build number; never overwrite an existing file
+        required: true
+        default: 0
+        type: number
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: jupyhop-conda-${{ inputs.version }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build, inspect and stage one noarch package
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    outputs:
+      filename: ${{ steps.archive.outputs.filename }}
+      sha256: ${{ steps.archive.outputs.sha256 }}
+    steps:
+      - name: Validate dispatch identity before executing candidate code
+        shell: bash
+        env:
+          CANDIDATE_SHA: ${{ inputs.candidate_sha }}
+          VERSION: ${{ inputs.version }}
+          BUILD_NUMBER: ${{ inputs.build_number }}
+        run: |
+          [[ "$CANDIDATE_SHA" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$VERSION" =~ ^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]]
+          [[ "$BUILD_NUMBER" =~ ^[0-9]+$ ]]
+          test "$GITHUB_REF" = refs/heads/main
+          test "$CANDIDATE_SHA" = "$GITHUB_SHA"
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.candidate_sha }}
+          persist-credentials: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.14'
+      - name: Require successful acceptance at the exact workflow and source commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CANDIDATE_SHA: ${{ inputs.candidate_sha }}
+          VERSION: ${{ inputs.version }}
+        run: |
+          python -m experiments.conda_release check-source --candidate-sha "$CANDIDATE_SHA" \
+            --version "$VERSION" --output "$RUNNER_TEMP/source-gates.json"
+      - name: Require the configured publication credential
+        env:
+          ANACONDA_API_TOKEN: ${{ secrets.ANACONDA_UIBCDF_TOKEN }}
+        run: |
+          if [ -z "$ANACONDA_API_TOKEN" ]; then
+            echo '::error::Configure ANACONDA_UIBCDF_TOKEN for this repository before publication.'
+            exit 1
+          fi
+      - uses: mamba-org/setup-micromamba@v3.2.1
+        with:
+          environment-name: build
+          environment-file: devtools/conda-envs/build_env.yaml
+          condarc: |
+            channels:
+              - conda-forge
+            channel_priority: strict
+      - name: Build and test without uploading
+        id: package
+        uses: uibcdf/action-build-and-upload-conda-packages@87c70b1443d5f22d738ee3ddf812bdbe0152f6c2 # v2.3.0
+        env:
+          JUPYHOP_CONDA_BUILD_NUMBER: ${{ inputs.build_number }}
+        with:
+          meta_yaml_dir: devtools/conda-build
+          upload: false
+          conda_build_args: --package-format 1
+      - name: Inspect the exact archive
+        id: archive
+        shell: bash -l {0}
+        env:
+          BUILT_PATHS: ${{ steps.package.outputs.built_paths }}
+          VERSION: ${{ inputs.version }}
+          BUILD_NUMBER: ${{ inputs.build_number }}
+        run: |
+          python -m experiments.conda_release inspect --built-paths "$BUILT_PATHS" \
+            --version "$VERSION" --build-number "$BUILD_NUMBER" \
+            --output "$RUNNER_TEMP/archive.json" --github-output "$GITHUB_OUTPUT"
+      - name: Upload only the inspected file to staging
+        id: upload
+        uses: uibcdf/action-build-and-upload-conda-packages/upload@87c70b1443d5f22d738ee3ddf812bdbe0152f6c2 # v2.3.0
+        with:
+          artifact: ${{ steps.archive.outputs.artifact }}
+          package-spec: uibcdf/jupyhop/${{ inputs.version }}/noarch/${{ steps.archive.outputs.filename }}
+          expected-sha256: ${{ steps.archive.outputs.sha256 }}
+          candidate-sha: ${{ inputs.candidate_sha }}
+          label: staging
+          token: ${{ secrets.ANACONDA_UIBCDF_TOKEN }}
+      - name: Collect the exact file and bounded build evidence
+        if: always() && steps.archive.outcome == 'success'
+        shell: bash
+        env:
+          ARCHIVE: ${{ steps.archive.outputs.artifact }}
+          UPLOAD_RECEIPT: ${{ steps.upload.outputs.receipt }}
+          PRODUCER_EVIDENCE: ${{ steps.package.outputs.evidence_path }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/conda-candidate"
+          cp "$ARCHIVE" "$RUNNER_TEMP/archive.json" "$RUNNER_TEMP/source-gates.json" "$RUNNER_TEMP/conda-candidate/"
+          for evidence in "$UPLOAD_RECEIPT" "$PRODUCER_EVIDENCE"; do
+            if [ -n "$evidence" ] && [ -f "$evidence" ]; then
+              cp "$evidence" "$RUNNER_TEMP/conda-candidate/"
+            fi
+          done
+      - name: Retain the exact file and build evidence
+        if: always() && steps.archive.outcome == 'success'
+        uses: actions/upload-artifact@v4
+        with:
+          name: jupyhop-conda-candidate
+          path: ${{ runner.temp }}/conda-candidate/
+          if-no-files-found: error
+          retention-days: 30
+
+  installed:
+    name: Installed Conda client (Python ${{ matrix.python }})
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ['3.11', '3.12', '3.13', '3.14']
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.candidate_sha }}
+          persist-credentials: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Prepare disposable remote fixtures outside the clean client
+        run: |
+          sudo apt-get update && sudo apt-get install -y openssh-server tmux
+          sudo mkdir -p /run/sshd
+          python -m pip install '.[experiments]' 'pytest>=8,<10'
+          echo "DRIVER_PYTHON=$(command -v python)" >> "$GITHUB_ENV"
+      - uses: actions/download-artifact@v4
+        with:
+          name: jupyhop-conda-candidate
+          path: ${{ runner.temp }}/conda-package
+      - name: Verify the retained file before installation
+        env:
+          ARCHIVE: ${{ runner.temp }}/conda-package/${{ needs.build.outputs.filename }}
+          DIGEST: ${{ needs.build.outputs.sha256 }}
+        run: |
+          python -c 'import hashlib, os; from pathlib import Path; assert hashlib.sha256(Path(os.environ["ARCHIVE"]).read_bytes()).hexdigest() == os.environ["DIGEST"]'
+      - uses: mamba-org/setup-micromamba@v3.2.1
+        with:
+          environment-name: client
+          create-args: >-
+            python=${{ matrix.python }}
+            jupyhop=${{ inputs.version }}=py_${{ inputs.build_number }}
+          condarc: |
+            channels:
+              - uibcdf/label/staging
+              - conda-forge
+            channel_priority: strict
+      - name: Bind installed channel metadata and OpenSSH to the tested artifact
+        shell: bash -l {0}
+        env:
+          DIGEST: ${{ needs.build.outputs.sha256 }}
+        run: |
+          python -I - <<'PY'
+          import json, os, shutil, sys
+          from pathlib import Path
+          prefix = Path(sys.prefix)
+          records = list((prefix / "conda-meta").glob("jupyhop-*.json"))
+          assert len(records) == 1
+          record = json.loads(records[0].read_text())
+          assert record["sha256"] == os.environ["DIGEST"]
+          assert record["url"].startswith("https://conda.anaconda.org/uibcdf/label/staging/noarch/")
+          assert Path(shutil.which("ssh")).resolve() == (prefix / "bin/ssh").resolve()
+          print("PASS: exact staged file, resolved dependencies and Conda OpenSSH")
+          PY
+      - name: Exercise the installed client through ProxyJump
+        shell: bash -l {0}
+        run: |
+          "$DRIVER_PYTHON" -m experiments.package_smoke --client-prefix "$CONDA_PREFIX"
+      - name: Verify native terminal authentication with Conda OpenSSH
+        if: matrix.python == '3.14'
+        shell: bash -l {0}
+        run: |
+          "$DRIVER_PYTHON" -m pytest tests/integration/test_ssh_auth.py --run-integration
+
+  publish:
+    name: Promote the tested file and verify public visibility
+    needs: [build, installed]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: mamba-org/setup-micromamba@v3.2.1
+        with:
+          environment-name: publisher
+          create-args: python=3.14 anaconda-client
+          condarc: |
+            channels:
+              - conda-forge
+            channel_priority: strict
+      - name: Add main to the same digest-verified file
+        id: promotion
+        uses: uibcdf/action-build-and-upload-conda-packages/promote@87c70b1443d5f22d738ee3ddf812bdbe0152f6c2 # v2.3.0
+        with:
+          package-spec: uibcdf/jupyhop/${{ inputs.version }}/noarch/${{ needs.build.outputs.filename }}
+          expected-sha256: ${{ needs.build.outputs.sha256 }}
+          from-label: staging
+          to-label: main
+          token: ${{ secrets.ANACONDA_UIBCDF_TOKEN }}
+      - name: Independently verify the public label, download and solver index
+        id: public
+        uses: uibcdf/molsyssuite/.github/actions/verify-public-conda@399d33a4ee0da148571cba7cfc004e3f3a2e71e7
+        with:
+          owner: uibcdf
+          package: jupyhop
+          version: ${{ inputs.version }}
+          subdir: noarch
+          filename: ${{ needs.build.outputs.filename }}
+          sha256: ${{ needs.build.outputs.sha256 }}
+      - name: Retain publication receipts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jupyhop-conda-publication
+          path: |
+            ${{ steps.promotion.outputs.receipt }}
+            ${{ steps.public.outputs.evidence-path }}
+          if-no-files-found: error
+          retention-days: 30

@@ -6,7 +6,7 @@ JupyHop is an open-source project for **discovering, opening, launching, managin
 
 It is designed for researchers, data scientists, developers, and small teams who already have SSH access to workstations or servers and want to work with their remote notebooks as easily as with local ones.
 
-> **Project status: 0.2.0 — operational pre-1.0 stabilization candidate.** Existing-server access, managed lifecycle/reconnection, native SSH passwords/keys, profiles, multi-host inventory and safe record archiving are implemented for supported Linux servers and CPython 3.11–3.14 clients. Persistence depends on remote OS policy; reboot/crash does not preserve kernel memory. The candidate is prepared locally and **not published on PyPI**. See [observed acceptance and limits](devguide/23-02-stabilization-evidence.md).
+> **Project status: 0.2.0 — operational pre-1.0 stabilization candidate.** Existing-server access, managed lifecycle/reconnection, native SSH passwords/keys, profiles, multi-host inventory and safe record archiving are implemented for supported Linux servers and CPython 3.11–3.14 clients. Persistence depends on remote OS policy; reboot/crash does not preserve kernel memory. The candidate is prepared for stabilization and **not published on PyPI**. See [observed acceptance and limits](devguide/23-02-stabilization-evidence.md).
 
 Start with the [quickstart](docs/quickstart.md), [compatibility matrix](docs/compatibility.md)
 and [troubleshooting](docs/troubleshooting.md). Development instructions are in
@@ -14,6 +14,8 @@ and [troubleshooting](docs/troubleshooting.md). Development instructions are in
 The [0.2.0 operational scope](devguide/22-02-stabilization.md) and
 [acceptance evidence](devguide/23-02-stabilization-evidence.md) distinguish tested
 workflows from the remaining physical-client/site observations.
+Conda distribution follows the shared UIBCDF build/test/staging/promotion workflow;
+see [publication evidence and installation status](devguide/24-conda-publication.md).
 
 ## The problem
 

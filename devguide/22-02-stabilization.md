@@ -3,7 +3,8 @@
 Status: operational candidate 0.2.0 prepared for pre-1.0 stabilization; see
 [observed evidence](23-02-stabilization-evidence.md). Numeric x.y.z naming follows
 the maintainer policy. This increment follows M6 and precedes optional M7 work.
-Package publication and unperformed physical-client/site cases are not claimed.
+Conda publication is tracked [separately](24-conda-publication.md); unperformed
+physical-client/site cases are not claimed.
 
 ## Objective and supported boundary
 
@@ -62,7 +63,7 @@ Detailed evidence: [M6 local report](20-m6-beta-readiness.md),
 | Endurance and route recovery | A bounded multi-hour toy workload survives disconnection; alternate configured routes do not create duplicate managed servers | 7200 seconds and final memory/progress/identity pass; direct/jump/changed-route mechanisms pass. Physical home/network/suspend transitions remain unmeasured |
 | Site persistence and failure truth | Observe configured site policy and safe disconnect behavior; process loss and changed credentials must be reported truthfully | Effective KillUserProcesses=false/Linger=no recorded without changes; real SSH closure/endurance and simulated reboot/stale/error cases pass. Forced last logout/physical reboot are not claimed |
 | Installed upgrade | Installed 0.1.0 baseline to actual 0.2.0 candidate, concurrent old/new clients, same live kernel and immutable runner/registry | Actual 0.2.0 wheel passes locally with upgraded, concurrent old and independent new clients; the candidate workflow enforces this on all four Python versions |
-| Usability and regression | Fresh-client instructions, actionable errors and CLI/JSON/exit contracts match the declared supported matrix | 294 tests per Python and six successful hosted jobs; real operator password diagnostics; fresh clients without local Jupyter |
+| Usability and regression | Fresh-client instructions, actionable errors and CLI/JSON/exit contracts match the declared supported matrix | Four-Python regression and six successful hosted jobs; real operator password diagnostics; fresh clients without local Jupyter |
 | Distribution | Matching numeric version, MIT, CLI entrypoint, no mandatory Python deps, complete safe wheel/sdist and clean installation | Local 0.2.0 artifact inspection, checksums and actual-wheel clean install/upgrade pass; publication is separate |
 
 These gates reuse the existing NET, DISC, LIFE, SCI, SEC and UX scenarios rather

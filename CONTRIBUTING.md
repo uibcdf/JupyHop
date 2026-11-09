@@ -63,6 +63,11 @@ installed-wheel upgrades and guarded real-site fixtures. See the
 password fixture runs only on its explicitly generated disposable accounts;
 ordinary product operation never creates users or requires sudo.
 
+Conda packaging reuses the UIBCDF build/upload/promote actions and the same
+installed-client smoke with --client-prefix. See [Conda acceptance](devguide/24-conda-publication.md)
+and [operator instructions](docs/releasing.md). Runtime platform constraints and
+the actual installed artifact must be checked before broadening package support.
+
 ## Changes and reports
 
 Prefer stdlib and ordinary OpenSSH over extra services or transport abstractions.

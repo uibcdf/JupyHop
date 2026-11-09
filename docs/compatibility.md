@@ -4,6 +4,10 @@ JupyHop 0.2.0 is a Linux pre-1.0 stabilization candidate. Compatibility means th
 workflows/versions observed below, not every Jupyter Server 2 deployment. The
 client needs OpenSSH and CPython 3.11–3.14; it has zero mandatory Python packages
 and needs no local Jupyter. Free-threaded Python, macOS and Windows are untested.
+The Conda recipe restricts installation to Linux via __linux and Python
+>=3.11,<3.15, and supplies OpenSSH. Noarch describes the Python payload, not a
+claim of macOS/Windows support. See [Conda evidence](../devguide/24-conda-publication.md)
+and [the future macOS investigation](https://github.com/uibcdf/jupyhop/issues/2).
 
 ## Endpoint and remote requirements
 
@@ -73,7 +77,7 @@ by that observation. Physical-client and site-policy limits remain explicit.
 
 | Contract | Current version / behavior |
 | --- | --- |
-| Client package | 0.2.0; prepared for stabilization, unpublished; identifiers use x.y.z |
+| Client package | 0.2.0; prepared for stabilization, PyPI unpublished; identifiers use x.y.z; Conda status in the distribution report |
 | Doctor wire | 1.0 |
 | Managed start wire | 1.2; version refusal is a new allowlisted error |
 | Discovery/status/stop wire | 1.3 |

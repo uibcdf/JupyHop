@@ -1,6 +1,6 @@
 # JupyHop Development Guide
 
-> **Status: M0–M6 local and GitHub CI acceptance passed; beta candidate unpublished.** SSH diagnostics, existing-server access, managed
+> **Status: M0–M6 local and GitHub CI acceptance passed.** SSH diagnostics, existing-server access, managed
 > lifecycle/reconnection, profiles, multi-host inventory and archive ship.
 > Real Unix account isolation and test-fixture cleanup are verified. OS logout
 > policy, physical reboot and wider compatibility are bounded in the reports.
@@ -8,6 +8,8 @@
 > The [0.2.0 operational stabilization candidate](22-02-stabilization.md) is prepared,
 > with [observed progress](23-02-stabilization-evidence.md) for real-site,
 > native SSH passwords/keys, endurance and installed-upgrade acceptance.
+> [Conda distribution status](24-conda-publication.md) is tracked separately;
+> no PyPI publication is included.
 
 JupyHop is a lightweight, SSH-native tool to launch, discover, manage, and reconnect to remote Jupyter sessions without deploying JupyterHub.
 
@@ -79,3 +81,5 @@ This directory is the project's design source of truth. Update specifications an
   upgrade evidence and the explicit boundaries for pre-1.0 stabilization.
 - [0.2.0 evidence](23-02-stabilization-evidence.md): observed site workflows,
   stale-metadata correction, native SSH terminal authentication and exact limits.
+- [Conda distribution](24-conda-publication.md): shared UIBCDF actions, exact-file
+  staging/installed qualification/promotion, Linux support and publication evidence.

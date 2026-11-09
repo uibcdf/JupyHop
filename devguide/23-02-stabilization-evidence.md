@@ -1,6 +1,6 @@
 # 23 — 0.2.0 stabilization evidence
 
-Status: operational 0.2.0 candidate prepared for pre-1.0 stabilization, unpublished.
+Status: operational 0.2.0 candidate prepared for pre-1.0 stabilization; PyPI unpublished.
 All real aliases, addresses, users and executable paths stay
 in private operator evidence outside the repository. Role labels below do not
 identify institutional infrastructure.
@@ -109,8 +109,10 @@ Primary references: [OpenSSH ssh](https://man.openbsd.org/ssh.1) and
 
 ## Verification
 
-Local CPython 3.14 observes 294 passing tests (225 unit, 69 integration), ruff and
-strict mypy. The isolated installed preview upgrade and clean-wheel smoke pass.
+Before the separate Conda integration, local CPython 3.14 observes 294 passing
+tests (225 unit, 69 integration), ruff and strict mypy. The isolated installed
+preview upgrade and clean-wheel smoke pass. Later package qualification is
+recorded in [the Conda report](24-conda-publication.md).
 The first
 [hosted run](https://github.com/uibcdf/jupyhop/actions/runs/42550984022) observes
 293 passing tests on every Python, clean-wheel acceptance and both server-version
@@ -206,6 +208,11 @@ now enforces the actual-wheel upgrade on each Python 3.11–3.14, in addition to
 the previously observed six-job regression/browser/account/password matrix.
 Each candidate's run must be observed independently; prior green runs do not
 substitute for its result.
+
+The actual 0.2.0 [candidate run](https://github.com/uibcdf/jupyhop/actions/runs/42557863957)
+at 763aa3f passes all six jobs, including actual installed-wheel upgrades on all
+four Python versions, Chrome and native password/account cleanup. Subsequent
+Conda work requires its own source commit and installed-package qualification.
 
 ## Acceptance boundary and next work
 
