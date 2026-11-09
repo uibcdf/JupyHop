@@ -27,13 +27,15 @@ M5 verified all 258 earlier tests and clean-wheel workflows on CPython 3.11.18,
 3.12.16, 3.13.18 and 3.14.10 with Server 2.21.1. M6 adds signal handling, live
 password rotation, an 8 MiB content roundtrip and 64 executions with 64 KiB output
 each on one sustained WebSocket through ProxyJump. See
-[the M6 report](../devguide/20-m6-beta-readiness.md) for final regression counts.
+[the M6 report](../devguide/20-m6-beta-readiness.md) for the local experiments and
+[the hosted CI follow-up](../devguide/21-m6-github-ci.md) for the current 270-test
+regression on each of the four supported Python versions.
 
 | Server / server Python | Existing open + kernel | Managed start/status/stop/archive |
 | --- | --- | --- |
 | 2.17.0 / 3.11.18 | Passed with an explicitly started server port | Refused before registry creation; native port=0 metadata is incorrect |
 | 2.20.0 / 3.11.18, Tornado 6.5.8 | Passed | Passed |
-| 2.21.1 / 3.12.16, 3.13.18, 3.14.10 | Covered by the four-version regression / clean-wheel acceptance | Covered by the same tests |
+| 2.21.1 / 3.11.18, 3.12.16, 3.13.18, 3.14.10 | Covered by the four-version regression / clean-wheel acceptance | Covered by the same tests |
 
 These are feature-compatibility observations, not a recommendation to install old
 server versions. Upstream fixes matter: Server 2.20 corrected reporting the bound
@@ -48,9 +50,13 @@ an existing 2.17 server with correct private runtime metadata. The earlier
 Alpine/QEMU attempt did not establish a platform-wide incompatibility; musl/Alpine
 managed operation remains unvalidated.
 
-Only the local Linux/OpenSSH/tmux environment recorded in the report has been
-observed here; Ubuntu GitHub CI is configured but a local run does not establish
-that CI passed. Chrome/JupyterLab browser acceptance is separate from API tests.
+Local Linux and Ubuntu hosted GitHub CI results are both observed; the linked
+CI follow-up records successful four-Python regression/clean-wheel jobs,
+server-version comparisons, Chrome/JupyterLab and actual Unix-account isolation
+with cleanup. Chrome acceptance is separate from API tests. This evidence does
+not establish compatibility with other operating systems, real-site logout
+policies or physical network moves. Those boundaries and the installed-client
+upgrade are part of the planned [0.2.0 stabilization](../devguide/22-02-stabilization.md).
 
 ## Client, wire and state versions
 

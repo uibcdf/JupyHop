@@ -11,6 +11,8 @@ It is designed for researchers, data scientists, developers, and small teams who
 Start with the [quickstart](docs/quickstart.md), [compatibility matrix](docs/compatibility.md)
 and [troubleshooting](docs/troubleshooting.md). Development instructions are in
 [CONTRIBUTING](CONTRIBUTING.md); vulnerability reporting is in [SECURITY](SECURITY.md).
+The next target is [0.2.0 operational stabilization](devguide/22-02-stabilization.md);
+real-site, endurance and installed-upgrade acceptance remain planned work.
 
 ## The problem
 
@@ -214,7 +216,7 @@ that interpreter; the server may run in a different Conda environment.
 | Any authorized client | Several SSH-accessible hosts | Separate managed forwards |
 | New client with authorized SSH access | A pre-existing remote user session | Rediscover and reconnect |
 
-**Connectivity prerequisite:** the client must already have a working and authorized SSH path to the destination. JupyHop does not automatically make machines behind NAT or firewalls reachable, establish a VPN, or bypass access restrictions.
+**Connectivity prerequisite:** the client must already have a working and authorized SSH path to the destination, with trusted host keys and noninteractive authentication (for example keys/agent). The current client uses OpenSSH BatchMode; password-only SSH and interactive MFA are outside the demonstrated support boundary. JupyHop does not automatically make machines behind NAT or firewalls reachable, establish a VPN, or bypass access restrictions.
 
 ## Managed vs. discovered Jupyter servers
 
@@ -296,7 +298,8 @@ See [security and reliability](devguide/04-security-and-reliability.md), [discov
 
 ## Development roadmap
 
-M0–M5 are implemented; M6 prepares and validates the local beta candidate.
+M0–M6 acceptance is recorded for the documented support boundary, including
+hosted GitHub CI. The next increment is operational stabilization for 0.2.0.
 The full roadmap is:
 
 1. **M0 — Validate design assumptions:** discovery, auth handoff, process managers, tunnel lifetime, and remote helper.

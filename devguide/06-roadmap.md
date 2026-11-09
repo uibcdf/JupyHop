@@ -91,6 +91,19 @@ No package publication or M7 extension has been performed.
 
 **Acceptance:** a new user with legitimate OpenSSH access can complete discovered-open and managed-start/reconnect/stop guided by docs. Automated and documented manual acceptance cases cover mandatory scenario IDs; no real lab IP/credentials in fixtures or release artifacts. PyPI release only after clean install and end-to-end tests.
 
+## 0.2.0 — Operational stabilization before 1.0
+
+**Planned after M6:** [scope, acceptance gates and safe pilot](22-02-stabilization.md).
+The current package remains 0.1.0. Complete the existing core workflows in an
+authorized real-site pilot, observe bounded endurance/network recovery, verify an
+installed-client upgrade without losing a live kernel, and close demonstrated
+usability defects before preparing 0.2.0 artifacts. Confirm the supported client
+OS and SSH authentication contract; today's transport requires keys/agent or
+another noninteractive method. Do not count unobserved site acceptance as passed.
+
+This is stabilization of M0–M6, not a dependency on optional M7 features. Keep the
+finite acceptance matrix distinct from a claim of universal compatibility.
+
 ## M7 — Optional extensions (separate scope decisions)
 
 - **Slurm launcher:** submit/cancel within scheduler allocations and route to compute nodes; never run compute workloads by default on the login/bastion node.
@@ -101,7 +114,7 @@ No package publication or M7 extension has been performed.
 
 ## Dependency and risk strategy
 
-`M0 → M1 → M2 → M3 → M4 → M5 → M6`. M7 is optional.
+`M0 → M1 → M2 → M3 → M4 → M5 → M6 → 0.2.0 stabilization`. M7 is optional.
 
 Some M2 discovery probes and M4 supervision/authentication spikes should be performed early in M0 to avoid discovering a fundamental blocker after implementing the CLI. Documentation, lint, package skeleton, and unit tests may proceed in parallel, but must not claim maturity ahead of implementation.
 

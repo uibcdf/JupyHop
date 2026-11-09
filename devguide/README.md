@@ -5,6 +5,8 @@
 > Real Unix account isolation and test-fixture cleanup are verified. OS logout
 > policy, physical reboot and wider compatibility are bounded in the reports.
 > See the milestone reports below for exact acceptance evidence and limits.
+> The next target is [0.2.0 operational stabilization](22-02-stabilization.md),
+> including real-site, endurance and installed-upgrade acceptance; it is planned.
 
 JupyHop is a lightweight, SSH-native tool to launch, discover, manage, and reconnect to remote Jupyter sessions without deploying JupyterHub.
 
@@ -71,3 +73,6 @@ This directory is the project's design source of truth. Update specifications an
 - [M6 GitHub CI follow-up](21-m6-github-ci.md): direct pushes to main, deterministic
   background-computation acceptance, complete hosted-runner matrix, actual account
   cleanup and independent CI artifact/source/checksum verification.
+- [0.2.0 operational stabilization](22-02-stabilization.md): remaining acceptance
+  gates, SSH/OS support decisions, safe real-site pilot and installed-client
+  upgrade evidence; planned work, not a completed release.
