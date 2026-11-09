@@ -83,3 +83,5 @@ This directory is the project's design source of truth. Update specifications an
   stale-metadata correction, native SSH terminal authentication and exact limits.
 - [Conda distribution](24-conda-publication.md): shared UIBCDF actions, exact-file
   staging/installed qualification/promotion, Linux support and publication evidence.
+- [Public documentation](25-public-documentation.md): Sphinx/MyST guides, current CLI
+  reference, browser/link acceptance and Pages artifact deployment.

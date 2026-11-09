@@ -71,6 +71,9 @@ def main():
         assert len(set(names)) == len(names), "Duplicate sdist members"
         for entry in entries:
             safe_path(entry.name)
+            assert not entry.name.startswith(f"jupyhop-{version}/docs/_build/"), (
+                "Generated documentation must not enter source distributions"
+            )
             assert entry.isdir() or entry.isfile(), "Unexpected sdist member type"
             assert entry.name == f"jupyhop-{version}" or entry.name.startswith(
                 f"jupyhop-{version}/"
@@ -84,11 +87,14 @@ def main():
                 "CONTRIBUTING.md",
                 "SECURITY.md",
                 "pyproject.toml",
+                "docs/Makefile",
             )
         ]
         for root, pattern in (
             ("src/jupyhop", "*.py"),
             ("docs", "*.md"),
+            ("docs", "*.py"),
+            ("docs", "*.css"),
             ("devguide", "*.md"),
             ("tests", "*.py"),
             ("experiments", "*.py"),
@@ -98,7 +104,9 @@ def main():
             (".github", "*.yml"),
             (".github", "*.yaml"),
         ):
-            required.extend(Path(root).rglob(pattern))
+            required.extend(
+                path for path in Path(root).rglob(pattern) if not path.is_relative_to("docs/_build")
+            )
         for path in required:
             stream = artifact.extractfile(f"jupyhop-{version}/" + path.as_posix())
             assert stream is not None and stream.read() == path.read_bytes(), path

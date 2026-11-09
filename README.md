@@ -8,7 +8,8 @@ It is designed for researchers, data scientists, developers, and small teams who
 
 > **Project status: 0.2.0 — operational pre-1.0 stabilization candidate.** Existing-server access, managed lifecycle/reconnection, native SSH passwords/keys, profiles, multi-host inventory and safe record archiving are implemented for supported Linux servers and CPython 3.11–3.14 clients. Persistence depends on remote OS policy; reboot/crash does not preserve kernel memory. The candidate is prepared for stabilization and **not published on PyPI**. See [observed acceptance and limits](devguide/23-02-stabilization-evidence.md).
 
-Start with the [quickstart](docs/quickstart.md), [compatibility matrix](docs/compatibility.md)
+Start with the [public documentation](https://www.uibcdf.org/jupyhop/).
+Its sources include the [quickstart](docs/quickstart.md), [compatibility matrix](docs/compatibility.md)
 and [troubleshooting](docs/troubleshooting.md). Development instructions are in
 [CONTRIBUTING](CONTRIBUTING.md); vulnerability reporting is in [SECURITY](SECURITY.md).
 The [0.2.0 operational scope](devguide/22-02-stabilization.md) and

@@ -70,6 +70,13 @@ the actual installed artifact must be checked before broadening package support.
 
 ## Changes and reports
 
+Public documentation uses Sphinx/MyST and the current CLI parser. Use a Python
+3.14 environment with `python -m pip install -e '.[docs]'`, or the dedicated
+`devtools/conda-envs/docs_env.yaml` mamba environment, then run `make -C docs check`.
+The [documentation guide](docs/contributing.md) explains local preview, strict
+HTML/link checks and Pages publication. Generated HTML/caches stay in the ignored
+docs/_build tree; no SSH/Jupyter example is executed by a documentation build.
+
 Prefer stdlib and ordinary OpenSSH over extra services or transport abstractions.
 Do not add mandatory Python dependencies without evidence. Test meaningful
 behavior and failure boundaries; no destructive tests against real workloads.

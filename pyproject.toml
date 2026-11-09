@@ -27,10 +27,11 @@ jupyhop = "jupyhop.cli:main"
 
 [project.urls]
 Repository = "https://github.com/uibcdf/jupyhop"
-Documentation = "https://github.com/uibcdf/jupyhop/blob/main/docs/quickstart.md"
+Documentation = "https://www.uibcdf.org/jupyhop/"
 Issues = "https://github.com/uibcdf/jupyhop/issues"
 
 [project.optional-dependencies]
+docs = ["sphinx>=9.2,<9.3", "myst-parser>=5.1,<5.2", "pydata-sphinx-theme>=0.24,<0.25", "sphinx-copybutton>=0.5.2,<0.6"]
 dev = ["pytest>=8,<10", "ruff>=0.16,<0.18", "mypy>=1.15,<3", "build>=1.2,<2", "setuptools>=77"]
 experiments = ["jupyter_server==2.21.1", "jupyterlab==4.6.4", "ipykernel==7.4.0", "requests==2.34.2", "websocket-client==1.9.2"]
 

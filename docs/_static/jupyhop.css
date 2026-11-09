@@ -1,0 +1,8 @@
+/* Keep command examples readable in both theme color modes. */
+.bd-article-container {
+  max-width: 58rem;
+}
+
+.bd-article pre {
+  line-height: 1.5;
+}
