@@ -31,6 +31,25 @@ Python may still serve as the discovery helper.
 Doctor's systemd-user capability result is diagnostic. Managed launch in 0.2.0
 uses private tmux; a systemd backend is not implemented.
 
+### Match the interpreter's import mode
+
+JupyHop runs the remote helper and managed server with Python's
+[isolated mode](https://docs.python.org/3.14/using/cmdline.html#cmdoption-I).
+Packages available only through `PYTHONPATH`, the current directory or Python's
+user site are not visible to those interpreters. Choose a Conda/venv/system
+Python that contains the required packages in its own environment. An interactive
+import succeeding after `pip install --user` does not establish that prerequisite.
+
+To check the intended **server** interpreter on the remote host:
+
+```console
+/absolute/remote/env/bin/python -I -m jupyter_server --version
+```
+
+The helper can remain stdlib-only for discovery/open. Notebook kernels follow
+their own kernelspec command/environment; this server/helper isolation does not
+silently add `-I` to kernel commands.
+
 ## Existing servers across environments
 
 Environments often share a user's ordinary Jupyter runtime directory. Custom

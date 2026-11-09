@@ -403,6 +403,9 @@ the helper and is the server default if no separate path is supplied. Neither
 path depends on shell activation. Native ephemeral-port reporting requires Server
 2.20 or later; 2.21.1 is the recommended tested stack. Older existing servers are
 validated separately; see [compatibility](docs/compatibility.md).
+The helper/server use isolated Python imports: their required packages must be
+available in the chosen environment. See [import-mode diagnostics](docs/environments.md#match-the-interpreters-import-mode)
+for user-site or PYTHONPATH-only installations.
 Relative workdirs resolve against remote HOME;
 `~` means the remote account, and workdir symlinks are canonicalized.
 

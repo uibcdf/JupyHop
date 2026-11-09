@@ -10,6 +10,11 @@ shape; they do not claim no remote servers exist. Check exit status and stderr:
 some errors produce a report followed by a nonzero exit, and other failures
 produce no JSON. See [Scripting](scripting.md) for process and input handling.
 
+`identity.scope` is an opaque current-boot/account observation scope, not the
+stable host/account directory name in the managed registry. Do not use it to
+construct a state path or as a session selector. Use the managed UUID and the
+returned `record_path`/`archived.path` when a path is needed.
+
 ## Discover and inventory
 
 `discover HOST --json` returns these top-level fields:
@@ -89,7 +94,7 @@ empty `servers`, `error: null` and:
 ```json
 {
   "id": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
-  "path": "/home/researcher/.local/state/jupyhop/hosts/aaaaaaaaaaaaaaaaaaaaaaaa/archive/bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+  "path": "/home/researcher/.local/state/jupyhop/hosts/cccccccccccccccccccccccc/archive/bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
 }
 ```
 

@@ -88,6 +88,13 @@ shell/site configuration, then recheck. Keep noninteractive startup output clean
 for JSON probes. A doctor result of systemd-user available does not select a
 systemd backend: managed launch currently uses private tmux.
 
+## A module imports interactively but doctor or start cannot find it
+
+If a module imports in an interactive shell but doctor/start reports it missing,
+check the chosen Python with isolated imports as described in
+[Environments](environments.md#match-the-interpreters-import-mode). User-site or
+`PYTHONPATH` packages are not sufficient for the remote helper/server.
+
 ## The browser opens the wrong page or cannot log in
 
 Use the exact current URL printed by the active invocation, on the same computer

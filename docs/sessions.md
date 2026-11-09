@@ -37,6 +37,11 @@ including after stop. A new session reusing an archived name has a new UUID.
 Only `ready` candidates can be opened. A state describes the observed server or
 record; it does not prove that every notebook kernel is healthy.
 
+One managed server can have several notebooks and kernels. Its managed UUID
+remains the same when a notebook kernel starts, restarts or stops. Notebook
+session IDs and kernel IDs belong to Jupyter; they are not selectors for
+JupyHop lifecycle actions. Stopping that server affects all its kernels.
+
 | State | Meaning | Next step |
 | --- | --- | --- |
 | `ready` | A supported live server endpoint and its ownership were verified | Open it, authenticate and select the existing notebook/kernel |
@@ -72,6 +77,11 @@ so a shared home directory does not merge registries from different machines.
 Consistent remote HOME/XDG settings are needed across clients reaching the same
 registry. Changing those paths or the account's host identity can make an old
 registry unavailable; it does not stop its server.
+
+The JSON `identity.scope` identifies an observation for the current boot/account.
+It changes after reboot and is different from the stable registry directory's
+scope. Use returned record/archive paths instead of constructing them from that
+JSON field.
 
 Managed directories are private 0700 and files 0600. Do not edit records,
 substitute runner files or change schema numbers to force access. Settings,

@@ -11,7 +11,7 @@ In the remote environment you intend to use, inspect its interpreter and Jupyter
 
 ```console
 python -c 'import sys; print(sys.executable)'
-python -m jupyter_server --version
+python -I -m jupyter_server --version
 python -m jupyter kernelspec list
 python -m jupyter --runtime-dir
 ```
@@ -21,6 +21,10 @@ directory. If the server was launched with a custom `JUPYTER_RUNTIME_DIR`, use
 that path: an unrelated shell or environment need not report the same directory.
 The [Jupyter directory reference](https://docs.jupyter.org/en/latest/use/jupyter-directories.html)
 explains these environment variables.
+
+The version check uses the same isolated Python import mode as JupyHop. If it
+fails while an ordinary import works, check
+[environment-local versus user-site packages](environments.md#match-the-interpreters-import-mode).
 
 Back **on the local client**, substitute the copied paths:
 

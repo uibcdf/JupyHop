@@ -30,6 +30,12 @@ notebook/session. Starting a new server or restarting a kernel does not recover
 the old computation. Opening the same notebook file alone cannot restore lost
 in-memory objects.
 
+The first client's browser/tunnel can also stay open: two authorized clients
+can reach the same surviving server through independent local forwards. Closing
+one forward leaves the other usable. In the second frontend, select the original
+running notebook/session; creating a different kernel gives separate memory.
+JupyHop does not coordinate simultaneous edits to the same notebook file.
+
 ## What survives disconnection
 
 | Event | Expected action |

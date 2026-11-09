@@ -1,6 +1,6 @@
 # Preparing a release
 
-The current candidate is 0.2.0. This repository has not published it to PyPI.
+The current Conda release is 0.2.0. This repository has not published it to PyPI.
 Builds, CI artifacts, commits and tags do not constitute a package publication.
 Uploading a release is a separate explicit maintainer action after artifact review.
 
@@ -53,10 +53,13 @@ The [Conda report](https://github.com/uibcdf/jupyhop/blob/main/devguide/24-conda
 actions, Linux-only noarch decision and observed publication status. This route
 does not publish PyPI, create a tag or create a GitHub Release.
 
-After the exact main commit's six source jobs pass, dispatch:
+The coordinate `0.2.0=py_0` is already published. For a future reviewed,
+unoccupied coordinate, wait for the exact main commit's six source jobs to pass,
+then substitute the approved commit, numeric version and integer build number
+in this template:
 
 ```console
-gh workflow run build_and_upload_conda_packages.yaml --ref main --field candidate_sha=FULL_COMMIT_SHA --field version=0.2.0 --field build_number=0
+gh workflow run build_and_upload_conda_packages.yaml --ref main --field candidate_sha=FULL_COMMIT_SHA --field version=X.Y.Z --field build_number=BUILD_NUMBER
 ```
 
 Use the configured ANACONDA_UIBCDF_TOKEN repository/organization secret. The

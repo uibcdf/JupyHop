@@ -24,6 +24,14 @@ JupyHop selects that executable directly; it does not activate or install Conda
 environments. [Environments](environments.md) distinguishes helper, server and
 kernel Python. Scientific setup remains under your control.
 
+Managed start uses private JupyHop settings and enables JupyterLab when it is
+installed in the selected server environment. Otherwise it provides the server/API
+view. Your ordinary Jupyter configuration files and other automatically enabled
+server extensions are not loaded by this launcher. There is no option to pass an
+existing Jupyter config or arbitrary server flags to `start`. Use the existing-server
+workflow when your separately configured launcher is needed, within the supported
+endpoint/authentication boundary.
+
 ## Start
 
 On the local client, replace the example Python/project paths with your own remote
@@ -38,9 +46,10 @@ for a **new Jupyter session password** and retains only its hash in private remo
 settings. Remember that password for later clients. It must be independent of your
 SSH password. Log in normally in the browser.
 
-Passwords must contain 8–1024 characters without ASCII control characters. The private
-prompt asks for confirmation; `--password-stdin` reads one UTF-8 line from a
-protected source. [Scripting](scripting.md#start-with-a-protected-password-source)
+Passwords must contain 8–1024 characters without ASCII control characters. The
+private prompt asks for confirmation before SSH authentication; `--password-stdin`
+reads one UTF-8 line from a protected source.
+[Scripting](scripting.md#start-with-a-protected-password-source)
 shows the noninteractive form. There is no Jupyter password reset command.
 
 The returned UUID is the session's stable identifier. Copy it, or find it with
@@ -83,9 +92,10 @@ an interrupted operation.
 jupyhop stop workstation SESSION_ID
 ```
 
-Confirm the exact UUID when prompted. **Stopping terminates that server and its
-kernels**, including their running computation and memory. Scripts must supply
-the exact UUID and `--yes` to authorize the action.
+Confirm the exact UUID when prompted. **Stopping terminates that server and all
+its kernels**, including computations in other notebooks attached to the same
+server. The managed UUID selects a server, not a particular notebook or kernel.
+Scripts must supply the exact UUID and `--yes` to authorize the action.
 
 Stop verifies the current host/account, runner and live process identity, then
 uses graceful pidfd signalling. Unsupported or uncertain identities are refused.
