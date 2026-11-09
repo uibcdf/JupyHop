@@ -35,11 +35,21 @@ def children(pid):
         return []
 
 
-def terminal_case(argv, password, *, jupyter_password=None, action="open"):
+def terminal_case(argv, password, *, jupyter_password=None, action="open", stdin=None):
+    input_read, input_write = os.pipe() if stdin is not None else (-1, -1)
     pid, terminal = pty.fork()
     if pid == 0:
+        if input_read != -1:
+            os.dup2(input_read, 0)
+            os.close(input_read)
+            os.close(input_write)
         environment = dict(
-            os.environ, LC_ALL="C", PYTHONPATH=str(Path(__file__).resolve().parents[1] / "src")
+            os.environ,
+            LC_ALL="C",
+            PYTHONPATH=str(Path(__file__).resolve().parents[1] / "src"),
+            XDG_CONFIG_HOME=str(
+                Path(argv[argv.index("--ssh-config") + 1]).parent / "isolated-client-config"
+            ),
         )
         os.execve(sys.executable, [sys.executable, "-m", "jupyhop", *argv], environment)
     transcript = bytearray()
@@ -47,7 +57,16 @@ def terminal_case(argv, password, *, jupyter_password=None, action="open"):
     connected = reaped = False
     owned = []
     wrong = b"incorrect-fixture-password"
+    result = None
     try:
+        if input_read != -1:
+            os.close(input_read)
+            input_read = -1
+            try:
+                os.write(input_write, stdin)
+            finally:
+                os.close(input_write)
+                input_write = -1
         deadline = time.monotonic() + 60
         while time.monotonic() < deadline:
             if not select.select([terminal], [], [], 0.1)[0]:
@@ -60,6 +79,13 @@ def terminal_case(argv, password, *, jupyter_password=None, action="open"):
                 break
             transcript.extend(chunk)
             assert len(transcript) < 32768
+            if action == "start":
+                for line in transcript.decode(errors="replace").splitlines():
+                    if line.startswith('{"id":'):
+                        try:
+                            result = json.loads(line)
+                        except json.JSONDecodeError:
+                            pass
             count = transcript.count(b"password:")
             if count > prompts:
                 direct = children(pid)
@@ -92,21 +118,31 @@ def terminal_case(argv, password, *, jupyter_password=None, action="open"):
             raise RuntimeError("Native password terminal case timed out; raw output suppressed")
         _, status = os.waitpid(pid, 0)
         reaped = True
-        assert os.waitstatus_to_exitcode(status) == (3 if action == "timeout" else 130)
+        assert os.waitstatus_to_exitcode(status) == (
+            0 if action == "start" else 3 if action == "timeout" else 130
+        )
         assert prompts == (2 if action == "retry" else 1)
         assert connected == (jupyter_password is not None)
         assert password not in transcript and wrong not in transcript
+        if stdin:
+            assert stdin.rstrip(b"\n") not in transcript
         if jupyter_password:
             assert jupyter_password.encode() not in transcript
         assert termios.tcgetattr(terminal)[3] & termios.ECHO
         for child in set(owned):
             path = Path(f"/proc/{child}/stat")
             assert not path.exists() or path.read_text().rsplit(")", 1)[1].split()[0] == "Z"
+        if action == "start":
+            assert result is not None
+        return result
     finally:
         if not reaped:
             os.killpg(pid, signal.SIGKILL)
             os.waitpid(pid, 0)
         os.close(terminal)
+        for descriptor in (input_read, input_write):
+            if descriptor != -1:
+                os.close(descriptor)
 
 
 def run(root, server_python):
@@ -130,6 +166,7 @@ Host *
     config.chmod(0o600)
     transport = SSHTransport("account-a", config=root / "ssh_config", timeout=45)
     sid = new_id()
+    active = [sid]
     jupyter_password = secrets.token_urlsafe(32)
     try:
         launched = start(
@@ -161,6 +198,33 @@ Host *
             flush=True,
         )
         config.write_text(prefix)
+        cli_password = secrets.token_urlsafe(32)
+        created = terminal_case(
+            [
+                "start",
+                "password-target",
+                "--server-python",
+                server_python,
+                "--remote-python",
+                "/usr/bin/python3",
+                "--workdir",
+                "~/project",
+                "--name",
+                "password-cli-start",
+                "--password-stdin",
+                "--no-open",
+                *common,
+            ],
+            password,
+            action="start",
+            stdin=(cli_password + "\n").encode(),
+        )
+        require_ready(created)
+        active.append(created["id"])
+        print(
+            "PASS: managed CLI start keeps piped Jupyter password separate from native terminal SSH password",
+            flush=True,
+        )
         terminal_case(
             ["open", "password-target", sid, "--no-browser", *common],
             password,
@@ -177,6 +241,7 @@ Host *
             [sys.executable, "-m", "jupyhop", "doctor", "password-target", "--batch", *common],
             capture_output=True,
             timeout=20,
+            env=dict(os.environ, XDG_CONFIG_HOME=str(root / "isolated-client-config")),
         )
         assert headless.returncode == 3 and not headless.stdout
         assert password not in headless.stderr and b"password:" not in headless.stderr
@@ -185,10 +250,13 @@ Host *
             flush=True,
         )
     finally:
-        stopped = lifecycle(transport, "stop", sid, python="/usr/bin/python3")
-        require_lifecycle_ok(stopped)
-        assert stopped["servers"][0]["state"] == "stopped"
-        require_lifecycle_ok(lifecycle(transport, "archive", sid, python="/usr/bin/python3"))
+        for identifier in reversed(active):
+            stopped = lifecycle(transport, "stop", identifier, python="/usr/bin/python3")
+            require_lifecycle_ok(stopped)
+            assert stopped["servers"][0]["state"] == "stopped"
+            require_lifecycle_ok(
+                lifecycle(transport, "archive", identifier, python="/usr/bin/python3")
+            )
     print(
         "PASS: password experiment managed UUID stopped/archived; privileged account cleanup remains mandatory",
         flush=True,

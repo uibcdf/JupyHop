@@ -67,7 +67,8 @@ product operation and the default fixture remains key-only.
 As the ordinary fixture owner, CI runs `python -m experiments.password_smoke
 --root PATH_FROM_PREPARE --server-python ABSOLUTE_SHARED_PYTHON`. It forces native
 password authentication, opens one owned live Jupyter directly and through a
-key-authenticated jump, and tests retry/cancel/timeout/headless behavior and echo
-restoration. It stops/archives only its own UUID. The existing privileged cleanup
+key-authenticated jump, tests CLI start with a piped Jupyter password separate
+from terminal SSH input, and exercises retry/cancel/timeout/headless behavior and
+echo restoration. It stops/archives only its own UUIDs. The existing privileged cleanup
 must still run in an always step; removal of the generated accounts also removes
 their Unix password entries. Finally remove the private client-fixture directory.
