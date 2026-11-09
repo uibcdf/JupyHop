@@ -64,6 +64,16 @@ artifact checksums, Chrome and account-fixture cleanup are observed results,
 not inferred from the earlier local run. Cancelled jobs in the initial run remain
 cancelled evidence rather than retrospectively passing results.
 
+A [subsequent main run](https://github.com/uibcdf/jupyhop/actions/runs/42538335604)
+on documentation/ref-concurrency commit `114b6f9` passed all application tests and
+Chrome checks but timed out after 30 seconds in the runner's native useradd during
+fixture provisioning. The fixture rollback and always-cleanup step succeeded.
+The backend cause was not established. The affected job was rerun on a fresh
+runner at the same commit, without increasing the timeout or skipping account
+acceptance; the successful first main run remains separate observed evidence.
+Attempt 2 completed successfully, including account creation, isolation and
+cleanup. The same commit therefore passes all six jobs without a fixture change.
+
 ## Artifact inspection
 
 Downloaded [the CI artifact](https://github.com/uibcdf/jupyhop/actions/runs/42537772370/artifacts/13640022697)
