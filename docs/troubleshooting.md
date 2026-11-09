@@ -50,4 +50,4 @@ Include the client/helper/Python/Jupyter/OpenSSH/tmux versions, command shape,
 exit code, platform and a redacted description of direct versus ProxyJump access.
 Replace aliases, account names and paths with examples. Do not attach raw runtime
 JSON, settings, kernel connection files, browser profiles, cookies, private keys,
-token URLs or server logs. Follow [SECURITY.md](../SECURITY.md) for security reports.
+token URLs or server logs. Follow [SECURITY.md](security.md) for security reports.

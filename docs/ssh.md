@@ -1,0 +1,95 @@
+# SSH and gateways
+
+JupyHop uses OpenSSH and the access you already have. Put host addresses, Unix
+users, keys and routing in your SSH configuration. JupyHop's optional TOML stores
+application preferences such as remote Python paths, not SSH credentials.
+
+## Direct access
+
+Example `~/.ssh/config` entry; replace the example domain and account yourself:
+
+```text
+Host workstation
+    HostName workstation.example.org
+    User researcher
+```
+
+Verify the host fingerprint through a trusted channel and check ordinary
+`ssh workstation` before using `jupyhop open workstation`. Keep SSH configuration
+and included files owned by you, without group/other write access. Private
+configuration commonly uses mode 0600.
+
+## ProxyJump
+
+For a destination reachable through an authorized gateway:
+
+```text
+Host gateway
+    HostName gateway.example.org
+    User researcher
+
+Host workstation
+    HostName workstation.example.org
+    User researcher
+    ProxyJump gateway
+```
+
+Verify access and host trust for every hop, then use the final alias:
+
+```console
+ssh workstation
+jupyhop open workstation
+```
+
+OpenSSH resolves the jump and configuration. The gateway needs ordinary SSH
+forwarding permission, not JupyHop or Jupyter. A gateway can also be a destination
+if that account and site's policy allow running Jupyter there.
+
+The same alias can use a different route on another client. Configure that
+client's OpenSSH appropriately; remote managed identities remain scoped to the
+actual host and account. JupyHop does not establish a VPN or make an unreachable
+private machine reachable without an existing route.
+
+## Passwords, passphrases and keys
+
+In a controlling terminal, OpenSSH handles native password/passphrase prompts.
+Keys and agents work through ordinary OpenSSH configuration too. Each invocation
+owns a private connection per route and reuses it for its probes and forwarding;
+authentication happens once per route/hop in that invocation. Python does not
+read, retain or supply your SSH password.
+
+Terminal authentication has a separate deadline:
+
+```console
+jupyhop doctor workstation --ssh-auth-timeout 180
+```
+
+`--ssh-auth-timeout` accepts 1–600 seconds (default 120). `--timeout` bounds the
+separate SSH probe/startup operations (default 20 seconds). Ctrl-C cancels an
+attempt and cleans owned local resources; interrupted remote writes still need
+reconciliation.
+
+## Headless commands and other configurations
+
+With no controlling terminal, or explicit `--batch`, authentication must work
+noninteractively on every hop:
+
+```console
+jupyhop discover workstation --batch --json
+```
+
+Prepare authorized keys/agent access through your usual SSH workflow. The
+`--password-stdin` option belongs only to a new Jupyter session password; it does
+not feed an SSH prompt. Individual MFA setups have not been qualified separately.
+
+An alternate configuration file can be selected explicitly:
+
+```console
+jupyhop doctor workstation --ssh-config /path/to/ssh_config
+```
+
+Use aliases whose destination/account remain stable for a transport-only SSH
+connection. Per-command `Match` rules cannot switch the destination between RPCs
+on that connection. Configured unrelated forwarding and arbitrary pre-existing
+shared masters are not adopted. See [Compatibility](compatibility.md) and
+[Security](security.md).

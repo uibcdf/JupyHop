@@ -6,7 +6,7 @@ client needs OpenSSH and CPython 3.11–3.14; it has zero mandatory Python packa
 and needs no local Jupyter. Free-threaded Python, macOS and Windows are untested.
 The Conda recipe restricts installation to Linux via __linux and Python
 >=3.11,<3.15, and supplies OpenSSH. Noarch describes the Python payload, not a
-claim of macOS/Windows support. See [Conda evidence](../devguide/24-conda-publication.md)
+claim of macOS/Windows support. See [Conda evidence](https://github.com/uibcdf/jupyhop/blob/main/devguide/24-conda-publication.md)
 and [the future macOS investigation](https://github.com/uibcdf/jupyhop/issues/2).
 
 ## Endpoint and remote requirements
@@ -36,9 +36,9 @@ M5 verified all 258 earlier tests and clean-wheel workflows on CPython 3.11.18,
 3.12.16, 3.13.18 and 3.14.10 with Server 2.21.1. M6 adds signal handling, live
 password rotation, an 8 MiB content roundtrip and 64 executions with 64 KiB output
 each on one sustained WebSocket through ProxyJump. See
-[the M6 report](../devguide/20-m6-beta-readiness.md) for the local experiments and
-[the hosted CI follow-up](../devguide/21-m6-github-ci.md) for the M6 270-test
-baseline on each supported Python. Subsequent [0.2.0 stabilization evidence](../devguide/23-02-stabilization-evidence.md)
+[the M6 report](https://github.com/uibcdf/jupyhop/blob/main/devguide/20-m6-beta-readiness.md) for the local experiments and
+[the hosted CI follow-up](https://github.com/uibcdf/jupyhop/blob/main/devguide/21-m6-github-ci.md) for the M6 270-test
+baseline on each supported Python. Subsequent [0.2.0 stabilization evidence](https://github.com/uibcdf/jupyhop/blob/main/devguide/23-02-stabilization-evidence.md)
 records additional tests, native terminal authentication and real-site observations.
 
 | Server / server Python | Existing open + kernel | Managed start/status/stop/archive |
@@ -68,8 +68,8 @@ server-version comparisons, Chrome/JupyterLab and actual Unix-account isolation
 with cleanup. Chrome acceptance is separate from API tests. This evidence does
 not establish compatibility with other operating systems, real-site logout
 policies or physical network moves. Those boundaries and the installed-client
-upgrade are tracked in [0.2.0 scope](../devguide/22-02-stabilization.md) and
-[observed acceptance](../devguide/23-02-stabilization-evidence.md). The tested
+upgrade are tracked in [0.2.0 scope](https://github.com/uibcdf/jupyhop/blob/main/devguide/22-02-stabilization.md) and
+[observed acceptance](https://github.com/uibcdf/jupyhop/blob/main/devguide/23-02-stabilization-evidence.md). The tested
 real-site OS is x86_64 Ubuntu 26.04.1; other Linux distributions are not certified
 by that observation. Physical-client and site-policy limits remain explicit.
 

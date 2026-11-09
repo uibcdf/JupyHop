@@ -22,7 +22,7 @@ checking a package, and wire/registry versions keep their independent contracts.
    Record exact versions; preserve separate real-account evidence from M5.
    The 0.2.0 stabilization also requires native terminal/Unix-password acceptance
    and the actual installed-wheel upgrade from the trusted 0.1.0 baseline. See
-   [the experiment instructions](../experiments/stabilization.md).
+   [the experiment instructions](https://github.com/uibcdf/jupyhop/blob/main/experiments/stabilization.md).
 4. Build in a clean checkout/environment with only the chosen release artifacts
    in `dist`, then run:
 
@@ -49,7 +49,7 @@ is explicitly approved.
 ## Conda packages on uibcdf
 
 The maintainer authorized publishing the tested 0.2.0 candidate to uibcdf.
-The [Conda report](../devguide/24-conda-publication.md) records the reused UIBCDF
+The [Conda report](https://github.com/uibcdf/jupyhop/blob/main/devguide/24-conda-publication.md) records the reused UIBCDF
 actions, Linux-only noarch decision and observed publication status. This route
 does not publish PyPI, create a tag or create a GitHub Release.
 

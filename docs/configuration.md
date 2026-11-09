@@ -1,0 +1,86 @@
+# Profiles and multiple hosts
+
+Basic `jupyhop open workstation` needs no JupyHop configuration file. Profiles
+become useful when you repeatedly choose a remote Python, project directory or
+custom discovery path.
+
+## Create an optional config
+
+The default path is `~/.config/jupyhop/config.toml`, or
+`$XDG_CONFIG_HOME/jupyhop/config.toml` when that variable is set. Select an
+alternate file with the per-command `--config FILE` option.
+
+```toml
+version = 1
+
+[profiles.research]
+server_python = "/opt/conda/envs/analysis/bin/python"
+workdir = "~/projects/analysis"
+
+[hosts.workstation-a]
+profile = "research"
+remote_python = "python3"
+runtime_dirs = ["~/custom-runtime"]
+
+[hosts.workstation-b]
+profile = "research"
+```
+
+Replace example paths with existing remote paths. The host names are existing
+OpenSSH aliases. Keep routing, users, addresses and keys in SSH configuration;
+passwords, tokens, shell commands and activation hooks are not TOML fields.
+
+The config must be your regular, single-link file, at most 64 KiB, without a
+final symlink or group/other write permission. Mode 0600 is recommended. An absent
+default file is optional; an explicit missing file or invalid config is an error
+before SSH access. Unknown fields and unsupported schema versions are refused.
+
+## Launch preferences and overrides
+
+```console
+jupyhop start workstation-a --env research
+jupyhop start workstation-a --env research --workdir '~/projects/other'
+```
+
+`--env research` chooses the `profiles.research` entry. It is not a Conda activation
+command. Each selected Python/project must already exist remotely.
+
+| Setting | Selection order |
+| --- | --- |
+| Launch profile | Explicit `--env`, then the host's default `profile` |
+| Server Python/workdir | Explicit CLI value, then selected profile, then launch defaults |
+| Helper Python | Explicit `--remote-python`, then host `remote_python`, then `python3` |
+| Extra runtime paths | CLI `--runtime-dir` paths merged with the host's `runtime_dirs` |
+
+By default the server uses the selected helper Python, and the working directory
+is the remote home. Workdir choices affect new launches, not an existing server.
+The configuration allows up to 32 profiles, 16 hosts and 16 merged extra runtime
+paths. These limits bound client work; discovery remains partial.
+
+## Inventory several routes
+
+```console
+jupyhop list workstation-a workstation-b
+jupyhop list workstation-a workstation-b --json
+jupyhop list
+```
+
+Without aliases, `list` uses the hosts in your JupyHop TOML. It does not enumerate
+every SSH configuration entry. Results retain each route's success or error so a
+failed host does not hide a successful one.
+
+The same remote host/account can be reached through different configured routes;
+managed UUIDs belong to its remote registry. Separate hosts or Unix accounts have
+separate authorization scopes. Local configuration is not an authoritative record
+of running servers.
+
+## Open from configured hosts
+
+```console
+jupyhop open
+jupyhop open workstation-a SESSION_ID
+```
+
+Hostless open searches configured hosts and lets a terminal select when needed.
+Scripts choose an explicit route and exact ID. Open a new terminal invocation for
+each attached forward when working on several servers simultaneously.
