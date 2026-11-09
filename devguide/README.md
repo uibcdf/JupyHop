@@ -87,3 +87,5 @@ This directory is the project's design source of truth. Update specifications an
   reference, browser/link acceptance and Pages artifact deployment.
 - [Documentation review](26-documentation-review.md): remote onboarding, JSON/state
   contracts, client updates, executable examples and observed publication checks.
+- [Documentation precision](27-documentation-precision.md): isolated Python,
+  observation/registry scope, multi-kernel ownership and continuous example checks.

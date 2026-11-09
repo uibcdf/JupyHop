@@ -23,8 +23,13 @@ Documentation tools are build-time dependencies; the installed client remains
 free of mandatory Python-package dependencies.
 
 The check target builds HTML with references and warnings treated as errors, then
-verifies local links, fragments, resources and generated CLI coverage. Output is
-in `docs/_build/html`. Preview it locally:
+verifies local links, fragments, resources and generated CLI coverage. It also
+parses standalone fenced JupyHop examples with the actual CLI parser, validates
+fenced TOML against the config reader and decodes fenced JSON. This catches
+misspelled options, invalid profile fields and malformed output examples in CI.
+Shell examples are not executed; remote prerequisites and authentication still
+need their isolated integration/acceptance checks. Output is in `docs/_build/html`.
+Preview it locally:
 
 ```console
 python -m http.server 8000 --bind 127.0.0.1 --directory docs/_build/html

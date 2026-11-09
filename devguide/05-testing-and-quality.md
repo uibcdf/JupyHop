@@ -68,6 +68,12 @@ Start with Linux clients and Linux remotes. Only advertise other platforms after
 - Use dependency constraints and reproducible test fixtures.
 - Check secret scanning and never put real machine names/IPs or credentials into committed fixtures.
 
+Public documentation CI runs `make -C docs check`: strict Sphinx, local HTML
+references/resources/anchors, generated parser-help coverage, and parsing of
+standalone fenced CLI/TOML/JSON source examples. Example validation executes no
+CLI command, shell, SSH request or input-file read. Remote prerequisites and
+complex shell workflows retain their separate isolated acceptance tests.
+
 ## Scenario traceability
 
 All behavior must be traceable to [08 — Scenario catalogue](08-scenarios-and-acceptance.md) and [09 — Session contracts](09-session-lifecycle-and-auth.md). Record which IDs are automated and which require manual testing, supported platforms and observed results. **M2 must prove discovery/opening of an already-running authorized Jupyter server through a jump host; M4 must separately prove same live kernel across disconnect/reconnect.** Never infer kernel persistence from a merely available HTTP endpoint.

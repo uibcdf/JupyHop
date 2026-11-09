@@ -76,6 +76,10 @@ Public documentation uses Sphinx/MyST and the current CLI parser. Use a Python
 The [documentation guide](docs/contributing.md) explains local preview, strict
 HTML/link checks and Pages publication. Generated HTML/caches stay in the ignored
 docs/_build tree; no SSH/Jupyter example is executed by a documentation build.
+The same check parses standalone fenced CLI examples, TOML configurations and
+JSON samples. Keep CLI examples as literal argv with canonical option names;
+explicit input redirection is supported without reading its target. Complex shell
+control flow needs separate acceptance and is not executed by this source check.
 
 Prefer stdlib and ordinary OpenSSH over extra services or transport abstractions.
 Do not add mandatory Python dependencies without evidence. Test meaningful
