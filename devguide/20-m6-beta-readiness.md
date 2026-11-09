@@ -1,12 +1,14 @@
 # 20 — M6: beta compatibility, security and release preparation
 
-Date: 2026-11-08. **Local M6 acceptance passed; 0.1.0b1 prepared, unpublished.**
+Date: 2026-11-08. **Local M6 acceptance passed; candidate unpublished.**
 No M7 extension or package publication is included. This report records work,
 experiments, decisions, files, tests, acceptance, limits and the next step.
 
 Subsequent hosted CI, its fixture correction, direct-push maintainer workflow and
 downloaded artifact checksums are recorded in [the CI follow-up](21-m6-github-ci.md).
 Statements about unobserved CI below describe the original local validation stage.
+The current package version is 0.1.0 under the maintainer's numeric x.y.z policy;
+the original local/CI observations below predate that naming adjustment.
 
 ## Work delivered
 
@@ -22,7 +24,7 @@ Statements about unobserved CI below describe the original local validation stag
   when they have correct private metadata and the supported endpoint/auth shape.
 - Added a quickstart, troubleshooting, compatibility/version policy, contribution
   instructions, security reporting policy, release guide and CHANGELOG.
-- Prepared version 0.1.0b1/Beta metadata, offline artifact inspection and an
+- Prepared initial candidate/Beta metadata, offline artifact inspection and an
   expanded CI matrix with downloadable distributions and no publishing credentials.
 
 ## Experiments and results
@@ -169,7 +171,7 @@ has not been observed and is not claimed as passed.
 Temporary mamba compatibility environments were removed after final wheel tests;
 fixture contexts cleaned their servers/kernels/forwards/browser profiles. The
 development environment is preserved, with its editable client/metadata updated
-to 0.1.0b1. No new test accounts or privileged infrastructure were created in M6.
+to the candidate version. No new test accounts or privileged infrastructure were created in M6.
 
 ## Acceptance, limits and next step
 

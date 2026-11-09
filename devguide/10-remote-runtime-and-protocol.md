@@ -16,7 +16,7 @@ have separate version-1 contracts. Migrations and automatic deletion remain abse
 
 M6 retains these contracts. Managed start now requires Server >=2.20,<3 and can
 return allowlisted `unsupported_server_version` before registry creation. Existing
-server access is validated separately. The package version 0.1.0b1 does not update
+server access is validated separately. The package version 0.1.0 does not update
 live runners; M3/M5 runner compatibility is exercised without migration. See
 [the compatibility policy](../docs/compatibility.md) and [M6](20-m6-beta-readiness.md).
 

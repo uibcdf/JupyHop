@@ -6,7 +6,7 @@ JupyHop is an open-source project for **discovering, opening, launching, managin
 
 It is designed for researchers, data scientists, developers, and small teams who already have SSH access to workstations or servers and want to work with their remote notebooks as easily as with local ones.
 
-> **Project status: M6 — beta candidate 0.1.0b1.** Existing-server access, managed lifecycle/reconnection, profiles, multi-host inventory and safe record archiving are implemented for supported Linux servers and CPython 3.11–3.14 clients. Persistence depends on remote OS policy; reboot/crash does not preserve kernel memory. The beta is prepared locally and **not published on PyPI**. See the [M6 evidence and limits](devguide/20-m6-beta-readiness.md).
+> **Project status: M6 — pre-1.0 candidate 0.1.0.** Existing-server access, managed lifecycle/reconnection, profiles, multi-host inventory and safe record archiving are implemented for supported Linux servers and CPython 3.11–3.14 clients. Persistence depends on remote OS policy; reboot/crash does not preserve kernel memory. The candidate is prepared locally and **not published on PyPI**. See the [M6 evidence and limits](devguide/20-m6-beta-readiness.md).
 
 Start with the [quickstart](docs/quickstart.md), [compatibility matrix](docs/compatibility.md)
 and [troubleshooting](docs/troubleshooting.md). Development instructions are in

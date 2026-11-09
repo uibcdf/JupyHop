@@ -3,6 +3,7 @@
 import ast
 import configparser
 import hashlib
+import re
 import stat
 import tarfile
 import tomllib
@@ -19,6 +20,9 @@ def safe_path(name):
 def main():
     project = tomllib.loads(Path("pyproject.toml").read_text())["project"]
     version = project["version"]
+    assert re.fullmatch(r"(?:0|[1-9][0-9]*)(?:\.(?:0|[1-9][0-9]*)){2}", version), (
+        "Release versions must use x.y.z without prefixes or suffixes"
+    )
     tree = ast.parse(Path("src/jupyhop/__init__.py").read_text())
     declared = next(
         ast.literal_eval(node.value)

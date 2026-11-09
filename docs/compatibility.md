@@ -1,6 +1,6 @@
 # Compatibility and version policy
 
-JupyHop 0.1.0b1 is a Linux beta candidate. Compatibility means the specific
+JupyHop 0.1.0 is a Linux pre-1.0 candidate. Compatibility means the specific
 workflows/versions observed below, not every Jupyter Server 2 deployment. The
 client needs OpenSSH and CPython 3.11–3.14; it has zero mandatory Python packages
 and needs no local Jupyter. Free-threaded Python, macOS and Windows are untested.
@@ -56,7 +56,7 @@ that CI passed. Chrome/JupyterLab browser acceptance is separate from API tests.
 
 | Contract | Current version / behavior |
 | --- | --- |
-| Client package | 0.1.0b1; prepared, unpublished |
+| Client package | 0.1.0; prepared, unpublished; release identifiers use x.y.z |
 | Doctor wire | 1.0 |
 | Managed start wire | 1.2; version refusal is a new allowlisted error |
 | Discovery/status/stop wire | 1.3 |

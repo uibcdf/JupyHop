@@ -80,7 +80,7 @@ nondeleting archive of inactive evidence, not automatic scientific-resource clea
 ## M6 — Public beta, compatibility and release
 
 **Local acceptance passed 2026-11-08:** [beta preparation, compatibility experiments
-and internal security review](20-m6-beta-readiness.md). Version 0.1.0b1 is prepared
+and internal security review](20-m6-beta-readiness.md). Version 0.1.0 is prepared
 locally; four-version regression/clean-wheel and actual-browser gates pass.
 The [GitHub CI follow-up](21-m6-github-ci.md) verifies all four Python versions,
 server comparisons, Chrome, two actual Unix accounts/cleanup and downloaded

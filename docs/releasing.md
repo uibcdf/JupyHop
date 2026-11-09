@@ -1,8 +1,15 @@
 # Preparing a release
 
-The current candidate is 0.1.0b1. This repository has not published it to PyPI.
+The current candidate is 0.1.0. This repository has not published it to PyPI.
 Builds, CI artifacts, commits and tags do not constitute a package publication.
 Uploading a release is a separate explicit maintainer action after artifact review.
+
+Package versions and release tags use exactly `x.y.z`, for example `0.1.0`,
+`0.1.1` or `0.2.0`. Tags use the same number, without a `v` prefix. Do not use
+prerelease, development, postrelease or local suffixes. The `0.y.z` series
+represents development before 1.0; numeric naming does not promise 1.x API stability.
+The artifact inspector enforces this format. No tag is created by building or
+checking a package, and wire/registry versions keep their independent contracts.
 
 1. Review the roadmap gates, security findings, scenario ledger, supported matrix
    and known limits. Check help/quickstart against actual commands. Observe CI;

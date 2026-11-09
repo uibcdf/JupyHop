@@ -1,9 +1,12 @@
 # Changelog
 
-## 0.1.0b1 — prepared, unpublished
+## 0.1.0 — prepared, unpublished
 
-First beta candidate for Linux and CPython 3.11–3.14. The client uses OpenSSH and
+First pre-1.0 candidate for Linux and CPython 3.11–3.14. The client uses OpenSSH and
 has no mandatory Python dependencies or local Jupyter requirement.
+
+Package versions and release tags use only x.y.z, without a v prefix or release
+suffixes. Pre-1.0 development is represented by the 0.y.z series.
 
 - Discover/open supported existing current-user Jupyter servers, directly or via
   ProxyJump, with normal Jupyter login and automatic owned loopback forwards.

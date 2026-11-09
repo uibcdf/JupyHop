@@ -1,7 +1,7 @@
 # 21 — M6 follow-up: GitHub CI and beta review
 
 Date: 2026-11-08. **Direct-push CI validation passed.** This follows
-[the local beta report](20-m6-beta-readiness.md); version 0.1.0b1 remains unpublished.
+[the local beta report](20-m6-beta-readiness.md); the current 0.1.0 candidate remains unpublished.
 M7 has not started.
 
 ## Work performed
@@ -74,7 +74,7 @@ acceptance; the successful first main run remains separate observed evidence.
 Attempt 2 completed successfully, including account creation, isolation and
 cleanup. The same commit therefore passes all six jobs without a fixture change.
 
-## Artifact inspection
+## Historical CI artifact inspection
 
 Downloaded [the CI artifact](https://github.com/uibcdf/jupyhop/actions/runs/42537772370/artifacts/13640022697)
 using the connected GitHub tool. Its ZIP SHA256 matches the Actions API digest:
@@ -83,15 +83,31 @@ The internal SHA256SUMS verifies both distributions:
 
 | File built from commit 65f20b1 | SHA256 |
 | --- | --- |
-| jupyhop-0.1.0b1-py3-none-any.whl | a3c1fed79b68986134bc02306a51d326f4fb5e96578ef2a7ebe553cf1f3df5b6 |
-| jupyhop-0.1.0b1.tar.gz | 724f3501f6fce4368397a931d99b45f2afefa590f891d06163548628ef0e5a5e |
+| Earlier unpublished wheel | a3c1fed79b68986134bc02306a51d326f4fb5e96578ef2a7ebe553cf1f3df5b6 |
+| Earlier unpublished source archive | 724f3501f6fce4368397a931d99b45f2afefa590f891d06163548628ef0e5a5e |
 
 Nested archive paths/types are safe, wheel metadata preserves MIT and zero
-mandatory dependencies, all installed Python module bytes match the local
+mandatory dependencies, all installed Python module bytes matched the then-current local
 client, and 85 tracked source files match the exact tested Git commit. ZIP/build
 metadata can yield different whole-file hashes between local and CI builds;
 byte-for-byte reproducible builds are not claimed. These hashes identify this
 observed CI build, not later documentation-only rebuilds.
+
+## Numeric release policy (D41)
+
+The maintainer selected plain x.y.z package versions and tags, without prefixes
+or suffixes. The current candidate is 0.1.0; 0.y.z represents development before
+1.0. Package metadata, CLI version, current user documentation and generated
+artifacts follow this policy. The artifact inspector rejects other identifier
+formats. No tag or registry publication is implied by this naming change.
+
+The historical checksums above identify the earlier unpublished CI candidate;
+they are retained as observed evidence, not relabeled as 0.1.0 artifacts. New
+0.1.0 distributions receive their own SHA256SUMS. Only the package identifier
+changes; existing runtime behavior and wire/registry compatibility stay the same.
+Local validation for 0.1.0 passes: 210 unit tests, lint/format/types, version-format
+refusal checks, wheel/sdist inspection and clean-wheel SSH lifecycle acceptance.
+The editable CLI and installed metadata both report 0.1.0.
 
 ## Decisions, files and limits
 

@@ -106,7 +106,8 @@ Experiments, internal review and release limits: [20](20-m6-beta-readiness.md).
 | --- | --- | --- |
 | D38 | Managed start requires Server >=2.20,<3; existing-open remains a separate capability | Native 2.17 advertises zero for a nonzero bound port; 2.20 fixes this upstream. Refuse before registry creation instead of introducing an allocator; recommend tested 2.21.1. |
 | D39 | Command-wide SIGTERM/SIGHUP unwind; refuse getpass echo fallback; bounded retry of atomically replaced reads | Close owned transport during any phase, preserve unknown remote-write outcome and private input; reopen retired inodes without relaxing file/UID/mode/link checks. |
-| D40 | Prepare reviewed 0.1.0b1 artifacts and explicit compatibility/security/release policy; publication stays separate | Stdlib artifact/version/license/entrypoint/source checks supplement clean-wheel/browser tests; no mandatory dependencies or automated upload to package registries. |
+| D40 | Prepare reviewed candidate artifacts and explicit compatibility/security/release policy; publication stays separate | Stdlib artifact/version/license/entrypoint/source checks supplement clean-wheel/browser tests; no mandatory dependencies or automated upload to package registries. |
+| D41 | Package versions and release tags use only x.y.z; current candidate 0.1.0 | Explicit maintainer preference: no prefixes or suffixes. Pre-1.0 uses 0.y.z; the artifact inspector enforces the format. Wire/state contracts stay independent and building creates no tag. |
 
 ## Decisions remaining for their implementation milestones
 

@@ -7,6 +7,8 @@ Small coherent commits should keep code, tests and docs synchronized.
 
 Maintainer development currently uses small coherent commits pushed directly to
 `main`. CI validates each push; this workflow does not require a pull request.
+Package versions and release tags use only `x.y.z`, with no prefix or suffix;
+see [the release guide](docs/releasing.md).
 
 ## Development environment
 
