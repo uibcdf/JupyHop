@@ -57,6 +57,12 @@ No `--no-sandbox` workaround is supported. CI defines the four-version suite and
 separate compatibility experiments. Record exact observed versions and failures;
 do not turn an unavailable platform/service into a passing compatibility claim.
 
+Stabilization also tests native SSH terminal prompts, closed-socket refusal,
+installed-wheel upgrades and guarded real-site fixtures. See the
+[reproducible experiments](experiments/stabilization.md). The optional Unix
+password fixture runs only on its explicitly generated disposable accounts;
+ordinary product operation never creates users or requires sudo.
+
 ## Changes and reports
 
 Prefer stdlib and ordinary OpenSSH over extra services or transport abstractions.

@@ -14,6 +14,7 @@ import json
 import os
 import pwd
 import re
+import secrets
 import select
 import signal
 import socket
@@ -113,8 +114,14 @@ def _root(path):
     return root, token
 
 
-def _run(args):
-    result = subprocess.run(args, stdin=subprocess.DEVNULL, capture_output=True, timeout=30)
+def _run(args, *, stdin=None):
+    result = subprocess.run(
+        args,
+        stdin=subprocess.DEVNULL if stdin is None else None,
+        input=stdin,
+        capture_output=True,
+        timeout=30,
+    )
     if result.returncode:
         raise RuntimeError(
             "Fixture command failed: " + Path(args[0]).name + "; raw output suppressed"
@@ -220,7 +227,15 @@ def _new_home(account):
     return home
 
 
-def provision(path):
+def _enable_fixture_password(root, entry, token, owner):
+    if _account(entry, token) is None:
+        raise RuntimeError("Generated account disappeared; password was not changed")
+    password = secrets.token_urlsafe(32)
+    _write(root / "ssh-password", password.encode(), owner=owner)
+    _run(["/usr/sbin/chpasswd"], stdin=(entry["name"] + ":" + password + "\n").encode())
+
+
+def provision(path, *, password_auth=False):
     _privileged()
     root, token, uid, gid = _prepared(path)
     folder = RUN_BASE / (PREFIX + token)
@@ -298,6 +313,11 @@ def provision(path):
             project = home / "project"
             project.mkdir(mode=0o700)
             os.chown(project, account.pw_uid, account.pw_gid)
+        if password_auth:
+            # Only the explicitly generated account receives a strong random
+            # fixture password. No shared constant or operator credential is
+            # installed; plaintext never appears in process arguments/logs.
+            _enable_fixture_password(root, users[0], token, (uid, gid))
         with socket.socket() as reservation:
             reservation.bind(("127.0.0.1", 0))
             port = reservation.getsockname()[1]
@@ -310,7 +330,7 @@ HostKey {folder}/hostkey
 PidFile {folder}/sshd.pid
 AuthorizedKeysFile .ssh/authorized_keys
 AllowUsers {" ".join(entry["name"] for entry in users)}
-PasswordAuthentication no
+PasswordAuthentication {"yes" if password_auth else "no"}
 KbdInteractiveAuthentication no
 UsePAM no
 PermitRootLogin no
@@ -347,7 +367,13 @@ LogLevel ERROR
         )
         client += f"\nHost *\n    IdentitiesOnly yes\n    UserKnownHostsFile {root}/known_hosts\n    GlobalKnownHostsFile /dev/null\n    StrictHostKeyChecking yes\n    BatchMode yes\n    ConnectTimeout 5\n"
         _write(root / "ssh_config", client.encode(), owner=(uid, gid))
-        ready = {"version": 1, "users": users, "ssh_config": str(root / "ssh_config"), "port": port}
+        ready = {
+            "version": 1,
+            "users": users,
+            "ssh_config": str(root / "ssh_config"),
+            "port": port,
+            "password_auth": password_auth,
+        }
         _write(root / "ready.json", json.dumps(ready).encode(), owner=(uid, gid))
         print("Created two temporary users: " + ", ".join(entry["name"] for entry in users))
         print("Private loopback sshd ready; client configuration: " + str(root / "ssh_config"))
@@ -482,14 +508,24 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("action", choices=("prepare", "provision", "check", "cleanup"))
     parser.add_argument("--root", type=Path)
+    parser.add_argument(
+        "--password-auth",
+        action="store_true",
+        help="Provision only: enable a strong random password on the first generated account for native terminal-auth acceptance.",
+    )
     args = parser.parse_args()
+    if args.password_auth and args.action != "provision":
+        parser.error("--password-auth is only valid for provision")
     try:
         if args.action == "prepare":
             print("Prepared private keys/metadata: " + str(prepare()))
             return
         if args.root is None:
             parser.error("--root is required for this action")
-        {"provision": provision, "check": check, "cleanup": cleanup}[args.action](args.root)
+        if args.action == "provision":
+            provision(args.root, password_auth=args.password_auth)
+        else:
+            {"check": check, "cleanup": cleanup}[args.action](args.root)
     except (RuntimeError, OSError, ValueError, KeyError) as error:
         print("Fixture action failed: " + str(error), file=sys.stderr)
         raise SystemExit(1) from None

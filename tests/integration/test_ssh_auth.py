@@ -222,7 +222,10 @@ def test_cli_open_authenticates_once_per_hop_and_reuses_only_its_private_master(
                     for line in transcript.decode(errors="replace").splitlines():
                         if not line.startswith('{"host":'):
                             continue
-                        connection = json.loads(line)
+                        try:
+                            connection = json.loads(line)
+                        except json.JSONDecodeError:
+                            continue  # A PTY may split a JSON line across reads.
                         base = connection["url"].split("login?", 1)[0]
                         with fixture.client(base) as client:
                             assert client.get(base + "api/status", timeout=5).status_code == 200

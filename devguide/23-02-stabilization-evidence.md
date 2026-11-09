@@ -50,7 +50,7 @@ identify institutional infrastructure.
 ## D43 — Obsolete metadata must not hide live endpoints
 
 The site's ordinary runtime directory contained 495 entries, including 110
-obsolete server metadata files. There were no live declared PIDs at inventory.
+obsolete server metadata files. No live current-user declared PIDs were found.
 The earlier probe stopped as soon as its 64-record diagnostic sample filled,
 which could hide a later live server or another known runtime path.
 
@@ -76,6 +76,8 @@ reading its controlling terminal. Python does not read, cache or pass the SSH
 password. Each route authenticates once per CLI invocation; probes and forwards
 use only its verified master PID/control socket, with ProxyCommand=false on mux
 clients to prohibit fallback. No arbitrary existing/shared master is adopted.
+Native configuration is resolved for a transport-only master; use stable SSH
+aliases rather than per-command Match rules that change account/route between RPCs.
 Keep strict host trust, no agent/X11 forwarding, no configured extra forwards,
 ControlPersist=no and ForkAfterAuthentication=no.
 

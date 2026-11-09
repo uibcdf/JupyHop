@@ -1,5 +1,7 @@
 import os
+import re
 import shutil
+import sys
 from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import patch
@@ -7,6 +9,51 @@ from unittest.mock import patch
 import pytest
 
 from experiments import m5_accounts as fixture
+
+
+@pytest.mark.parametrize("missing", [True, False])
+def test_fixture_password_never_changes_missing_or_replaced_account(tmp_path, missing):
+    with (
+        patch.object(
+            fixture,
+            "_account",
+            return_value=None,
+            side_effect=None if missing else RuntimeError("identity changed"),
+        ),
+        patch.object(fixture, "_run") as run,
+        patch.object(fixture, "_write") as write,
+        pytest.raises(RuntimeError),
+    ):
+        fixture._enable_fixture_password(
+            tmp_path, {"name": "fixture"}, "a" * 12, (os.getuid(), os.getgid())
+        )
+    run.assert_not_called()
+    write.assert_not_called()
+
+
+def test_fixture_password_is_generated_private_and_never_a_command_argument(tmp_path):
+    with (
+        patch.object(fixture, "_account", return_value=object()),
+        patch.object(fixture, "_run") as run,
+    ):
+        fixture._enable_fixture_password(
+            tmp_path, {"name": "fixture"}, "a" * 12, (os.getuid(), os.getgid())
+        )
+    secret = (tmp_path / "ssh-password").read_bytes()
+    assert re.fullmatch(rb"[A-Za-z0-9_-]{43}", secret)
+    assert (tmp_path / "ssh-password").stat().st_mode & 0o777 == 0o600
+    assert run.call_args.args == (["/usr/sbin/chpasswd"],)
+    assert run.call_args.kwargs["stdin"] == b"fixture:" + secret + b"\n"
+    assert secret.decode() not in repr(run.call_args.args)
+
+
+def test_fixture_command_accepts_private_stdin_without_shell_or_argument_interpolation():
+    payload = b"fixture:$(id); PRIVATE_SENTINEL\n"
+    result = fixture._run(
+        [sys.executable, "-c", "import sys; sys.stdout.buffer.write(sys.stdin.buffer.read())"],
+        stdin=payload,
+    )
+    assert result == payload
 
 
 def test_prepare_only_creates_private_keys_and_bounded_metadata(tmp_path, monkeypatch):

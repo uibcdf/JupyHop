@@ -21,6 +21,11 @@ Remote helper Python and server Python may differ. Conda/venv/system executables
 are selected directly, without activation or remote installation. Notebook kernels
 are chosen by their kernelspec and may use another environment.
 
+SSH configuration is resolved for a transport-only master (`ssh -N`). Use aliases
+with a stable destination/account; per-command Match rules cannot switch routes
+or identities between RPCs on that authenticated connection. Mux clients use only
+the owned socket and cannot fall back to a fresh connection if it is lost.
+
 ## Observed matrix
 
 M5 verified all 258 earlier tests and clean-wheel workflows on CPython 3.11.18,

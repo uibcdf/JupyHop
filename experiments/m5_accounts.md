@@ -20,7 +20,7 @@ No packages are installed by this script.
 The fixture creates two uniquely named users/groups and private homes, generated
 SSH keys and a separate sshd listening only on loopback. It uses its own config
 and pinned host key; the normal SSH service/configuration is unchanged. The
-accounts have password authentication disabled and keys limited to loopback.
+accounts have password authentication disabled by default and keys limited to loopback.
 Each generated home starts empty and private; the fixture uses explicit
 `--no-create-home` and creates only its own directories. It never copies the
 host's skeleton files, profiles or caches. Pre-existing home paths are refused
@@ -40,7 +40,7 @@ identities or unrelated root state. It then prints the command for removing your
 remaining temporary client keys. Existing users, data and SSH services are outside
 its cleanup scope. Do not use the generated homes for work you intend to retain.
 
-Seventeen unprivileged tests cover preparation/privacy, path constraints, refusal
+Unprivileged tests cover preparation/privacy, path constraints, refusal
 without sudo, changed account identity/PID refusal, symlink rejection and exclusive
 empty-home creation/ownership. Native
 pidfd termination was exercised only on an owned disposable child. Actual account
@@ -52,3 +52,22 @@ Operator cleanup requires sudo and remains explicit. For the recorded M5 run,
 the operator completed cleanup; absence of both users/groups, their processes,
 the private listener and privileged state was verified. The remaining temporary
 keys/configuration and dedicated shared server environment were also removed.
+
+## Optional native-password CI acceptance
+
+Disposable CI runners opt into `provision --password-auth`. Root first verifies
+the exact generated account identity, generates a strong random password for the
+first account and passes it to native chpasswd through stdin. A private 0600
+client-fixture file holds it for the terminal test actor; it is never printed or
+put in command arguments. The private sshd enables password authentication; the
+normal SSH service/configuration is unchanged. Other generated accounts keep
+their invalid password hash. This option is not needed for normal development or
+product operation and the default fixture remains key-only.
+
+As the ordinary fixture owner, CI runs `python -m experiments.password_smoke
+--root PATH_FROM_PREPARE --server-python ABSOLUTE_SHARED_PYTHON`. It forces native
+password authentication, opens one owned live Jupyter directly and through a
+key-authenticated jump, and tests retry/cancel/timeout/headless behavior and echo
+restoration. It stops/archives only its own UUID. The existing privileged cleanup
+must still run in an always step; removal of the generated accounts also removes
+their Unix password entries. Finally remove the private client-fixture directory.
