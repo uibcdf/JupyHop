@@ -1,7 +1,7 @@
 # 24 — Conda distribution through UIBCDF infrastructure
 
-Status: recipe, workflow and local installed-client acceptance implemented;
-hosted candidate qualification and channel publication are pending observation.
+Status: 0.2.0 build py_0 published to uibcdf/main, with source acceptance,
+four installed Conda clients and independent public receiving verified.
 The maintainer explicitly authorized publishing a usable package to uibcdf for
 testing. The selected package version is 0.2.0, without a version suffix.
 
@@ -75,7 +75,7 @@ the exact-archive inspector. Installing it into a separate clean CPython 3.14
 prefix passed the installed-client smoke. A subsequent indexed-channel install
 verified dependency resolution, the installed archive digest and the prefix's
 OpenSSH executable, then passed the complete ProxyJump/lifecycle smoke again.
-No system/scientific environment, SSH configuration or remote workload changed.
+No system/scientific environment, personal SSH configuration or remote workload changed.
 
 The indexed test exposed fixture host configuration written as 0664 under a
 group-writable umask. Conda's OpenSSH 10.6p2 rejected the included hosts file;
@@ -108,12 +108,51 @@ Main files: [recipe](../devtools/conda-build/meta.yaml),
 artifact-inspector updates. User installation and operator instructions are in
 the quickstart and release guide.
 
+## Hosted qualification and publication
+
+The immutable candidate is 53737f87ca2658ecceef1992329137d3be7ba3be.
+Its [source acceptance](https://github.com/uibcdf/jupyhop/actions/runs/42560580553)
+passes all six jobs: 310 tests on each Python 3.11–3.14, actual installed-wheel
+upgrades, clean clients, server comparisons, Chrome and native SSH passwords/
+actual-account cleanup. The downloaded CI wheel/sdist and ZIP/checksums were
+independently checked against that commit, including the complete source/docs
+and UTF-8 README.
+
+The [Conda publication run](https://github.com/uibcdf/jupyhop/actions/runs/42560992989)
+also passes all six jobs. The single inspected file uploaded to staging has
+SHA256 `061225745df3da02efd03981feb234b9bb919f73cd05de7040432ab65fc119e4`.
+All four clients resolve that exact version/build from staging, verify their
+installed record digest and Conda OpenSSH, and pass the full installed-client
+smoke. The Python 3.14 cell additionally passes all ten terminal regressions.
+Promotion preserves the same file and staging label while adding main; both the
+promotion receipt and independent public download/solver-index verifier report
+verified status.
+
+A separate local install resolves jupyhop=0.2.0=py_0 from uibcdf/main with a
+new prefix and fresh package cache. The actual downloaded archive, installed
+record, version, import origin and Conda OpenSSH match. This CPython 3.14.10 client
+has no local Jupyter and passes doctor, profiles/fleet, existing open and managed
+start/open/status/stop/archive through a disposable ProxyJump route. Fixtures and
+owned connections were cleaned after acceptance.
+
+This report retains the candidate, run IDs, exact archive/digest and independent
+receiving result. Original bounded upload/producer/promotion/public receipts
+accompany the workflow artifacts. The separately downloaded source-CI artifacts
+at the candidate commit have these hashes:
+
+| Artifact | SHA256 |
+| --- | --- |
+| jupyhop-0.2.0-py3-none-any.whl | ca1c90072aeb6421eca4344da8ff6118ba3fd935e5672a58d434821bfe68cb13 |
+| jupyhop-0.2.0.tar.gz | e6d909f85e6a416dbc1a90f0869610a24b35c3f0525d293555519ea01566db65 |
+
+Later documentation-only commits do not rebuild or replace the published bytes.
+
 ## Limits and next step
 
-Observe the exact candidate's hosted checks, dispatch the publication workflow,
-inspect every result and independently install the exact public coordinate from
-uibcdf before reporting success. Missing credentials or registry errors must
-remain failures, never a passing publication claim. Keep real credentials in
+The scoped source, artifact, installed-client, main-label/public-index and
+independent receiving gates passed. Future candidates require their own exact
+source/installed acceptance. Missing credentials or registry errors must remain
+failures. Keep real credentials in
 the existing ANACONDA_UIBCDF_TOKEN secret, never in source, commands or chat.
 
 Linux and the previously documented endpoint/authentication/persistence limits

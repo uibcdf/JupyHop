@@ -14,8 +14,9 @@ and [troubleshooting](docs/troubleshooting.md). Development instructions are in
 The [0.2.0 operational scope](devguide/22-02-stabilization.md) and
 [acceptance evidence](devguide/23-02-stabilization-evidence.md) distinguish tested
 workflows from the remaining physical-client/site observations.
-Conda distribution follows the shared UIBCDF build/test/staging/promotion workflow;
-see [publication evidence and installation status](devguide/24-conda-publication.md).
+Version 0.2.0 is available on the [uibcdf Conda channel](https://anaconda.org/uibcdf/jupyhop)
+for Linux. Distribution follows the shared UIBCDF build/test/staging/promotion
+workflow; see [publication evidence](devguide/24-conda-publication.md).
 
 ## The problem
 
