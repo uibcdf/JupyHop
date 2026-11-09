@@ -1,7 +1,8 @@
 # 27 — Documentation precision and continuous example checks
 
 Date: 2026-11-09.
-Status: local acceptance passed; publication of this follow-up remains to be observed.
+Status: published at https://www.uibcdf.org/jupyhop/. Local acceptance, hosted
+documentation/source workflows and independent HTTPS receiving checks pass.
 
 ## Review findings and changes
 
@@ -80,5 +81,21 @@ platforms/features need their own evidence. Hosted acceptance is recorded below.
 
 ## Publication closeout
 
-Pending: observe the exact candidate's documentation/source workflows and confirm
-that the corrected pages are served by the canonical HTTPS site.
+Candidate 6a603a0b95e6fbcd06f206bc3fc79a863c02859d passes the
+[documentation workflow](https://github.com/uibcdf/jupyhop/actions/runs/42652971630):
+strict HTML checks, the new 63-command/two-TOML/five-JSON source gate, artifact
+upload and Pages deployment all succeed. Independent HTTPS checks receive all
+27 public HTML pages and confirm updated content in eight affected guides.
+
+Its [source workflow](https://github.com/uibcdf/jupyhop/actions/runs/42652971451)
+passes all six jobs. Every Python 3.11–3.14 observes 321 passing tests, including
+the eleven new checker regressions. Lint/types, complete safe artifacts,
+installed-client upgrade, browser, server comparisons and real Unix account/
+password acceptance pass their configured gates; generated account cleanup is
+confirmed. The local review also builds/inspects temporary wheel/sdist artifacts
+without publishing or replacing any package.
+
+This documentary closeout records the observed candidate rather than relabeling
+later commits as that tested source. Public HTML inputs and installed-client
+behavior are unchanged by the closeout. The second review is complete within
+the stated Linux scope; new platform/site guarantees remain separate work.
