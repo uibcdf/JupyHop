@@ -7,6 +7,7 @@ checkout. Neither path publishes a release or installs anything remotely.
 
 import argparse
 import hashlib
+import importlib.util
 import io
 import json
 import math
@@ -49,6 +50,10 @@ def run_command(argv, *, environment=None, cwd=None, stdin=None, timeout=90):
 
 
 def build_wheel(source, destination):
+    if importlib.util.find_spec("setuptools") is None:
+        raise RuntimeError(
+            "Offline wheel builds require the dev build backend; install .[dev] including setuptools>=77 first"
+        )
     destination.mkdir()
     run_command(
         [sys.executable, "-m", "build", "--wheel", "--no-isolation", "--outdir", str(destination)],

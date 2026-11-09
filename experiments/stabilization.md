@@ -17,6 +17,8 @@ The trusted local baseline commit is
 the checkout is shallow; CI uses fetch-depth=0. Both wheels build offline with
 --no-isolation. A temporary copy of the current package receives the preview
 version; this checkout/version and scientific environments remain untouched.
+The dev extra includes setuptools>=77 because these offline builds cannot rely
+on an isolated build environment or an interpreter bundling the backend.
 Old/new venvs install offline without Jupyter, with separate keys/HOMEs/routes.
 The old client launches the server; upgraded, simultaneous old and independent
 new clients retain server/kernel/session/PID/memory/progress and original runner/

@@ -107,7 +107,15 @@ Observed local CPython 3.14 checks before the final fixture-password additions:
 288 tests pass (220 unit, 68 integration); ruff and strict mypy pass. The isolated
 installed preview upgrade passes. Hosted CI is being extended for the upgrade
 and native Unix-password acceptance on its disposable generated accounts; a new
-hosted result is not yet claimed.
+hosted result is not yet claimed complete. The first
+[hosted run](https://github.com/uibcdf/jupyhop/actions/runs/42550984022) observes
+293 passing tests on every Python, clean-wheel acceptance and both server-version
+comparisons. Python 3.11 also passes the installed preview upgrade. The other
+three jobs stop before account/password acceptance because the offline baseline
+wheel build lacks its global backend. A fresh Python 3.14 venv reproduces that
+failure; adding the declared setuptools backend alone makes the build pass.
+The dev extra now explicitly includes setuptools>=77. No runtime dependency is
+added; password-account acceptance awaits the corrected hosted run.
 
 A 7200-second real-site toy workload is in progress, with no Jupyter/tunnel
 connection to that workload during the hold. Brief unrelated read-only host/
