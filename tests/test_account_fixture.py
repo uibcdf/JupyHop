@@ -30,6 +30,47 @@ def test_prepare_only_creates_private_keys_and_bounded_metadata(tmp_path, monkey
         shutil.rmtree(root)
 
 
+def test_new_account_home_is_empty_private_and_owned(tmp_path):
+    home = tmp_path / "home"
+    account = SimpleNamespace(pw_dir=str(home), pw_uid=os.getuid(), pw_gid=os.getgid())
+    assert fixture._new_home(account) == home
+    assert not list(home.iterdir())
+    assert home.stat().st_mode & 0o777 == 0o700
+    assert home.stat().st_uid == os.getuid() and home.stat().st_gid == os.getgid()
+
+
+@pytest.mark.parametrize("kind", ["directory", "symlink"])
+def test_new_home_never_reuses_existing_paths(tmp_path, kind):
+    target = tmp_path / "target"
+    target.mkdir()
+    sentinel = target / "sentinel"
+    sentinel.write_text("UNCHANGED")
+    home = target if kind == "directory" else tmp_path / "home"
+    if kind == "symlink":
+        home.symlink_to(target, target_is_directory=True)
+    account = SimpleNamespace(pw_dir=str(home), pw_uid=os.getuid(), pw_gid=os.getgid())
+    with pytest.raises(FileExistsError):
+        fixture._new_home(account)
+    assert sentinel.read_text() == "UNCHANGED"
+
+
+def test_provision_refuses_existing_home_before_creating_accounts(tmp_path):
+    token = "123456abcdef"
+    root = tmp_path / (fixture.PREFIX + token)
+    with (
+        patch.object(fixture, "_privileged"),
+        patch.object(fixture, "_prepared", return_value=(root, token, os.getuid(), os.getgid())),
+        patch.object(fixture.pwd, "getpwnam", side_effect=KeyError),
+        patch.object(fixture.grp, "getgrnam", side_effect=KeyError),
+        patch.object(fixture.os.path, "lexists", return_value=True),
+        patch.object(fixture, "_run") as run,
+    ):
+        with pytest.raises(RuntimeError, match="home already exists"):
+            fixture.provision(root)
+        run.assert_not_called()
+    assert not list(tmp_path.iterdir())
+
+
 @pytest.mark.parametrize(
     "path",
     [

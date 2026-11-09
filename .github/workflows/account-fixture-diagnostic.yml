@@ -39,8 +39,9 @@ jobs:
               if 'useradd' in line or 'SIGKILL' in line or duration and float(duration[1]) >= 0.25:
                   slow.append(line)
           print('\n'.join(slow[-100:]))
-          print('Final syscall context:')
-          print('\n'.join(lines[-40:]))
+          pids = {line.split()[0] for line in lines if 'execve("/usr/sbin/useradd"' in line}
+          print('Useradd syscall context (data buffers remain raw):')
+          print('\n'.join(line for line in lines if line.split()[0] in pids)[-12000:])
           PY
           fi
           if sudo test -f "/run/$(basename "$JUPYHOP_TEST_ROOT")/state.json"; then

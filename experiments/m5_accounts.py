@@ -211,6 +211,15 @@ def _account(entry, token):
     return account
 
 
+def _new_home(account):
+    """Create only a verified new account's private home; inherit no host files."""
+    home = Path(account.pw_dir)
+    home.mkdir(mode=0o700)
+    home.chmod(0o700)
+    os.chown(home, account.pw_uid, account.pw_gid, follow_symlinks=False)
+    return home
+
+
 def provision(path):
     _privileged()
     root, token, uid, gid = _prepared(path)
@@ -231,6 +240,8 @@ def provision(path):
             pass
         else:
             raise RuntimeError("Generated group already exists; nothing was changed")
+        if os.path.lexists("/home/" + entry["name"]):
+            raise RuntimeError("Fixture home already exists; nothing was changed")
     folder.mkdir(mode=0o700)
     lock = _lock(folder)
     state = {
@@ -250,7 +261,9 @@ def provision(path):
             _run(
                 [
                     "/usr/sbin/useradd",
-                    "--create-home",
+                    "--no-create-home",
+                    "--home-dir",
+                    "/home/" + entry["name"],
                     "--user-group",
                     "--no-log-init",
                     "--shell",
@@ -265,8 +278,7 @@ def provision(path):
             account = _account(entry, token)
             entry.update({"uid": account.pw_uid, "gid": account.pw_gid})
             _save_state(folder, state)
-            home = Path(account.pw_dir)
-            home.chmod(0o700)
+            home = _new_home(account)
             ssh = home / ".ssh"
             ssh.mkdir(mode=0o700, exist_ok=True)
             if ssh.is_symlink() or not ssh.is_dir():
