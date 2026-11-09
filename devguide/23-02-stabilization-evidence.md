@@ -197,7 +197,7 @@ session/PID/memory/progress and immutable registry/runner bytes while upgraded,
 old and independent new clients coexist. Stop/archive affects only its toy UUID.
 Wheel/source inspection verifies numeric version, MIT, CLI entrypoint, Python
 classifiers, zero mandatory dependencies, safe archives and complete source/docs.
-The wheel's embedded README matches the UTF-8 source; 225 local documentation
+The wheel's embedded README matches the UTF-8 source; local documentation
 links resolve. Rebuilding from the source distribution produces identical wheel
 member names and bytes. Checksums accompany artifacts in dist/SHA256SUMS.
 

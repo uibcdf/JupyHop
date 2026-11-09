@@ -1,8 +1,9 @@
 # 21 — M6 follow-up: GitHub CI and beta review
 
 Date: 2026-11-08. **Direct-push CI validation passed.** This follows
-[the local beta report](20-m6-beta-readiness.md); the current 0.1.0 candidate remains unpublished.
-M7 has not started.
+[the local beta report](20-m6-beta-readiness.md); that M6 candidate was 0.1.0,
+unpublished. Subsequent [0.2.0 stabilization](23-02-stabilization-evidence.md)
+does not start M7.
 
 ## Work performed
 
@@ -96,7 +97,7 @@ observed CI build, not later documentation-only rebuilds.
 ## Numeric release policy (D41)
 
 The maintainer selected plain x.y.z package versions and tags, without prefixes
-or suffixes. The current candidate is 0.1.0; 0.y.z represents development before
+or suffixes. The M6 candidate was 0.1.0; 0.y.z represents development before
 1.0. Package metadata, CLI version, current user documentation and generated
 artifacts follow this policy. The artifact inspector rejects other identifier
 formats. No tag or registry publication is implied by this naming change.

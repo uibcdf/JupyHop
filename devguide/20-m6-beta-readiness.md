@@ -7,8 +7,9 @@ experiments, decisions, files, tests, acceptance, limits and the next step.
 Subsequent hosted CI, its fixture correction, direct-push maintainer workflow and
 downloaded artifact checksums are recorded in [the CI follow-up](21-m6-github-ci.md).
 Statements about unobserved CI below describe the original local validation stage.
-The current package version is 0.1.0 under the maintainer's numeric x.y.z policy;
+The M6 package version was 0.1.0 under the maintainer's numeric x.y.z policy;
 the original local/CI observations below predate that naming adjustment.
+Subsequent 0.2.0 stabilization is recorded in [its evidence report](23-02-stabilization-evidence.md).
 
 ## Work delivered
 
