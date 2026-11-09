@@ -1,8 +1,8 @@
 # 25 — Public Sphinx documentation
 
-Status: user documentation and publication workflow implemented; local build,
-HTML checks and browser acceptance passed. Hosted deployment is pending observed
-results. The maintainer authorized preparing and publishing the public website.
+Status: public documentation published at https://www.uibcdf.org/jupyhop/.
+Local/hosted builds, link/resource checks and live HTTPS/browser acceptance passed.
+The maintainer authorized preparing and publishing the public website.
 
 ## Content delivered
 
@@ -70,8 +70,9 @@ References: [Sphinx Markdown](https://www.sphinx-doc.org/en/master/usage/markdow
 - The offline HTML check passes 1105 local links/resource references/fragments,
   required user guides and all current CLI commands/options. Theme HTML/Jinja
   fragments under _static are resources, not rendered site documents.
-- Fault injection into a copy of the actual build rejects a missing page and a
-  missing fragment. Sphinx caches stay outside the publishable HTML tree.
+- Fault injection into a copy of the actual build rejects a missing page,
+  missing fragment and accidentally included build cache. Sphinx caches stay
+  outside the publishable HTML tree.
 - Normal-sandbox Chrome with an exclusive temporary profile passes desktop,
   CLI-sidebar and mobile layout without horizontal page overflow under the
   /jupyhop/ path. Browser search for ProxyJump returns SSH results. The preview
@@ -86,7 +87,31 @@ docs/_build. Artifact inspection checks the source inputs and refuses generated
 documentation in an sdist. HTML is neither a mandatory runtime dependency nor
 part of the client wheel.
 
-## Files and remaining acceptance
+## Hosted deployment and live acceptance
+
+Candidate e0f69bb8fb5f7454739e991b0b04d6751c4ac2b8 passes the
+[documentation workflow](https://github.com/uibcdf/jupyhop/actions/runs/42567402357):
+strict build/HTML checks and official artifact deployment both succeed. Its
+[client regression](https://github.com/uibcdf/jupyhop/actions/runs/42567402351)
+also passes all six jobs, including 310 tests per Python 3.11–3.14, installed-wheel
+upgrade, Chrome and actual Unix password/account cleanup.
+
+Independent receiving checks validate TLS normally and find all 23 public HTML
+pages and 16 referenced static/search resources available. The live custom CSS
+matches the committed source and the CLI page contains all eight command anchors
+and current authentication flags. The canonical HTTPS homepage serves the new
+guide. Normal-sandbox Chrome with an exclusive profile verifies live HTTPS CLI
+navigation and search for ProxyJump. No insecure TLS/browser workaround is used.
+
+The Pages API reports an http site URL and a null project certificate/false
+https_enforced flag. A project enforcement request returned
+certificate-not-found. Direct HTTPS delivery is verified; server-side enforcement
+is not claimed. No parent-site, custom-domain or DNS configuration was changed.
+
+README and Python/Conda source metadata now point to the public website. This
+metadata update does not rebuild or replace the published Conda 0.2.0 archive.
+
+## Files, acceptance and next work
 
 Main changes: [site entry](../docs/index.md), task guides in docs/,
 [Sphinx config](../docs/conf.py), [CLI directive](../docs/_ext/jupyhop_cli.py),
@@ -95,9 +120,10 @@ Main changes: [site entry](../docs/index.md), task guides in docs/,
 [workflow](../.github/workflows/docs.yml), optional dependencies, README/
 contribution links and source-manifest/artifact checks.
 
-Observe the exact hosted build/deployment, confirm HTTPS delivery, navigation,
-search/resources and the live CLI page before marking publication complete.
-Record the resulting URL/run and keep private workstation/profile data outside
-the repository. Package 0.2.0's already qualified Conda bytes remain unchanged.
+The scoped content, generated-reference, strict-build, source-artifact, browser,
+local-reference and live-publication gates are satisfied. Private workstation/
+profile data stays outside the repository. Package 0.2.0's already qualified Conda
+bytes remain unchanged. Subsequent documentary closeout commits do not relabel
+the observed candidate/run above.
 After publication, continue user stabilization within the documented Linux
 boundary; optional M7 features are outside this documentation increment.

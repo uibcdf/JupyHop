@@ -42,4 +42,4 @@ about:
   license_file: LICENSE
   summary: "Discover, launch and open user-owned remote Jupyter servers through OpenSSH"
   dev_url: https://github.com/uibcdf/jupyhop
-  doc_url: https://github.com/uibcdf/jupyhop/blob/main/docs/quickstart.md
+  doc_url: https://www.uibcdf.org/jupyhop/
