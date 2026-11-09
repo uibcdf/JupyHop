@@ -1,7 +1,7 @@
 # 06 — Development roadmap
 
-**Status:** M0–M5 complete, including operator fixture cleanup; M6 local beta gates
-passed, candidate unpublished. M7 is optional. Dependency-ordered milestones,
+**Status:** M0–M6 local and GitHub CI gates passed, including account-fixture
+cleanup; candidate unpublished. M7 is optional. Dependency-ordered milestones,
 **not** a release timeline. Each milestone has an independently demonstrable
 vertical slice; security is a gate at every stage. Never advertise proposed CLI
 syntax as implemented.
@@ -82,8 +82,10 @@ nondeleting archive of inactive evidence, not automatic scientific-resource clea
 **Local acceptance passed 2026-11-08:** [beta preparation, compatibility experiments
 and internal security review](20-m6-beta-readiness.md). Version 0.1.0b1 is prepared
 locally; four-version regression/clean-wheel and actual-browser gates pass.
-GitHub CI is configured but unobserved. No package publication or M7 extension
-has been performed. Review the candidate before any publishing action.
+The [GitHub CI follow-up](21-m6-github-ci.md) verifies all four Python versions,
+server comparisons, Chrome, two actual Unix accounts/cleanup and downloaded
+artifact/source checksums. Maintainers use direct coherent commits/pushes to main.
+No package publication or M7 extension has been performed.
 
 **Outputs:** test matrix, security review, docs with actual commands, quickstart, troubleshooting, contribution instructions, package metadata and MIT license, clean install/build, CI for supported platforms, versioned state/protocol compatibility strategy, release notes.
 

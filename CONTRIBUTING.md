@@ -5,6 +5,9 @@ is the source of architectural/functional decisions; update it when evidence
 changes a decision. Keep discovered servers separate from managed lifecycle.
 Small coherent commits should keep code, tests and docs synchronized.
 
+Maintainer development currently uses small coherent commits pushed directly to
+`main`. CI validates each push; this workflow does not require a pull request.
+
 ## Development environment
 
 Use CPython 3.11–3.14 on Linux; development currently uses 3.14. A dedicated Conda

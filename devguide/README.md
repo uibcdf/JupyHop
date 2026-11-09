@@ -1,6 +1,6 @@
 # JupyHop Development Guide
 
-> **Status: M0–M6 local acceptance passed; beta candidate unpublished.** SSH diagnostics, existing-server access, managed
+> **Status: M0–M6 local and GitHub CI acceptance passed; beta candidate unpublished.** SSH diagnostics, existing-server access, managed
 > lifecycle/reconnection, profiles, multi-host inventory and archive ship.
 > Real Unix account isolation and test-fixture cleanup are verified. OS logout
 > policy, physical reboot and wider compatibility are bounded in the reports.
@@ -68,3 +68,6 @@ This directory is the project's design source of truth. Update specifications an
 - [M6 beta readiness](20-m6-beta-readiness.md): native server-version evidence,
   internal security review, interrupted probe/input/atomic-read hardening,
   sustained data/authentication gates and reviewed unpublished beta artifacts.
+- [M6 GitHub CI follow-up](21-m6-github-ci.md): direct pushes to main, deterministic
+  background-computation acceptance, complete hosted-runner matrix, actual account
+  cleanup and independent CI artifact/source/checksum verification.

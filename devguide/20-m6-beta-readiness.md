@@ -4,6 +4,10 @@ Date: 2026-11-08. **Local M6 acceptance passed; 0.1.0b1 prepared, unpublished.**
 No M7 extension or package publication is included. This report records work,
 experiments, decisions, files, tests, acceptance, limits and the next step.
 
+Subsequent hosted CI, its fixture correction, direct-push maintainer workflow and
+downloaded artifact checksums are recorded in [the CI follow-up](21-m6-github-ci.md).
+Statements about unobserved CI below describe the original local validation stage.
+
 ## Work delivered
 
 - Reviewed transport, authentication, ownership, bindings, input quoting,
