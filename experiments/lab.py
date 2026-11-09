@@ -166,6 +166,10 @@ Host *
 Match host 127.0.0.1
     ServerAliveInterval 5
 """)
+            # A group-writable operator umask must not weaken fixture SSH config.
+            # Newer OpenSSH also checks included files supplied through -F.
+            for config in (self.config, included):
+                config.chmod(0o600)
             return self
         except BaseException:
             self.stack.close()
