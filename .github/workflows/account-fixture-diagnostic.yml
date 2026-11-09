@@ -1,0 +1,49 @@
+name: account-fixture-diagnostic
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/account-fixture-diagnostic.yml']
+permissions:
+  contents: read
+jobs:
+  provision:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    strategy:
+      fail-fast: false
+      matrix:
+        sample: [1, 2]
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get update && sudo apt-get install -y openssh-server strace
+      - name: Trace disposable account provisioning
+        run: |
+          sudo mkdir -p /run/sshd
+          fixture_root="$(/usr/bin/python3 -c 'from experiments.m5_accounts import prepare; print(prepare())')"
+          echo "JUPYHOP_TEST_ROOT=$fixture_root" >> "$GITHUB_ENV"
+          sudo /usr/sbin/useradd -D
+          sudo timeout 10s du -sk /etc/skel
+          sudo strace -f -qq -ttt -T -s 80 -e trace=process,fcntl,flock,futex,connect,poll,ppoll,select,pselect6,epoll_wait,copy_file_range,sendfile,nanosleep,clock_nanosleep,read,pread64,write,pwrite64,readv,writev,getdents64,openat,close -e raw=read,pread64,write,pwrite64,readv,writev,getdents64 -o "$fixture_root/provision.trace" /usr/bin/python3 -m experiments.m5_accounts provision --root "$fixture_root"
+          /usr/bin/python3 -m experiments.m5_accounts check --root "$fixture_root"
+      - name: Inspect timing and remove only the fixture
+        if: always() && env.JUPYHOP_TEST_ROOT != ''
+        run: |
+          if sudo test -f "$JUPYHOP_TEST_ROOT/provision.trace"; then
+            sudo /usr/bin/python3 - "$JUPYHOP_TEST_ROOT/provision.trace" <<'PY'
+          import re, sys
+          from pathlib import Path
+          lines = Path(sys.argv[1]).read_text().splitlines()
+          slow = []
+          for line in lines:
+              duration = re.search(r'<([0-9]+\.[0-9]+)>$', line)
+              if 'useradd' in line or 'SIGKILL' in line or duration and float(duration[1]) >= 0.25:
+                  slow.append(line)
+          print('\n'.join(slow[-100:]))
+          print('Final syscall context:')
+          print('\n'.join(lines[-40:]))
+          PY
+          fi
+          if sudo test -f "/run/$(basename "$JUPYHOP_TEST_ROOT")/state.json"; then
+            sudo /usr/bin/python3 -m experiments.m5_accounts cleanup --root "$JUPYHOP_TEST_ROOT"
+          fi
+          rm -rf -- "$JUPYHOP_TEST_ROOT"
