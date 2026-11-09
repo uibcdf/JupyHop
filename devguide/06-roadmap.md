@@ -80,7 +80,7 @@ nondeleting archive of inactive evidence, not automatic scientific-resource clea
 ## M6 — Public beta, compatibility and release
 
 **Local acceptance passed 2026-11-08:** [beta preparation, compatibility experiments
-and internal security review](20-m6-beta-readiness.md). Version 0.1.0 is prepared
+and internal security review](20-m6-beta-readiness.md). Version 0.1.0 was prepared
 locally; four-version regression/clean-wheel and actual-browser gates pass.
 The [GitHub CI follow-up](21-m6-github-ci.md) verifies all four Python versions,
 server comparisons, Chrome, two actual Unix accounts/cleanup and downloaded
@@ -93,15 +93,15 @@ No package publication or M7 extension has been performed.
 
 ## 0.2.0 — Operational stabilization before 1.0
 
-**In progress after M6:** [scope, acceptance gates and safe pilot](22-02-stabilization.md)
+**Operational candidate prepared:** [scope, acceptance gates and safe pilot](22-02-stabilization.md)
 and [observed evidence](23-02-stabilization-evidence.md).
-The current package remains 0.1.0. Complete the existing core workflows in an
-authorized real-site pilot, observe bounded endurance/network recovery, verify an
-installed-client upgrade without losing a live kernel, and close demonstrated
-usability defects before preparing 0.2.0 artifacts. Confirm the supported client
-OS and SSH authentication contract. The maintainer requires both native terminal
-SSH passwords and keys/agent; headless/--batch requires noninteractive access.
-Do not count unobserved site acceptance as passed.
+The current package is 0.2.0, unpublished. Real manual/managed sessions, a
+7200-second disconnected workload, native terminal/password workflows and the
+installed-client upgrade are covered by the recorded experiments. The maintainer
+requires both native SSH passwords and keys/agent; headless/--batch requires
+noninteractive access. Candidate packaging uses the actual wheel. Physical home
+client/network moves and forced logout/reboot remain unmeasured; their limits are
+explicit and are not counted as passed observations.
 
 This is stabilization of M0–M6, not a dependency on optional M7 features. Keep the
 finite acceptance matrix distinct from a claim of universal compatibility.

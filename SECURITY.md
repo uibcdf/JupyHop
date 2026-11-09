@@ -1,6 +1,6 @@
 # Security policy
 
-JupyHop 0.1.0 is a pre-1.0 candidate, not an independently audited product. Its
+JupyHop 0.2.0 is a pre-1.0 candidate, not an independently audited product. Its
 supported boundary is described in [compatibility](docs/compatibility.md) and the
 [threat model](devguide/04-security-and-reliability.md). Until a release is
 published, use a reviewed checkout/artifact; no historical public release receives

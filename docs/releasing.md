@@ -1,6 +1,6 @@
 # Preparing a release
 
-The current candidate is 0.1.0. This repository has not published it to PyPI.
+The current candidate is 0.2.0. This repository has not published it to PyPI.
 Builds, CI artifacts, commits and tags do not constitute a package publication.
 Uploading a release is a separate explicit maintainer action after artifact review.
 
@@ -20,6 +20,9 @@ checking a package, and wire/registry versions keep their independent contracts.
 3. Run lint/type checks, the full four-Python suite, compatibility, legacy-runner,
    browser and clean-wheel experiments described in CONTRIBUTING and the M6 report.
    Record exact versions; preserve separate real-account evidence from M5.
+   The 0.2.0 stabilization also requires native terminal/Unix-password acceptance
+   and the actual installed-wheel upgrade from the trusted 0.1.0 baseline. See
+   [the experiment instructions](../experiments/stabilization.md).
 4. Build in a clean checkout/environment with only the chosen release artifacts
    in `dist`, then run:
 

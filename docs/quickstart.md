@@ -1,7 +1,7 @@
 # Quickstart
 
 JupyHop's client runs on Linux with CPython 3.11–3.14 and OpenSSH. It needs no
-local Jupyter and no Python runtime dependencies. The beta artifacts are prepared
+local Jupyter and no Python runtime dependencies. The 0.2.0 artifacts are prepared
 locally; this version has not been published to PyPI.
 
 ## Install the client
@@ -34,6 +34,10 @@ configuration. A POSIX-compatible remote login shell and Python >=3.11 are requi
 Headless commands or explicit `--batch` require noninteractive SSH authentication.
 Terminal authentication has its own `--ssh-auth-timeout` (default 120 seconds);
 `--timeout` bounds probes/network startup. No key provisioning is mandatory.
+
+`doctor` inspects only its selected Python. A system Python without Jupyter can
+still act as the stdlib discovery helper for servers in Conda/venv environments;
+Jupyter does not need installing into that system Python just to open one.
 
 With your current-user Jupyter server already running remotely:
 

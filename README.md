@@ -6,13 +6,14 @@ JupyHop is an open-source project for **discovering, opening, launching, managin
 
 It is designed for researchers, data scientists, developers, and small teams who already have SSH access to workstations or servers and want to work with their remote notebooks as easily as with local ones.
 
-> **Project status: M6 — pre-1.0 candidate 0.1.0.** Existing-server access, managed lifecycle/reconnection, profiles, multi-host inventory and safe record archiving are implemented for supported Linux servers and CPython 3.11–3.14 clients. Persistence depends on remote OS policy; reboot/crash does not preserve kernel memory. The candidate is prepared locally and **not published on PyPI**. See the [M6 evidence and limits](devguide/20-m6-beta-readiness.md).
+> **Project status: 0.2.0 — operational pre-1.0 stabilization candidate.** Existing-server access, managed lifecycle/reconnection, native SSH passwords/keys, profiles, multi-host inventory and safe record archiving are implemented for supported Linux servers and CPython 3.11–3.14 clients. Persistence depends on remote OS policy; reboot/crash does not preserve kernel memory. The candidate is prepared locally and **not published on PyPI**. See [observed acceptance and limits](devguide/23-02-stabilization-evidence.md).
 
 Start with the [quickstart](docs/quickstart.md), [compatibility matrix](docs/compatibility.md)
 and [troubleshooting](docs/troubleshooting.md). Development instructions are in
 [CONTRIBUTING](CONTRIBUTING.md); vulnerability reporting is in [SECURITY](SECURITY.md).
-The next target is [0.2.0 operational stabilization](devguide/22-02-stabilization.md);
-see [observed progress and remaining gates](devguide/23-02-stabilization-evidence.md).
+The [0.2.0 operational scope](devguide/22-02-stabilization.md) and
+[acceptance evidence](devguide/23-02-stabilization-evidence.md) distinguish tested
+workflows from the remaining physical-client/site observations.
 
 ## The problem
 
@@ -299,7 +300,7 @@ See [security and reliability](devguide/04-security-and-reliability.md), [discov
 ## Development roadmap
 
 M0–M6 acceptance is recorded for the documented support boundary, including
-hosted GitHub CI. The next increment is operational stabilization for 0.2.0.
+hosted GitHub CI. Version 0.2.0 prepares those workflows for pre-1.0 stabilization.
 The full roadmap is:
 
 1. **M0 — Validate design assumptions:** discovery, auth handoff, process managers, tunnel lifetime, and remote helper.

@@ -28,8 +28,10 @@ jobs:
       - run: python -m build
       - run: python -m experiments.release_check
       - run: python -m experiments.package_smoke
-      - name: Verify installed client upgrade with a temporary 0.2.0 preview
-        run: python -m experiments.client_upgrade --preview-version 0.2.0
+      - name: Verify installed client upgrade from 0.1.0 using the actual candidate
+        run: |
+          candidate_wheel="$(python -c 'from pathlib import Path; print(next(Path("dist").glob("jupyhop-*.whl")))')"
+          python -m experiments.client_upgrade --candidate-wheel "$candidate_wheel"
       - if: matrix.python == '3.14'
         uses: actions/upload-artifact@v4
         with:

@@ -1,6 +1,6 @@
 # 14 — Acceptance ledger
 
-Created: 2026-11-07; updated through M6: 2026-11-08. Every scenario in [08](08-scenarios-and-acceptance.md)
+Created: 2026-11-07; updated through 0.2.0 stabilization. Every scenario in [08](08-scenarios-and-acceptance.md)
 has a gate and a test target below. `A-<scenario>` is a **planned acceptance
 test ID**, not an existing automated test. M0 spikes are feasibility evidence;
 they do not satisfy later product gates. Details, versions and isolation:
@@ -10,6 +10,8 @@ Managed launch evidence: [M3 report](17-m3-managed-launch.md).
 Lifecycle/kernel/legacy-runner evidence: [M4 report](18-m4-lifecycle.md).
 Profiles/multi-host/real-account/archive evidence: [M5 report](19-m5-scientific-workflows.md).
 Beta compatibility/security/artifact evidence: [M6 report](20-m6-beta-readiness.md).
+Native SSH authentication, real-site endurance and installed upgrade evidence:
+[0.2.0 report](23-02-stabilization-evidence.md).
 
 For future gates the fixture, assertions and failure output follow the expected
 behavior of the corresponding row in 08. Automated fixtures use disposable
@@ -36,7 +38,7 @@ SEC gates apply from the first relevant prototype onward, not only at release.
 | DISC-07 | M2 | Password integration; token form/browser smoke | M2 normal login verified; custom auth not universally supported |
 | DISC-08 | M2 | Documented M2 auth/proxy/version restrictions in 16 | M2 limitation explicit; no universal proxy compatibility claim |
 | LIFE-01 | M3 | `test_managed_start_password_kernel_and_owned_registry`; browser smoke --managed | M3 verified: correct user/workdir/Python, auth, loopback and kernel execution |
-| LIFE-02 | M4 | `test_independent_clients_preserve_notebook_kernel_memory_and_stop`; browser --managed --reconnect | Verified after browser/tunnel/first-client exit; site PAM/logout policy external |
+| LIFE-02 | M4/0.2 | Independent-client/browser acceptance and 7200-second real-site pilot | Same kernel/memory after browser/tunnel/first-client exit and two hours disconnected; configured KillUserProcesses=false/Linger=no observed, forced last logout unmeasured |
 | LIFE-03 | M4 | Independent-client integration and `experiments.m4_reconnect` | Separate keys/HOMEs/configs/processes and fresh password login verified; physical machines not used |
 | LIFE-04 | M4 | `test_two_owned_forwards_share_one_live_kernel_without_restarting` | Same kernel memory verified, including after one tunnel closes |
 | LIFE-05 | M4 | Confirmed CLI stop, selected-only stop, unrelated-process/socket guards, pidfd unit test | Graceful managed stop verified; no forced escalation |
@@ -49,7 +51,7 @@ SEC gates apply from the first relevant prototype onward, not only at release.
 | LIFE-12 | M4 | `test_crashed_server_is_stale_and_is_never_automatically_restarted`; M2 endpoint loss checks | Process loss verified; no kernel resurrection or automatic restart |
 | SCI-01 | M5 | CLI profile precedence, two-target Conda/venv launch, native stdlib helper and shared server environment | Explicit executable profiles verified; no activation hooks or CLI kernel-selector promise |
 | SCI-02 | M5 | Profile integration verifies relative HOME path, symlink canonicalization, tilde, spaces/Unicode/metacharacters | Remote path semantics verified; long-running scientific filesystem behavior remains broader acceptance |
-| SCI-03 | M4 | Independent-client background computation and browser reconnect | Computation survives tested disconnect; hours-long workload/site logout policy not measured |
+| SCI-03 | M4/0.2 | Independent-client/browser acceptance and real-site toy computation | Same kernel/session/memory and advancing workload after 7200 disconnected seconds; physical last logout/reboot unmeasured |
 | SCI-04 | M5 | `test_two_hosts_profile_launch_science_reconnect_and_archive` | Two disposable targets/kernels/forwards coexist and reconnect without losing memory |
 | SCI-05 | M7 | `A-SCI-05` | Pending |
 | SEC-01 | M1 | `test_unknown_host_key_is_refused`; `test_changed_host_key_is_refused` | M1 satisfied (SSH trust) |
@@ -72,8 +74,8 @@ SEC gates apply from the first relevant prototype onward, not only at release.
 | DISC-11 | M2/0.2 | Multiple-server/custom-runtime/deduplication and crowded-runtime integration | Live endpoints retained across runtime paths when stale diagnostics fill the sample; discovery remains bounded and partial |
 | DISC-12 | M2/M6 | `test_live_password_rotation_requires_fresh_authorized_login` | Same live server, fresh client/tunnel; old password denied, new password accepted; existing cookies follow upstream policy |
 | LIFE-13 | M4 | Reused PID/start/socket refusal and M2 changed-server open guard | Replacement identity cannot authorize old-session stop/open; no continuity claim |
-| LIFE-14 | M4/M6 | Legacy experiment against trusted M3 and M5 sources; incompatible-schema integration | Beta status/idempotent stop preserves immutable historical runner/hash; no migration/replacement |
-| LIFE-15 | M4/M6 | Historical runners/current source RPC, additive intent, strict parser/schema refusal | Tested combinations and refusal policy documented; arbitrary client versions/future migrations not promised |
+| LIFE-14 | M4/M6/0.2 | Trusted M3/M5 runner acceptance and installed-client upgrade experiment | Live kernel/registry/runner bytes preserved across tested installed old/new clients; no migration/replacement |
+| LIFE-15 | M4/M6/0.2 | Historical runners, installed 0.1.0-to-0.2.0 acceptance, strict parser/schema refusal | Tested combinations and refusal policy documented; arbitrary client versions/future migrations not promised |
 | LIFE-16 | M4 | CLI SIGINT/SIGHUP/SIGTERM cleanup and independent-client memory acceptance | Attached lifetime/kernel survival verified; no attached-forward survival promise after SIGKILL/network failure |
 | LIFE-17 | M4 | Lost start reply after spawn/checkpoint; status promotes starting to ready | Recovery verified without duplicate launch; pre-PID unconfirmed intent remains starting |
 | UX-01 | M2 | Zero-config direct/jump integration; browser smoke | M2 verified for supported defaults |

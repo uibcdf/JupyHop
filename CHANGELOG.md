@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased — 0.2.0 stabilization
+## 0.2.0 — prepared for pre-1.0 stabilization, unpublished
 
 - Support native terminal SSH passwords/passphrases and keys/agent through one
   invocation-owned foreground master per route. Add --batch and a bounded
@@ -12,6 +12,17 @@
 - Classify timeouts, execution errors and malformed responses during the
   pre-launch environment check as prerequisite failures before any state/server
   creation; retain the existing timeout and credential redaction.
+- Verify installed 0.1.0-to-0.2.0 clients preserve live kernels and immutable
+  runners, including simultaneous old/new clients with independent keys/HOMEs.
+- Observe two hours of disconnected toy computation on a real Linux target,
+  followed by the same kernel/session/PID/memory/progress and verified own cleanup.
+- Add native terminal/password, guarded site-fixture and cleanup regressions;
+  CI covers Python 3.11–3.14, actual Unix passwords/accounts and browser kernels.
+
+Supported operation remains bounded by the [compatibility matrix](docs/compatibility.md).
+Physical home-client network moves, forced last logout/reboot, other client OSes
+and individually configured MFA variants remain unmeasured. See
+[the acceptance evidence](devguide/23-02-stabilization-evidence.md).
 
 ## 0.1.0 — prepared, unpublished
 

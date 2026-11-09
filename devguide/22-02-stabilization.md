@@ -1,9 +1,9 @@
 # 22 — 0.2.0 operational stabilization
 
-Status: in progress; see [observed evidence](23-02-stabilization-evidence.md).
-Current package: 0.1.0. Target: 0.2.0, using the numeric
-x.y.z release policy. This increment follows M6 and precedes optional M7 work.
-This plan does not claim a completed 0.2.0 release or unobserved site acceptance.
+Status: operational candidate 0.2.0 prepared for pre-1.0 stabilization; see
+[observed evidence](23-02-stabilization-evidence.md). Numeric x.y.z naming follows
+the maintainer policy. This increment follows M6 and precedes optional M7 work.
+Package publication and unperformed physical-client/site cases are not claimed.
 
 ## Objective and supported boundary
 
@@ -22,7 +22,7 @@ stop requirements remain separate from existing-server access. See
 **Confirmed scope:** the maintainer requires both native SSH password prompts and
 keys/agent for 0.2.0. Invocation-private connections now delegate terminal input
 to OpenSSH and reuse only their own verified master. Headless/--batch operation
-requires noninteractive authentication. Terminal, real-route and remaining
+requires noninteractive authentication. Terminal, real-route and Unix
 password-fixture evidence are tracked in [the stabilization report](23-02-stabilization-evidence.md).
 Interactive MFA variants still require their own evidence; none is assumed passed.
 
@@ -42,10 +42,11 @@ Linux/IPv4 support claim or advertise them before testing.
   surviving kernel/session/memory are demonstrated on disposable loopback targets.
 - Signals, lost replies, port/identity conflicts, partial discovery, password
   rotation and bounded data/WebSocket traffic are covered. Physical network/site
-  transitions and hours-long endurance are not yet observed.
-- Immutable historical runner compatibility is observed. A full installed
-  0.1.0-to-0.2.0 client upgrade while a scientific-style kernel stays alive is
-  still a separate stabilization gate.
+  transitions were not part of that baseline; the subsequent two-hour real-site
+  endurance result is recorded in the stabilization report.
+- Immutable historical runners and installed 0.1.0-to-0.2.0 preview clients are
+  observed with the same live kernel. Final packaging uses the actual 0.2.0 wheel;
+  its local/hosted checks accompany candidate preparation.
 
 Detailed evidence: [M6 local report](20-m6-beta-readiness.md),
 [hosted CI follow-up](21-m6-github-ci.md) and
@@ -55,14 +56,14 @@ Detailed evidence: [M6 local report](20-m6-beta-readiness.md),
 
 | Gate | Required demonstration | Current state |
 | --- | --- | --- |
-| Support and authentication contract | Freeze client/remote OS, Python/server versions, SSH auth and supported endpoints; clearly diagnose unsupported prerequisites | Baseline documented; pilot OS/auth choice pending |
-| Real existing-server open | With an existing SSH alias, discover/open a manually launched current-user server, including selected Conda runtimes and ProxyJump, without choosing ports or requiring TOML; normal authorized login works | Automated mechanism passes; real-site pilot pending |
-| Real managed workflow | Select an existing Python/project, start a uniquely named temporary session, close first client/tunnel/browser, then use an independent authorized client to recover the same notebook/kernel/PID/memory; stop/archive only that created UUID | Loopback and real-UID mechanisms pass; real-site pilot pending |
-| Endurance and route recovery | A bounded multi-hour toy workload survives supported client disconnections; direct/ProxyJump routes reach the same registry; interruption/reconnect does not create a duplicate server | Short automated cases pass; endurance and physical route/client transition evidence pending |
-| Site persistence and failure truth | Establish the dedicated test account's actual logout policy; unavailable routes, process loss/reboot identity, changed credentials and stale state give correct recovery guidance without touching unrelated workloads | Simulation/error mechanisms pass; safe site-policy observation pending |
-| Installed upgrade | Launch via an installed 0.1.0 wheel, upgrade a client to 0.2.0, reconnect independently and retain PID/kernel/session/memory and immutable runner; verify documented old/new-client compatibility or explicit refusal | Historical source compatibility passes; installed-version upgrade gate pending |
-| Usability and regression | A fresh client follows the quickstart; common errors identify the required action; CLI/JSON/exit contracts match docs; the declared supported matrix stays green, with the actual pilot OS recorded and additional OS versions tested before claiming them | Current matrix passes; pilot usability and final support matrix pending |
-| Distribution | Build/review 0.2.0 wheel and source with matching version/license/entrypoint/checksums, no mandatory Python deps or real infrastructure/credentials; clean install/upgrade and updated release notes pass | Build machinery exists; 0.2.0 artifacts await gate completion |
+| Support and authentication contract | Freeze client/remote OS, Python/server versions, SSH auth and supported endpoints; clearly diagnose unsupported prerequisites | Linux CPython 3.11–3.14; native terminal passwords/passphrases and keys/agent; endpoint and MFA limits documented |
+| Real existing-server open | Discover/open manually launched current-user servers in selected Conda runtimes; preserve normal login and automate forwarding | Real two-environment direct open/login; automated Jupyter/password ProxyJump; real three-machine SSH/password doctor and honest empty discovery. Positive Jupyter open on the second actual target remains unobserved |
+| Real managed workflow | Start in an existing Python/project; disconnect and recover the same server/kernel/session/memory; stop/archive only its new UUID | Real Linux target passes short and 7200-second recovery; independent key/HOME/client processes pass in CI. A second physical client remains a separate manual observation |
+| Endurance and route recovery | A bounded multi-hour toy workload survives disconnection; alternate configured routes do not create duplicate managed servers | 7200 seconds and final memory/progress/identity pass; direct/jump/changed-route mechanisms pass. Physical home/network/suspend transitions remain unmeasured |
+| Site persistence and failure truth | Observe configured site policy and safe disconnect behavior; process loss and changed credentials must be reported truthfully | Effective KillUserProcesses=false/Linger=no recorded without changes; real SSH closure/endurance and simulated reboot/stale/error cases pass. Forced last logout/physical reboot are not claimed |
+| Installed upgrade | Installed 0.1.0 baseline to actual 0.2.0 candidate, concurrent old/new clients, same live kernel and immutable runner/registry | Actual 0.2.0 wheel passes locally with upgraded, concurrent old and independent new clients; the candidate workflow enforces this on all four Python versions |
+| Usability and regression | Fresh-client instructions, actionable errors and CLI/JSON/exit contracts match the declared supported matrix | 294 tests per Python and six successful hosted jobs; real operator password diagnostics; fresh clients without local Jupyter |
+| Distribution | Matching numeric version, MIT, CLI entrypoint, no mandatory Python deps, complete safe wheel/sdist and clean installation | Local 0.2.0 artifact inspection, checksums and actual-wheel clean install/upgrade pass; publication is separate |
 
 These gates reuse the existing NET, DISC, LIFE, SCI, SEC and UX scenarios rather
 than introducing unrelated features. In particular, real network transitions
@@ -100,13 +101,12 @@ ordinary kernel memory; expected behavior is truthful stale/lost-state detection
 
 ## Implementation order and decisions
 
-1. Confirm pilot aliases, client OS and SSH auth; freeze the 0.2.0 support contract.
-2. Prepare the real-site and installed-wheel upgrade experiments. Work that needs
-   no real target can proceed independently of the pilot.
-3. Run the pilot and bounded endurance, then fix demonstrated defects and UX gaps.
-   Add meaningful regressions for those findings and extend the observed matrix.
-4. Reconcile current docs/CLI/ledger, run final checks and build reviewed 0.2.0
-   artifacts. Bump the package only when the target scope and acceptance are clear.
+1. Keep 0.2.0 within the observed Linux/endpoint/authentication boundary above.
+2. Stabilize with actual users and a second physical home client when available;
+   record exact evidence rather than broadening claims from unavailable cases.
+3. Fix demonstrated defects with meaningful regressions, run the matrix and
+   rebuild reviewed numeric-version artifacts for each candidate increment.
+4. Extend OS/auth/URL/process-manager scope only after its own acceptance.
 
 Maintainers continue small coherent commits and direct pushes to main. Tags,
 GitHub releases and PyPI upload remain separate explicitly requested actions.

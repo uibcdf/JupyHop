@@ -5,7 +5,7 @@
 > Real Unix account isolation and test-fixture cleanup are verified. OS logout
 > policy, physical reboot and wider compatibility are bounded in the reports.
 > See the milestone reports below for exact acceptance evidence and limits.
-> The next target is [0.2.0 operational stabilization](22-02-stabilization.md),
+> The [0.2.0 operational stabilization candidate](22-02-stabilization.md) is prepared,
 > with [observed progress](23-02-stabilization-evidence.md) for real-site,
 > native SSH passwords/keys, endurance and installed-upgrade acceptance.
 
@@ -74,8 +74,8 @@ This directory is the project's design source of truth. Update specifications an
 - [M6 GitHub CI follow-up](21-m6-github-ci.md): direct pushes to main, deterministic
   background-computation acceptance, complete hosted-runner matrix, actual account
   cleanup and independent CI artifact/source/checksum verification.
-- [0.2.0 operational stabilization](22-02-stabilization.md): remaining acceptance
+- [0.2.0 operational stabilization](22-02-stabilization.md): scoped acceptance
   gates, SSH/OS support decisions, safe real-site pilot and installed-client
-  upgrade evidence; work in progress.
+  upgrade evidence and the explicit boundaries for pre-1.0 stabilization.
 - [0.2.0 evidence](23-02-stabilization-evidence.md): observed site workflows,
   stale-metadata correction, native SSH terminal authentication and exact limits.

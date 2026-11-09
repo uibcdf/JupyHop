@@ -1,7 +1,7 @@
 # 23 — 0.2.0 stabilization evidence
 
-Status: in progress. Package metadata remains 0.1.0; 0.2.0 is the target, not a
-published release. All real aliases, addresses, users and executable paths stay
+Status: operational 0.2.0 candidate prepared for pre-1.0 stabilization, unpublished.
+All real aliases, addresses, users and executable paths stay
 in private operator evidence outside the repository. Role labels below do not
 identify institutional infrastructure.
 
@@ -27,15 +27,17 @@ identify institutional infrastructure.
   The original underlying exception was not captured and is not claimed solved.
   Read-only status and directory inspection established no registered launch;
   only its marked toy directories were then removed. Later short acceptance
-  passed. Reproducible preflight timeout/exec/JSON failures are now correctly
-  classified before any registry/launch, without increasing the 8-second bound.
+  and two-hour acceptance passed. Reproducible preflight timeout/exec/JSON failures
+  are now correctly classified before any registry/launch, without increasing
+  the 8-second bound.
 - An installed-client experiment builds the trusted historical 0.1.0 source at
   `21e0dc97161d83088ae6ad850027fa4d17ee4d3c`, installs it without local Jupyter,
   starts a kernel, closes the connection, upgrades that venv to a temporary 0.2.0
   preview, and reconnects concurrent old and independent new clients with separate
   keys/HOMEs/routes. PID/kernel/session/memory/progress and immutable registry/
-  runner bytes match. Safe stop/archive pass. This preview must be repeated with
-  the final actual 0.2.0 wheel before final distribution acceptance.
+  runner bytes match. Safe stop/archive pass. The candidate workflow now uses
+  the actual built wheel instead of a temporary version preview; final local
+  artifact acceptance is recorded below.
 - Native terminal authentication passed direct and ProxyJump tests using an
   encrypted fixture key. Ctrl-C, SIGTERM and authentication timeout restore
   terminal echo and leave no owned SSH/proxy process. CLI open prompts once per
@@ -105,7 +107,7 @@ connections preserve the existing ownership/revalidation model with fewer prompt
 Primary references: [OpenSSH ssh](https://man.openbsd.org/ssh.1) and
 [ssh_config](https://man.openbsd.org/ssh_config.5).
 
-## Verification and remaining gates
+## Verification
 
 Local CPython 3.14 observes 294 passing tests (225 unit, 69 integration), ruff and
 strict mypy. The isolated installed preview upgrade and clean-wheel smoke pass.
@@ -143,24 +145,80 @@ were removed; normal runtime entries returned to the original 495 plus the four
 files belonging to the still-active endurance manual fixtures. No pre-existing
 metadata was deleted or modified.
 
+After endurance completed, the same guards removed its two remaining own JSON
+records and two native HTML redirects. The ordinary runtime returned to exactly
+its original 495 entries. Separate PID/start-identity verification found neither
+the owned managed server nor its kernel alive after stop/archive. All experiment
+projects, manual servers and client connections were cleaned; inactive managed
+archives intentionally retain their normal recovery evidence.
+
 The reproducible driver now places manual metadata/redirects in its exclusive
 private runtime and supplies that explicit known path during discovery. Its
 integration tests assert the original runtime file names/bytes remain unchanged
 on success and definitive preflight failure. This fixture correction adds no
 product adoption or automatic unmanaged metadata cleanup feature.
 
-An additional password-fixture case is being added to start via CLI with a piped
-new Jupyter password while native OpenSSH reads its separate password from the
-controlling terminal. That test actor, not JupyHop, types only a synthetic secret.
+The subsequent [hosted run](https://github.com/uibcdf/jupyhop/actions/runs/42554470299)
+at e15ed77 also completes all six jobs with the isolated site runtimes and CLI
+start's piped new Jupyter password separate from native terminal SSH input.
+That test actor, not JupyHop, types only a synthetic SSH secret. Privileged fixture
+cleanup is observed successful after all password cases.
 
-A 7200-second real-site toy workload is in progress, with no Jupyter/tunnel
-connection to that workload during the hold. Brief unrelated read-only host/
-route diagnostics do not establish a controlled last-logout test. Completion,
-reconnection and cleanup remain pending until observed.
+Read-only logind queries on the real endurance target report effective
+KillUserProcesses=false and Linger=no for the current user. No policy, linger or
+service configuration was changed. This records configured policy, not an actual
+forced last-logout experiment.
 
-Remaining: finish endurance and final CI after fixture changes, review/rebuild actual 0.2.0 artifacts
-and repeat installed-wheel acceptance; reconcile all current docs/contracts.
+## Main files changed
+
+| Area | Files |
+| --- | --- |
+| SSH authentication and resource lifetime | [connection.py](../src/jupyhop/connection.py), [ssh.py](../src/jupyhop/ssh.py), [tunnel.py](../src/jupyhop/tunnel.py), [CLI](../src/jupyhop/cli.py), [fleet](../src/jupyhop/fleet.py) |
+| Discovery and preflight fixes | [discovery probe](../src/jupyhop/_discovery_probe.py), [managed runner/RPC](../src/jupyhop/_managed_remote.py), discovery/open and managed tests |
+| Reproducible acceptance | [installed upgrade](../experiments/client_upgrade.py), [site pilot](../experiments/site_pilot.py), [Unix password](../experiments/password_smoke.py), [guarded account fixture](../experiments/m5_accounts.py), [instructions](../experiments/stabilization.md) |
+| Automated guards | [native terminal integration](../tests/integration/test_ssh_auth.py), [site integration](../tests/integration/test_site_pilot.py), [site cleanup](../tests/test_site_fixture.py), [account guards](../tests/test_account_fixture.py), [pool cleanup](../tests/test_connection.py) |
+| Packaging and CI | [pyproject](../pyproject.toml), [workflow](../.github/workflows/checks.yml); README, CHANGELOG, SECURITY, CONTRIBUTING, quickstart, troubleshooting and compatibility |
+| Design and acceptance | Architecture/security/CLI guide, roadmap, D43–D45, scenario ledger, [0.2.0 plan](22-02-stabilization.md) and this evidence report |
+
+## Candidate verification
+
+A 7200-second real-site toy workload passed. No Jupyter/tunnel connection to that
+workload was held during the interval. A fresh worker, login and forward recovered
+the same server PID, notebook/session, kernel identity, memory checksum and
+advancing computation; stop/archive and exact process cleanup then passed.
+Brief unrelated read-only host/route diagnostics do not establish a controlled
+last-logout test.
+
+The actual 0.2.0 wheel passes local clean-client acceptance without local Jupyter:
+profiles/fleet, existing access and managed start/open/status/stop/archive through
+ProxyJump, with owned-tunnel cleanup. Installed upgrade from the trusted 0.1.0
+wheel also passes with the actual candidate, preserving live server/kernel/
+session/PID/memory/progress and immutable registry/runner bytes while upgraded,
+old and independent new clients coexist. Stop/archive affects only its toy UUID.
+Wheel/source inspection verifies numeric version, MIT, CLI entrypoint, Python
+classifiers, zero mandatory dependencies, safe archives and complete source/docs.
+The wheel's embedded README matches the UTF-8 source; 225 local documentation
+links resolve. Rebuilding from the source distribution produces identical wheel
+member names and bytes. Checksums accompany artifacts in dist/SHA256SUMS.
+
+The [candidate workflow](https://github.com/uibcdf/jupyhop/actions/workflows/checks.yml?query=branch%3Amain)
+now enforces the actual-wheel upgrade on each Python 3.11–3.14, in addition to
+the previously observed six-job regression/browser/account/password matrix.
+Each candidate's run must be observed independently; prior green runs do not
+substitute for its result.
+
+## Acceptance boundary and next work
+
+The scoped Linux functionality, native password/key authentication, discovery,
+managed persistence, concurrency, safe lifecycle and two-hour recovery gates have
+observed results. The [gate table](22-02-stabilization.md) maps these results to
+the supported matrix. Package publication is a separate maintainer action.
+
 Physical home/laptop suspend/network moves, a second physical client and actual
 last-logout/reboot policy remain unmeasured. The real password route's doctor
 does not by itself demonstrate Jupyter start/kernel operation on that second
 target. Do not turn unavailable or unperformed manual cases into passing results.
+
+The recommended next increment is actual-user stabilization of the declared
+0.2.0 workflows, including a separate physical home client and broader site/OS
+observations when available. Optional M7 features remain outside this increment.

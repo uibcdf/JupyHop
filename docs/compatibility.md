@@ -1,6 +1,6 @@
 # Compatibility and version policy
 
-JupyHop 0.1.0 is a Linux pre-1.0 candidate. Compatibility means the specific
+JupyHop 0.2.0 is a Linux pre-1.0 stabilization candidate. Compatibility means the specific
 workflows/versions observed below, not every Jupyter Server 2 deployment. The
 client needs OpenSSH and CPython 3.11–3.14; it has zero mandatory Python packages
 and needs no local Jupyter. Free-threaded Python, macOS and Windows are untested.
@@ -15,7 +15,7 @@ and needs no local Jupyter. Free-threaded Python, macOS and Windows are untested
 | Unsupported endpoints | Public/wildcard listeners, IPv6-only, HTTPS, Unix sockets, legacy nbserver metadata, exotic auth/proxies. Refused or labeled unsupported; no TLS/host-key bypass. |
 | Managed start | Existing Python >=3.11, Jupyter Server >=2.20,<3, usable kernelspec, tmux and a readable stable Linux machine ID; selected directory must exist. Server 2.21.1 is the recommended tested stack. |
 | Safe stop | Linux pidfd support (kernel >=5.3), exposed by Python or named libc wrappers. Otherwise refused. No PID-only or forced-kill fallback. |
-| Persistence | Private tmux, subject to site PAM/cgroup/last-logout policy. Browser/tunnel closure is tested; physical reboot/logout policies and long physical network moves remain site acceptance. |
+| Persistence | Private tmux, subject to site PAM/cgroup/last-logout policy. Browser/tunnel closure and two hours of real-site disconnected computation are tested. Configured site KillUserProcesses=false/Linger=no was observed; physical last logout/reboot/network moves remain unmeasured. |
 
 Remote helper Python and server Python may differ. Conda/venv/system executables
 are selected directly, without activation or remote installation. Notebook kernels
@@ -42,6 +42,8 @@ records additional tests, native terminal authentication and real-site observati
 | 2.17.0 / 3.11.18 | Passed with an explicitly started server port | Refused before registry creation; native port=0 metadata is incorrect |
 | 2.20.0 / 3.11.18, Tornado 6.5.8 | Passed | Passed |
 | 2.21.1 / 3.11.18, 3.12.16, 3.13.18, 3.14.10 | Covered by the four-version regression / clean-wheel acceptance | Covered by the same tests |
+| 2.17.0 / 3.12.11, real Linux target | Manual open/private login passed; no kernel was executed in this manual fixture | Below the managed minimum; not launched |
+| 2.21.1 / 3.14.7, real Linux target | Manual open/private login passed | Start/reconnect/same live kernel after 7200 disconnected seconds, graceful stop and archive passed |
 
 These are feature-compatibility observations, not a recommendation to install old
 server versions. Upstream fixes matter: Server 2.20 corrected reporting the bound
@@ -62,13 +64,16 @@ server-version comparisons, Chrome/JupyterLab and actual Unix-account isolation
 with cleanup. Chrome acceptance is separate from API tests. This evidence does
 not establish compatibility with other operating systems, real-site logout
 policies or physical network moves. Those boundaries and the installed-client
-upgrade are part of the planned [0.2.0 stabilization](../devguide/22-02-stabilization.md).
+upgrade are tracked in [0.2.0 scope](../devguide/22-02-stabilization.md) and
+[observed acceptance](../devguide/23-02-stabilization-evidence.md). The tested
+real-site OS is x86_64 Ubuntu 26.04.1; other Linux distributions are not certified
+by that observation. Physical-client and site-policy limits remain explicit.
 
 ## Client, wire and state versions
 
 | Contract | Current version / behavior |
 | --- | --- |
-| Client package | 0.1.0; prepared, unpublished; release identifiers use x.y.z |
+| Client package | 0.2.0; prepared for stabilization, unpublished; identifiers use x.y.z |
 | Doctor wire | 1.0 |
 | Managed start wire | 1.2; version refusal is a new allowlisted error |
 | Discovery/status/stop wire | 1.3 |
