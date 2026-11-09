@@ -585,20 +585,28 @@ def _prepare(request: dict[str, Any]) -> dict[str, Any]:
     manager = shutil.which("tmux")
     if manager is None:
         raise ManagedProblem("missing_tmux")
-    result = subprocess.run(
-        [python, "-I", "-B", "-c", _PREFLIGHT],
-        input=json.dumps({"password": password}).encode(),
-        stdout=subprocess.PIPE,
-        stderr=subprocess.DEVNULL,
-        timeout=8,
-        check=False,
-    )
-    del password
-    if result.returncode == 5:
-        raise ManagedProblem("unsupported_server_version")
-    if result.returncode or len(result.stdout) > 4096:
-        raise ManagedProblem("server_prerequisites")
-    checked = json.loads(result.stdout)
+    try:
+        result = subprocess.run(
+            [python, "-I", "-B", "-c", _PREFLIGHT],
+            input=json.dumps({"password": password}).encode(),
+            stdout=subprocess.PIPE,
+            stderr=subprocess.DEVNULL,
+            timeout=8,
+            check=False,
+        )
+        if result.returncode == 5:
+            raise ManagedProblem("unsupported_server_version")
+        if result.returncode or len(result.stdout) > 4096:
+            raise ManagedProblem("server_prerequisites")
+        checked = json.loads(result.stdout)
+        if not isinstance(checked, dict):
+            raise ManagedProblem("server_prerequisites")
+    except (OSError, subprocess.TimeoutExpired, ValueError, TypeError, RecursionError):
+        # This phase cannot create a registry or spawn a server. Do not turn a
+        # known environment-check failure into an unknown launch outcome.
+        raise ManagedProblem("server_prerequisites") from None
+    finally:
+        del password
     password_hash = checked.get("hash")
     if (
         not isinstance(password_hash, str)

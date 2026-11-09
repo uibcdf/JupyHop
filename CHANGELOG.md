@@ -5,6 +5,9 @@
 - Continue bounded runtime discovery after the 64-record diagnostic sample fills;
   retain verified live servers in preference to stale/unsupported diagnostics.
   Existing metadata remains untouched and discovery remains explicitly partial.
+- Classify timeouts, execution errors and malformed responses during the
+  pre-launch environment check as prerequisite failures before any state/server
+  creation; retain the existing timeout and credential redaction.
 
 ## 0.1.0 — prepared, unpublished
 

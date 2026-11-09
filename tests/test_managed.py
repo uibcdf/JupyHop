@@ -1,6 +1,7 @@
 import io
 import json
 import os
+import subprocess
 import sys
 import warnings
 from types import SimpleNamespace
@@ -62,6 +63,33 @@ def test_start_password_is_stdin_only_and_extra_secret_fields_are_dropped(start_
     assert packet["request"]["password"] == "PRIVATE_SENTINEL"
     assert packet["request"]["server_python"] == "/env α/python"
     assert len(run.call_args.kwargs["stdin"]) < 65536
+
+
+@pytest.mark.parametrize("failure", ["timeout", "execution", "malformed"])
+def test_failed_environment_check_cannot_create_state_or_claim_unknown_launch(failure):
+    result = SimpleNamespace(returncode=0, stdout=b"PRIVATE_SENTINEL")
+    error = (
+        subprocess.TimeoutExpired("PRIVATE_SENTINEL", 8)
+        if failure == "timeout"
+        else OSError("PRIVATE_SENTINEL")
+        if failure == "execution"
+        else None
+    )
+    with (
+        patch.object(
+            remote,
+            "_validated_request",
+            return_value=("a" * 32, "analysis", "PRIVATE_SENTINEL", "/project", sys.executable),
+        ),
+        patch.object(remote.shutil, "which", return_value="/usr/bin/tmux"),
+        patch.object(remote.subprocess, "run", return_value=result, side_effect=error) as run,
+        patch.object(remote, "Registry") as registry,
+    ):
+        with pytest.raises(remote.ManagedProblem, match="server_prerequisites") as exc:
+            remote._prepare({})
+        assert "PRIVATE_SENTINEL" not in str(exc.value)
+        registry.assert_not_called()
+        assert run.call_count == 1
 
 
 @pytest.mark.parametrize(
