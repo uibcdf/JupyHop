@@ -12,14 +12,16 @@ Profiles/multi-host/real-account/archive evidence: [M5 report](19-m5-scientific-
 Beta compatibility/security/artifact evidence: [M6 report](20-m6-beta-readiness.md).
 
 For future gates the fixture, assertions and failure output follow the expected
-behavior of the corresponding row in 08. Real infrastructure is never a fixture.
+behavior of the corresponding row in 08. Automated fixtures use disposable
+targets. Explicit operator site pilots create only marked temporary resources on
+authorized hosts; real infrastructure is never hard-coded into a fixture.
 SEC gates apply from the first relevant prototype onward, not only at release.
 
 | Scenario | Gate | Test target / current evidence | Product acceptance |
 | --- | --- | --- | --- |
-| NET-01 | M2 | `test_zero_config_discovery_and_open_existing_server[destination]`; `experiments.browser_smoke` | M2 verified via disposable jump |
+| NET-01 | M2/0.2 | Disposable jump/browser, native terminal CLI open, operator password-auth doctor through three real machines | Jupyter/jump mechanisms verified; real-route doctor authenticates successfully, separate from Jupyter operation on that target |
 | NET-02 | M2/M5 | Real-account acceptance; protected runtime and foreign open/lifecycle refusal | M5 verified with two actual Unix UIDs; authorization follows the selected SSH account |
-| NET-03 | M2 | `test_zero_config_discovery_and_open_existing_server[direct]` | M2 direct route verified; physical LAN not tested |
+| NET-03 | M2/0.2 | Direct integration and authorized real-site manual/managed workflows in 23 | Direct SSH/Jupyter verified on a real Linux target; broader physical network transitions remain manual |
 | NET-04 | M2 | `test_zero_config_discovery_and_open_existing_server[direct]` | M2 direct SSH mechanism verified; site policy external |
 | NET-05 | M5 | Two-target profile/kernel integration plus M4 independent-client test | Software mechanisms verified on disposable loopback targets; physical home/lab topology not claimed |
 | NET-06 | M2 | M1 unavailable-jump test; `test_ssh_policy_denies_forwarding_without_stopping_server` | M2 failure/state preservation verified |
@@ -52,9 +54,9 @@ SEC gates apply from the first relevant prototype onward, not only at release.
 | SCI-05 | M7 | `A-SCI-05` | Pending |
 | SEC-01 | M1 | `test_unknown_host_key_is_refused`; `test_changed_host_key_is_refused` | M1 satisfied (SSH trust) |
 | SEC-02 | M2 | M3 native password hash/login; wrong-password denial; M2 token/password login | M2/M3 authentication verified; no argv or generic-output credentials |
-| SEC-03 | M1/M2 | M3 stdin/response allowlist unit tests; managed browser history smoke | M3 chosen password remains outside argv/output/history URLs; hash stays private remotely |
+| SEC-03 | M1/M2/0.2 | Stdin/allowlist/browser tests; native controlling-terminal/RPC tests and real password-route doctor | Jupyter password stays outside argv/output/history; OpenSSH owns SSH password input; terminal echo/restoration and private RPC separation verified |
 | SEC-04 | M4/M5 | Real-account foreign read/open/stop/archive refusal and pidfd/provenance checks | Verified with actual distinct UIDs; neither user's healthy server is modified by rejected actions |
-| SEC-05 | M2 | `test_private_master_ignores_configured_forward_and_retries_collision` | M2 verified; unrelated listener untouched |
+| SEC-05 | M2/0.2 | Configured-forward/collision, borrowed-forward cancellation and missing-private-socket tests | Only owned foreground masters/explicit forwards used; no network fallback, unrelated listener/master adoption or cross-forward cancellation |
 | SEC-06 | M2 | Browser availability unit tests; actual no-browser/signal CLI integration | M2 verified |
 | SEC-07 | M2/M5 | Schema/atomic/ownership checks plus archive live/uncertain/start-time/symlink refusal | Explicit inactive move preserves recovery evidence; permanent deletion unimplemented |
 | SEC-08 | M1 | `test_remote_shell_injection_is_literal`; unit input/quoting tests | M1 satisfied (SSH arguments) |

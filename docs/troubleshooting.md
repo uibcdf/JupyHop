@@ -9,7 +9,7 @@ infrastructure details and must be reviewed before sharing.
 | Symptom / exit | Action |
 | --- | --- |
 | Invalid arguments/config (2) | Check command help, TOML version/known fields and file ownership/permissions. Config is at most 64 KiB, regular, single-link, without final symlink or group/other write access. |
-| SSH/access/timeout (3) | Verify the route with ordinary SSH, including the gateway. Check selected User, unlocked keys and host trust. JupyHop uses BatchMode; it cannot prompt for SSH credentials. No conclusion about remote session state follows. |
+| SSH/access/timeout (3) | Verify the route with ordinary SSH, including the gateway. Check selected User and host trust. Use a controlling terminal for native OpenSSH password/passphrase prompts; headless/--batch requires keys/agent or another noninteractive method. --ssh-auth-timeout bounds terminal authentication. No conclusion about remote session state follows. |
 | Host-key mismatch | Verify the new fingerprint independently, then manage known_hosts through your normal SSH procedure. Never disable verification as a workaround. |
 | Missing prerequisites (4) | Read the specific error. `doctor` checks Jupyter only in its selected interpreter. A stdlib-only helper can still discover a server in another environment. Managed start additionally needs compatible Jupyter, tmux, kernels and a valid remote directory. |
 | Invalid remote JSON/schema (5) | Check login-shell banners and the supported helper/client versions. Unknown state versions are refused; do not edit schema numbers or delete state to force acceptance. |

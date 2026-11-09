@@ -10,6 +10,7 @@ from typing import Any
 
 from jupyhop import __version__
 from jupyhop.config import Config, Host, load_config
+from jupyhop.connection import ConnectionPool
 from jupyhop.discovery import discover, select_server
 from jupyhop.doctor import diagnose
 from jupyhop.errors import JupyHopError, OwnershipError
@@ -84,7 +85,7 @@ def _parser() -> argparse.ArgumentParser:
     launch.add_argument(
         "--password-stdin",
         action="store_true",
-        help="Read one password line from a protected stdin source instead of prompting. Never supply passwords in argv.",
+        help="Read the new Jupyter password from protected stdin; SSH passwords stay in native terminal prompts. Never supply passwords in argv.",
     )
     launch.add_argument(
         "--no-open",
@@ -153,6 +154,17 @@ def _connection_arguments(
         help="Optional local JupyHop TOML file (default: XDG config/jupyhop/config.toml).",
     )
     parser.add_argument(
+        "--batch",
+        action="store_true",
+        help="Disable SSH authentication prompts; require keys/agent or another noninteractive method.",
+    )
+    parser.add_argument(
+        "--ssh-auth-timeout",
+        type=float,
+        default=120,
+        help="Deadline for native terminal SSH authentication in seconds (1–600, default 120).",
+    )
+    parser.add_argument(
         "--json", action="store_true", help="Emit nonsecret JSON; diagnostics stay on stderr."
     )
 
@@ -201,6 +213,7 @@ def _fleet(args: argparse.Namespace, config: Config) -> int:
         timeout=20 if args.timeout is None else args.timeout,
         pythons=args.remote_python,
         paths=args.runtime_dir,
+        connections=args.connections,
     )
     for entry in data["hosts"]:
         if not entry["ok"]:
@@ -224,6 +237,7 @@ def _fleet(args: argparse.Namespace, config: Config) -> int:
                 args.host,
                 config=args.ssh_config,
                 timeout=20 if args.timeout is None else args.timeout,
+                connections=args.connections,
             ),
             report,
         )
@@ -295,11 +309,14 @@ def main(argv: list[str] | None = None) -> int:
     parser = _parser()
     args = parser.parse_args(argv)
     launch_id = None
+    connections = None
     handlers = {number: signal.getsignal(number) for number in (signal.SIGTERM, signal.SIGHUP)}
     try:
         for number in handlers:
             signal.signal(number, _interrupted)
         config = load_config(args.config)
+        connections = ConnectionPool(batch=args.batch, auth_timeout=args.ssh_auth_timeout)
+        args.connections = connections
         if args.command == "list" or args.command == "open" and args.host is None:
             return _fleet(args, config)
         host = config.hosts.get(args.host, Host())
@@ -335,7 +352,9 @@ def main(argv: list[str] | None = None) -> int:
                 )
                 if sys.stdin.readline().strip() != args.command:
                     raise OwnershipError("Lifecycle action cancelled; no SSH command was sent.")
-        transport = SSHTransport(args.host, config=args.ssh_config, timeout=args.timeout)
+        transport = SSHTransport(
+            args.host, config=args.ssh_config, timeout=args.timeout, connections=connections
+        )
         if args.command in {"status", "stop", "archive"}:
             report = lifecycle(transport, args.command, args.session, python=args.remote_python)
             if args.json:
@@ -439,6 +458,10 @@ def main(argv: list[str] | None = None) -> int:
         print(message, file=sys.stderr)
         return 130
     finally:
-        for number, handler in handlers.items():
-            signal.signal(number, handler)
+        try:
+            if connections is not None:
+                connections.close()
+        finally:
+            for number, handler in handlers.items():
+                signal.signal(number, handler)
     return 2

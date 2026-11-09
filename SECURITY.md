@@ -13,8 +13,11 @@ does not protect against a malicious same-UID process, root or a compromised
 authorized remote host. Separate Unix users remain separate authorization scopes.
 
 OpenSSH handles the route and host trust; target connections enforce strict host
-checking. Configure trusted host keys and noninteractive authentication on jump
-aliases too. No host-key bypass, SSH agent forwarding, public Jupyter binding,
+checking. Configure trusted host keys on jump aliases too. Native terminal SSH
+password/passphrase prompts and keys/agent are supported; headless/--batch needs
+noninteractive access for every hop. Python does not read/cache SSH passwords.
+An invocation owns its foreground masters and permits no mux reconnect fallback.
+No host-key bypass, SSH agent forwarding, public Jupyter binding,
 automatic token handoff or plaintext credential cache is introduced. Private
 settings retain password hashes; runtime/archive evidence may contain kernel
 secrets and must stay private. Normal Jupyter login/cookie policy still applies.

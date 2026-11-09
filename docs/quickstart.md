@@ -27,10 +27,13 @@ ssh workstation
 ```
 
 Verify the host fingerprint through your normal trusted channel, then exit that
-SSH shell. JupyHop uses strict host checking and noninteractive SSH; unlock your
-SSH key in your agent when needed. User, keys, Include/Match and ProxyJump belong
-in OpenSSH configuration. JupyHop neither configures them nor prompts for SSH
-passwords. A POSIX-compatible remote login shell and Python >=3.11 are required.
+SSH shell. JupyHop keeps strict host checking. In a terminal, OpenSSH handles
+password/passphrase prompts; keys/agent work too. Python never reads or caches
+the SSH password. User, keys, Include/Match and ProxyJump belong in OpenSSH
+configuration. A POSIX-compatible remote login shell and Python >=3.11 are required.
+Headless commands or explicit `--batch` require noninteractive SSH authentication.
+Terminal authentication has its own `--ssh-auth-timeout` (default 120 seconds);
+`--timeout` bounds probes/network startup. No key provisioning is mandatory.
 
 With your current-user Jupyter server already running remotely:
 

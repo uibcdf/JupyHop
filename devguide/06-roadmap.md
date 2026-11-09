@@ -93,13 +93,15 @@ No package publication or M7 extension has been performed.
 
 ## 0.2.0 — Operational stabilization before 1.0
 
-**Planned after M6:** [scope, acceptance gates and safe pilot](22-02-stabilization.md).
+**In progress after M6:** [scope, acceptance gates and safe pilot](22-02-stabilization.md)
+and [observed evidence](23-02-stabilization-evidence.md).
 The current package remains 0.1.0. Complete the existing core workflows in an
 authorized real-site pilot, observe bounded endurance/network recovery, verify an
 installed-client upgrade without losing a live kernel, and close demonstrated
 usability defects before preparing 0.2.0 artifacts. Confirm the supported client
-OS and SSH authentication contract; today's transport requires keys/agent or
-another noninteractive method. Do not count unobserved site acceptance as passed.
+OS and SSH authentication contract. The maintainer requires both native terminal
+SSH passwords and keys/agent; headless/--batch requires noninteractive access.
+Do not count unobserved site acceptance as passed.
 
 This is stabilization of M0–M6, not a dependency on optional M7 features. Keep the
 finite acceptance matrix distinct from a claim of universal compatibility.

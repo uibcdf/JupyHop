@@ -69,6 +69,14 @@ Host workstation
 
 Do not parse or reimplement all of OpenSSH's config syntax. Invoke `ssh` with the alias and let OpenSSH resolve `Include`, `Match`, `ProxyJump`, keys and host verification.
 
+Native SSH password/passphrase prompts are supported when a controlling terminal
+is available. --batch or headless operation requires noninteractive access.
+--ssh-auth-timeout bounds terminal authentication (default 120 seconds, 1–600);
+--timeout keeps the separate probe/network bounds. No SSH-password argument or
+JupyHop credential cache exists; --password-stdin is only the new Jupyter password.
+An invocation reuses only its own verified foreground master per route, including
+for the forward's final identity check. See [D45](23-02-stabilization-evidence.md).
+
 ## JupyHop configuration v1
 
 Optional `$XDG_CONFIG_HOME/jupyhop/config.toml` (default

@@ -12,7 +12,7 @@ Start with the [quickstart](docs/quickstart.md), [compatibility matrix](docs/com
 and [troubleshooting](docs/troubleshooting.md). Development instructions are in
 [CONTRIBUTING](CONTRIBUTING.md); vulnerability reporting is in [SECURITY](SECURITY.md).
 The next target is [0.2.0 operational stabilization](devguide/22-02-stabilization.md);
-real-site, endurance and installed-upgrade acceptance remain planned work.
+see [observed progress and remaining gates](devguide/23-02-stabilization-evidence.md).
 
 ## The problem
 
@@ -216,7 +216,7 @@ that interpreter; the server may run in a different Conda environment.
 | Any authorized client | Several SSH-accessible hosts | Separate managed forwards |
 | New client with authorized SSH access | A pre-existing remote user session | Rediscover and reconnect |
 
-**Connectivity prerequisite:** the client must already have a working and authorized SSH path to the destination, with trusted host keys and noninteractive authentication (for example keys/agent). The current client uses OpenSSH BatchMode; password-only SSH and interactive MFA are outside the demonstrated support boundary. JupyHop does not automatically make machines behind NAT or firewalls reachable, establish a VPN, or bypass access restrictions.
+**Connectivity prerequisite:** the client must already have a working and authorized SSH path to the destination, with trusted host keys. Terminal commands support native OpenSSH password/passphrase prompts and keys/agent. Headless commands or explicit `--batch` require noninteractive authentication. Each invocation owns its private connection; SSH passwords stay in OpenSSH. Individual MFA variants remain untested. JupyHop does not automatically make machines behind NAT or firewalls reachable, establish a VPN, or bypass access restrictions.
 
 ## Managed vs. discovered Jupyter servers
 
@@ -330,11 +330,14 @@ jupyhop open workstation SERVER_ID --no-browser
 
 The client has **no Python runtime dependencies** and does not need local
 Jupyter. OpenSSH resolves the existing alias, remote user, keys, `Include`,
-`Match` and `ProxyJump`. Doctor uses strict host-key checking and `BatchMode`:
+`Match` and `ProxyJump`. Doctor uses strict host-key checking and native SSH authentication:
 first verify access with `ssh workstation`, establish host trust through the
-normal SSH workflow, and unlock keys in your agent if needed. Doctor does not
-prompt for passwords or edit SSH configuration. `--ssh-config PATH` passes a
-specific file to OpenSSH; `--timeout SECONDS` bounds the diagnostic (default 20).
+normal SSH workflow, then use a terminal for native password/passphrase prompts
+or unlock keys in your agent. Scripts use `--batch` with noninteractive SSH access.
+JupyHop does not read/cache SSH passwords or edit SSH configuration.
+`--ssh-config PATH` passes a specific file to OpenSSH; `--timeout SECONDS` bounds each probe/
+network startup (default 20), while `--ssh-auth-timeout SECONDS` bounds terminal
+authentication (default 120). Each route authenticates once per invocation.
 
 The selected remote Python must be >=3.11. Doctor reports its installed Jupyter
 Server/core versions, the runtime directory visible to that interpreter, the

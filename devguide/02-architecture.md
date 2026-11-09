@@ -37,6 +37,13 @@ No central service or inter-user privileged daemon is required.
 
 **SSH transport:** delegate authentication, host verification, proxy jumps, and crypto settings to OpenSSH. Use subprocess argument arrays rather than shell-interpolated user input.
 
+The 0.2.0 stabilization transport lazily owns one foreground, private OpenSSH
+master per route/invocation. Native terminal password/passphrase prompts and
+keys/agent are supported. RPCs and explicit forwards share only that verified
+master; mux clients cannot reconnect if it disappears. --batch/headless stays
+noninteractive. No SSH password is read/cached by Python and no arbitrary shared
+master is adopted. See [D45 evidence](23-02-stabilization-evidence.md).
+
 **Remote source RPC:** start/status/stop owned processes, plus read-only discovery
 of current-user Jupyter Servers. Versioned stdlib source travels through SSH
 stdin; no installed helper package. Status/stop use wire 1.3; archive uses 1.4.

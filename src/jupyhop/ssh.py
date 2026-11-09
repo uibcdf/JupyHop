@@ -9,10 +9,14 @@ import signal
 import subprocess
 import time
 from collections.abc import Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from jupyhop.errors import ProtocolError, SSHError
+
+if TYPE_CHECKING:
+    from jupyhop.connection import ConnectionPool
 
 STDOUT_LIMIT = 64 * 1024
 STDERR_LIMIT = 32 * 1024
@@ -48,18 +52,17 @@ class SSHTransport:
     host: str
     config: Path | None = None
     timeout: float = 20
+    connections: "ConnectionPool | None" = field(default=None, compare=False, repr=False)
 
     def __post_init__(self) -> None:
         validate_alias(self.host)
         if not math.isfinite(self.timeout) or not 1 <= self.timeout <= 300:
             raise ValueError("Timeout must be between 1 and 300 seconds.")
 
-    def options(self, *, control_path: Path | None = None) -> list[str]:
+    def options(self, *, control_path: Path | None = None, interactive: bool = False) -> list[str]:
         options = [
             "ssh",
             "-T",
-            "-o",
-            "BatchMode=yes",
             "-o",
             "StrictHostKeyChecking=yes",
             "-o",
@@ -79,12 +82,16 @@ class SSHTransport:
             "-o",
             "ControlPersist=no",
             "-o",
+            "ForkAfterAuthentication=no",
+            "-o",
             f"ConnectTimeout={math.ceil(self.timeout)}",
             "-o",
             "ServerAliveInterval=5",
             "-o",
             "ServerAliveCountMax=2",
         ]
+        if not interactive:
+            options.extend(["-o", "BatchMode=yes"])
         if self.config is not None:
             options.extend(["-F", str(self.config.expanduser().resolve())])
         return options
@@ -95,6 +102,9 @@ class SSHTransport:
     def run(self, argv: Sequence[str], *, stdin: bytes = b"") -> CommandResult:
         if len(stdin) > STDIN_LIMIT:
             raise ValueError("Remote probe input exceeds 64 KiB.")
+        if self.connections is not None:
+            remote_command(argv)
+            return self.connections.get(self).run(list(argv), stdin=stdin)
         return _run_bounded(self.command(argv), stdin, self.timeout)
 
 
@@ -183,7 +193,7 @@ def ssh_failure(stderr: bytes) -> SSHError:
         )
     if b"permission denied" in lowered:
         return SSHError(
-            "SSH authentication denied. Check the configured remote User, key and agent with ssh. Doctor uses BatchMode and cannot prompt for credentials."
+            "SSH authentication denied. Check the configured User, key/agent or password access with ssh. For password/passphrase prompts run jupyhop from a terminal without --batch; scripts require noninteractive OpenSSH authentication."
         )
     return SSHError(
         "SSH connection failed. Check the alias, ProxyJump, known_hosts and authentication with ssh. Remote Jupyter session state is unknown."

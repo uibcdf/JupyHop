@@ -23,6 +23,14 @@ JupyHop may inspect only Jupyter runtime data available to the authenticated rem
 
 ## Authentication baseline and pending browser automation
 
+SSH authentication is delegated to native OpenSSH terminal prompts or keys/agent.
+Python never reads or stores the SSH password. --batch/headless is noninteractive.
+Invocation-private foreground control sockets carry only that invocation's RPCs
+and explicit forwards, with PID verification and no network fallback if lost.
+Normal signal/timeout cleanup is tested with native controlling terminals and
+ProxyJump. Individual MFA configurations still need separate evidence. See
+[D45 and its alternatives](23-02-stabilization-evidence.md).
+
 M0 selected normal Jupyter login through a token-free URL as the safe baseline.
 No JupyHop credential cache or automatic browser token transfer is implemented.
 M2 validates current UID/process/socket ownership and uses explicit login with

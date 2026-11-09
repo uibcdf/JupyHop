@@ -1,12 +1,15 @@
 """Bounded multi-alias inventory; failures remain explicit per SSH route."""
 
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from jupyhop.config import Config
 from jupyhop.discovery import discover
 from jupyhop.errors import JupyHopError, SelectionError
 from jupyhop.ssh import SSHTransport, validate_alias
+
+if TYPE_CHECKING:
+    from jupyhop.connection import ConnectionPool
 
 
 def inventory(
@@ -17,6 +20,7 @@ def inventory(
     timeout: float = 20,
     pythons: list[str] | None = None,
     paths: list[str] | None = None,
+    connections: "ConnectionPool | None" = None,
 ) -> dict[str, Any]:
     names = list(dict.fromkeys(hosts or config.hosts))
     if not 1 <= len(names) <= 16:
@@ -26,7 +30,7 @@ def inventory(
     # Validate all local arguments before sending any SSH request.
     prepared = [
         (
-            SSHTransport(host, config=ssh_config, timeout=timeout),
+            SSHTransport(host, config=ssh_config, timeout=timeout, connections=connections),
             config.discovery_options(host, pythons, paths),
         )
         for host in names

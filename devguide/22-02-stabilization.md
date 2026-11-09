@@ -1,8 +1,9 @@
 # 22 — 0.2.0 operational stabilization
 
-Status: planned. Current package: 0.1.0. Target: 0.2.0, using the numeric
+Status: in progress; see [observed evidence](23-02-stabilization-evidence.md).
+Current package: 0.1.0. Target: 0.2.0, using the numeric
 x.y.z release policy. This increment follows M6 and precedes optional M7 work.
-No 0.2.0 functionality or real-site acceptance is claimed by this plan.
+This plan does not claim a completed 0.2.0 release or unobserved site acceptance.
 
 ## Objective and supported boundary
 
@@ -18,12 +19,12 @@ login and private tmux for managed launch. Managed Server >=2.20,<3 and pidfd
 stop requirements remain separate from existing-server access. See
 [compatibility](../docs/compatibility.md).
 
-**Open scope decision:** current SSH transport enforces BatchMode and requires
-noninteractive authentication (for example unlocked keys/agent). Password-only
-SSH and interactive MFA are not a demonstrated supported workflow. Decide from
-the intended users/pilot whether they are required for 0.2.0. Any implementation
-must retain native OpenSSH authentication and host trust. A working interactive
-SSH login alone does not establish compatibility with today's BatchMode client.
+**Confirmed scope:** the maintainer requires both native SSH password prompts and
+keys/agent for 0.2.0. Invocation-private connections now delegate terminal input
+to OpenSSH and reuse only their own verified master. Headless/--batch operation
+requires noninteractive authentication. Terminal, real-route and remaining
+password-fixture evidence are tracked in [the stabilization report](23-02-stabilization-evidence.md).
+Interactive MFA variants still require their own evidence; none is assumed passed.
 
 Client operating systems beyond Linux, IPv6/HTTPS and unusual authentication
 setups need explicit scope/evidence decisions. Do not implicitly add them to a

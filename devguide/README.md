@@ -6,7 +6,8 @@
 > policy, physical reboot and wider compatibility are bounded in the reports.
 > See the milestone reports below for exact acceptance evidence and limits.
 > The next target is [0.2.0 operational stabilization](22-02-stabilization.md),
-> including real-site, endurance and installed-upgrade acceptance; it is planned.
+> with [observed progress](23-02-stabilization-evidence.md) for real-site,
+> native SSH passwords/keys, endurance and installed-upgrade acceptance.
 
 JupyHop is a lightweight, SSH-native tool to launch, discover, manage, and reconnect to remote Jupyter sessions without deploying JupyterHub.
 
@@ -75,4 +76,6 @@ This directory is the project's design source of truth. Update specifications an
   cleanup and independent CI artifact/source/checksum verification.
 - [0.2.0 operational stabilization](22-02-stabilization.md): remaining acceptance
   gates, SSH/OS support decisions, safe real-site pilot and installed-client
-  upgrade evidence; planned work, not a completed release.
+  upgrade evidence; work in progress.
+- [0.2.0 evidence](23-02-stabilization-evidence.md): observed site workflows,
+  stale-metadata correction, native SSH terminal authentication and exact limits.

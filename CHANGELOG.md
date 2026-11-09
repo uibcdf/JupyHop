@@ -2,6 +2,10 @@
 
 ## Unreleased — 0.2.0 stabilization
 
+- Support native terminal SSH passwords/passphrases and keys/agent through one
+  invocation-owned foreground master per route. Add --batch and a bounded
+  --ssh-auth-timeout; RPCs/forwards cannot fall back to a new network connection.
+  Python never reads or caches the SSH password.
 - Continue bounded runtime discovery after the 64-record diagnostic sample fills;
   retain verified live servers in preference to stale/unsupported diagnostics.
   Existing metadata remains untouched and discovery remains explicitly partial.

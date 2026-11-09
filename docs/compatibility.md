@@ -9,7 +9,7 @@ and needs no local Jupyter. Free-threaded Python, macOS and Windows are untested
 
 | Operation | Requirements / supported boundary |
 | --- | --- |
-| SSH | Existing authorized alias, trusted host keys, noninteractive authentication, POSIX-compatible remote shell. OpenSSH handles Include/Match/ProxyJump. Jump-host configuration is trusted too. |
+| SSH | Existing authorized alias, trusted host keys, POSIX-compatible remote shell. Keys/agent and native terminal password/passphrase prompts; headless/--batch requires noninteractive access. OpenSSH handles Include/Match/ProxyJump. Jump-host configuration is trusted too; individual MFA variants are untested. |
 | Discover/open | Linux remote helper Python >=3.11 (stdlib sufficient), readable private current-user runtime metadata, verified current-user process and IPv4 loopback TCP listener, recognizable Jupyter 2 API/auth behavior. |
 | HTTP/URLs | `127.0.0.1`, HTTP, normal password/token login and simple ASCII base paths including WebSockets. No automatic credential handoff. |
 | Unsupported endpoints | Public/wildcard listeners, IPv6-only, HTTPS, Unix sockets, legacy nbserver metadata, exotic auth/proxies. Refused or labeled unsupported; no TLS/host-key bypass. |
@@ -28,8 +28,9 @@ M5 verified all 258 earlier tests and clean-wheel workflows on CPython 3.11.18,
 password rotation, an 8 MiB content roundtrip and 64 executions with 64 KiB output
 each on one sustained WebSocket through ProxyJump. See
 [the M6 report](../devguide/20-m6-beta-readiness.md) for the local experiments and
-[the hosted CI follow-up](../devguide/21-m6-github-ci.md) for the current 270-test
-regression on each of the four supported Python versions.
+[the hosted CI follow-up](../devguide/21-m6-github-ci.md) for the M6 270-test
+baseline on each supported Python. Subsequent [0.2.0 stabilization evidence](../devguide/23-02-stabilization-evidence.md)
+records additional tests, native terminal authentication and real-site observations.
 
 | Server / server Python | Existing open + kernel | Managed start/status/stop/archive |
 | --- | --- | --- |
