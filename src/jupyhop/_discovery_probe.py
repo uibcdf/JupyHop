@@ -355,7 +355,7 @@ def discover(request: dict[str, Any], report: dict[str, Any]) -> None:
             entry["status"] = "ok"
             with os.scandir(directory) as entries:
                 for index, item in enumerate(entries):
-                    if index >= 512 or len(report["servers"]) >= MAX_RECORDS:
+                    if index >= 512:
                         entry["status"] = "limited"
                         report["issues"].append("entry_limit")
                         break
@@ -363,13 +363,27 @@ def discover(request: dict[str, Any], report: dict[str, Any]) -> None:
                         candidate = _candidate(directory, item.name, path, scope)
                         if "mark_managed" in globals():
                             candidate = globals()["mark_managed"](candidate, records)
-                        report["servers"].append(candidate)
+                        if len(report["servers"]) < MAX_RECORDS:
+                            report["servers"].append(candidate)
+                        else:
+                            # A full diagnostic sample must not prevent finding
+                            # a live server later in this or another runtime.
+                            entry["status"] = "limited"
+                            if "entry_limit" not in report["issues"]:
+                                report["issues"].append("entry_limit")
+                            if candidate["state"] == "ready":
+                                for position in range(MAX_RECORDS - 1, -1, -1):
+                                    if report["servers"][position]["state"] != "ready":
+                                        report["servers"][position] = candidate
+                                        break
         finally:
             os.close(directory)
     if records:
         report["servers"].extend(
             globals()["missing_managed"](records, {s["id"] for s in report["servers"]})
         )
+    # Preserve verified endpoints if the final byte bound truncates diagnostics.
+    report["servers"].sort(key=lambda server: server["state"] != "ready")
 
 
 def main() -> None:

@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased — 0.2.0 stabilization
+
+- Continue bounded runtime discovery after the 64-record diagnostic sample fills;
+  retain verified live servers in preference to stale/unsupported diagnostics.
+  Existing metadata remains untouched and discovery remains explicitly partial.
+
 ## 0.1.0 — prepared, unpublished
 
 First pre-1.0 candidate for Linux and CPython 3.11–3.14. The client uses OpenSSH and

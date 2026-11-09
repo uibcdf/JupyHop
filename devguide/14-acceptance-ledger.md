@@ -29,7 +29,7 @@ SEC gates apply from the first relevant prototype onward, not only at release.
 | DISC-02 | M2 | `test_multiple_servers_custom_paths_and_duplicate_runtime_metadata` | M2 verified |
 | DISC-03 | M2/M5 | M2 Conda spike, configured runtime paths and separate helper/server profile tests | Known paths across selected environments verified; exhaustive environment enumeration not promised |
 | DISC-04 | M2 | Directory-symlink/private-permission unit tests; empty JSON discovery test | M2 partial/unsupported behavior verified |
-| DISC-05 | M2 | `test_read_only_metadata_does_not_delete_stale_or_expose_token`; identity-change integration | M2 verified; no stale-file deletion |
+| DISC-05 | M2/0.2 | `test_read_only_metadata_does_not_delete_stale_or_expose_token`; crowded-runtime/two-server integration | No stale-file deletion; 110 stale records cannot hide verified live endpoints within the bounded scan |
 | DISC-06 | M2 | `test_stop_is_refused_without_any_remote_action` | M2 stop guard verified; no adoption |
 | DISC-07 | M2 | Password integration; token form/browser smoke | M2 normal login verified; custom auth not universally supported |
 | DISC-08 | M2 | Documented M2 auth/proxy/version restrictions in 16 | M2 limitation explicit; no universal proxy compatibility claim |
@@ -67,7 +67,7 @@ SEC gates apply from the first relevant prototype onward, not only at release.
 | NET-15 | M5/M6 | `test_large_contents_and_sustained_websocket_through_jump` | 8 MiB API roundtrip with SHA256, 64 requests/64 KiB output each on one WebSocket; bounded loopback smoke, not a WAN endurance claim |
 | DISC-09 | M2/M5 | Custom-runtime integration, per-host runtime_dirs config and explicit path merging | Known-path coverage verified; another client needs the same custom path preference where not in remote state |
 | DISC-10 | M2 | Empty JSON discovery test; complete=false invariant | M2 honest partial result verified; arbitrary endpoint override unimplemented |
-| DISC-11 | M2 | `test_multiple_servers_custom_paths_and_duplicate_runtime_metadata` | M2 verified |
+| DISC-11 | M2/0.2 | Multiple-server/custom-runtime/deduplication and crowded-runtime integration | Live endpoints retained across runtime paths when stale diagnostics fill the sample; discovery remains bounded and partial |
 | DISC-12 | M2/M6 | `test_live_password_rotation_requires_fresh_authorized_login` | Same live server, fresh client/tunnel; old password denied, new password accepted; existing cookies follow upstream policy |
 | LIFE-13 | M4 | Reused PID/start/socket refusal and M2 changed-server open guard | Replacement identity cannot authorize old-session stop/open; no continuity claim |
 | LIFE-14 | M4/M6 | Legacy experiment against trusted M3 and M5 sources; incompatible-schema integration | Beta status/idempotent stop preserves immutable historical runner/hash; no migration/replacement |

@@ -109,6 +109,7 @@ Experiments, internal review and release limits: [20](20-m6-beta-readiness.md).
 | D40 | Prepare reviewed candidate artifacts and explicit compatibility/security/release policy; publication stays separate | Stdlib artifact/version/license/entrypoint/source checks supplement clean-wheel/browser tests; no mandatory dependencies or automated upload to package registries. |
 | D41 | Package versions and release tags use only x.y.z; current candidate 0.1.0 | Explicit maintainer preference: no prefixes or suffixes. Pre-1.0 uses 0.y.z; the artifact inspector enforces the format. Wire/state contracts stay independent and building creates no tag. |
 | D42 | Disposable Unix accounts receive exclusively created empty private homes | Hosted /etc/skel measured 833208 KiB; copying it exceeded useradd's 30-second bound. Explicit no-create-home plus verified UID/GID ownership avoids host files/caches and existing paths; deadlines and rollback stay strict. |
+| D43 | Discovery's bounded diagnostic sample cannot stop searching for verified live endpoints | A real-site pilot found 110 obsolete metadata files. Keep the 512-entry per-directory scan, time/byte limits and 64-candidate sample, but replace non-ready samples with verified endpoints found later and retain ready endpoints before byte truncation. Do not delete old metadata, scan arbitrary processes or relax ownership/auth checks. |
 
 ## Decisions remaining for their implementation milestones
 

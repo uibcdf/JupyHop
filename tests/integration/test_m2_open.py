@@ -134,6 +134,54 @@ def test_multiple_servers_custom_paths_and_duplicate_runtime_metadata(ssh_lab, m
         )
 
 
+def test_stale_metadata_sample_cannot_hide_live_servers_or_later_runtimes(ssh_lab):
+    stale = []
+    raw = {}
+    try:
+        for index in range(110):
+            pid = 2147483000 + index
+            path = ssh_lab.runtime / f"jpserver-{pid}.json"
+            content = json.dumps(
+                {
+                    "pid": pid,
+                    "port": 8888,
+                    "base_url": "/",
+                    "hostname": "127.0.0.1",
+                    "secure": False,
+                    "token": "PRIVATE_SENTINEL",
+                }
+            ).encode()
+            path.write_bytes(content)
+            path.chmod(0o600)
+            stale.append(path)
+            raw[path] = content
+        with (
+            JupyterFixture(ssh_lab.root / "crowded-runtime", runtime=ssh_lab.runtime) as first,
+            JupyterFixture(ssh_lab.root / "later-runtime") as second,
+        ):
+            transport = SSHTransport("destination", config=ssh_lab.config)
+            report = discover(transport, runtime_dirs=[str(second.runtime)])
+            ready = [server for server in report["servers"] if server["state"] == "ready"]
+            assert {first.process.pid, second.process.pid} <= {server["pid"] for server in ready}
+            assert len(report["servers"]) <= 64
+            assert not report["coverage"]["complete"]
+            assert "entry_limit" in report["coverage"]["issues"]
+            assert "PRIVATE_SENTINEL" not in json.dumps(report)
+            selected = next(server for server in ready if server["pid"] == second.process.pid)
+            with open_connection(transport, report, selected) as (tunnel, _):
+                with second.client(f"http://127.0.0.1:{tunnel.local_port}/science/") as client:
+                    assert (
+                        client.get(
+                            f"http://127.0.0.1:{tunnel.local_port}/science/api/status", timeout=5
+                        ).status_code
+                        == 200
+                    )
+            assert all(path.read_bytes() == raw[path] for path in stale)
+    finally:
+        for path in stale:
+            path.unlink()
+
+
 def test_password_authentication_is_preserved(ssh_lab):
     with JupyterFixture(ssh_lab.root / "password", password=True) as fixture:
         transport = SSHTransport("destination", config=ssh_lab.config)
