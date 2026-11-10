@@ -19,6 +19,16 @@ Verify the host fingerprint through a trusted channel and check ordinary
 and included files owned by you, without group/other write access. Private
 configuration commonly uses mode 0600.
 
+If OpenSSH reports **Bad owner or permissions**, inspect the exact file named in
+its error. For an ordinary local configuration owned by your account, group or
+other **write** permission is unsafe: 0664 is rejected, while 0644 normally
+passes this file check. Mode 0600 is the conservative recommendation. A correctly
+restricted 0700 directory does not replace the file's independent check.
+An editable configuration could change the destination or commands SSH executes.
+See the [OpenSSH file requirements](https://man.openbsd.org/ssh_config#FILES)
+and [step-by-step correction](troubleshooting.md#bad-owner-or-permissions-on-ssh-configuration).
+JupyHop does not change ownership or permissions for you.
+
 ## ProxyJump
 
 For a destination reachable through an authorized gateway:
@@ -65,9 +75,13 @@ jupyhop doctor workstation --ssh-auth-timeout 180
 ```
 
 `--ssh-auth-timeout` accepts 1–600 seconds (default 120). `--timeout` bounds the
-separate SSH probe/startup operations (default 20 seconds). Ctrl-C cancels an
-attempt and cleans owned local resources; interrupted remote writes still need
-reconciliation.
+separate SSH probe/startup operations (default 20 seconds) and supplies OpenSSH's
+[ConnectTimeout](https://man.openbsd.org/ssh_config#ConnectTimeout), which covers
+the initial connection/handshake. A longer authentication deadline does not
+remove that handshake bound on a jump route. See
+[timeout recovery](troubleshooting.md#ssh-times-out-during-a-start).
+Ctrl-C cancels an attempt and cleans owned local resources; interrupted remote
+writes still need reconciliation.
 
 ## Headless commands and other configurations
 

@@ -93,3 +93,9 @@ including inactive records. Use [archive](managed-sessions.md#archive-inactive-r
 after verified inactivity to release names and this budget. Archives retain
 evidence and possible orphaned-kernel recovery data; they are not running-session
 backups. There is no archive list/restore/delete command or automatic restart.
+
+To inspect the current unarchived registry, use `jupyhop status workstation`.
+It includes stopped entries, which continue reserving their names and slots
+until explicit archive. Version 0.2.0 has no summary counters or archive inventory;
+an empty status does not mean that no historical archives exist. After confirming
+inactivity, use the [manual archive step](managed-sessions.md#archive-inactive-records).

@@ -22,6 +22,63 @@ infrastructure details and must be reviewed before sharing.
 | Partial fleet result (14) | Read each host's result; successful routes remain usable. `list` returns 3 when all selected routes fail, 0 when every route was inspected, even with no ready servers. |
 | Interrupted (130) | Owned local SSH resources are closed. Remote start/stop may already have taken effect; reconcile before retrying. Closing an open forward does not stop remote Jupyter. |
 
+## Bad owner or permissions on SSH configuration
+
+This message comes from OpenSSH before it can use the affected configuration;
+it is different from a rejected SSH password or Jupyter login. JupyHop 0.2.0 may
+add only a generic SSH explanation, so read the preceding native SSH diagnostic.
+
+For an error naming your local ~/.ssh/config, inspect it on the **client**:
+
+```console
+ls -ld ~/.ssh ~/.ssh/config
+```
+
+If this is your ordinary configuration file, owned by your account, and it permits
+group/other writes, restrict that exact file and retry ordinary SSH:
+
+```console
+chmod 600 ~/.ssh/config
+ssh workstation
+```
+
+For this check, group write is the problem: 0664 is unsafe, while 0644 normally
+passes; 0600 also keeps configuration private. A .ssh directory already at 0700
+needs no permission change for this file-specific failure. SSH configuration can
+select destinations and commands, so unauthorized edits can affect connections.
+The [OpenSSH manual](https://man.openbsd.org/ssh_config#FILES) describes the
+configuration-file restrictions.
+
+If ownership is wrong, chmod does not correct it: establish the intended owner
+with your administrator before changing ownership. For --ssh-config, included
+files or an error from a gateway-side SSH process, identify the exact file and
+machine first. Avoid recursive permission changes or assuming every named path
+belongs to the local client. Once ordinary SSH succeeds, retry JupyHop.
+
+## SSH times out during a start
+
+A printed request UUID followed by **Connection timed out during banner
+exchange** does not establish whether a remote server exists. Keep the request
+UUID and inspect before repeating start:
+
+```console
+jupyhop discover workstation --timeout 120
+jupyhop status workstation --timeout 120
+```
+
+Read warnings as well as session rows. If the existing request appears, inspect
+that exact UUID and reconcile its state rather than creating another session.
+An unsuccessful inspection, registry error or unknown/starting state is not
+evidence that nothing started. A successful inventory establishing that the
+request has no registered session can inform a deliberate retry; the new request
+has a new UUID.
+
+--timeout changes the connection/handshake and probe bounds; --ssh-auth-timeout
+separately bounds terminal authentication. Both can matter on password jump
+routes. Later success with --timeout 120 does not by itself establish why an
+earlier attempt timed out. If SSH itself still fails, diagnose the route first;
+increasing a deadline cannot repair an incorrect alias, host trust or permission.
+
 ## Paths, environments and authentication
 
 `--remote-python` selects the helper; `--server-python` selects the managed server
@@ -61,7 +118,8 @@ such process loss. Explicitly recheck after access is restored.
 | --- | --- |
 | Path `missing` | Confirm the runtime path visible to the actual server, including its launch-time environment variables |
 | Path `unsafe` | Check ownership, private permissions and symlinks on that exact path; do not recursively chmod shared/scientific directories |
-| `entry_limit`, `time_limit`, `output_limit`, path `limited` | The bounded search was curtailed; narrow the known runtime paths or investigate the specific environment |
+| `entry_limit` or path `limited` | A directory scan or the retained diagnostic sample reached a bound; this label alone does not distinguish them. Verified candidates can still be found and retained. More timeout does not enlarge the sample. |
+| `time_limit`, `output_limit` | The probe deadline or output bound curtailed the result. Inspect known paths/environments and distinguish those bounds before changing a deadline. |
 | `interpreter_unavailable` | At least one selected helper could not run; diagnose that interpreter separately with doctor |
 | `managed_state_unavailable` | Managed registry access/validation failed; inspect status and private evidence, keeping incompatible/corrupt records intact |
 | `unsupported_address`, `https_or_unix_socket`, `legacy_metadata` | The endpoint/metadata is outside the current compatibility boundary |
@@ -70,6 +128,8 @@ such process loss. Explicitly recheck after access is restored.
 
 Original runtime metadata is never deleted by discovery. Stale entries in a
 partial report are diagnostics; they do not authorize lifecycle control.
+Dozens of stale rows do not mean dozens of servers need stopping. The retained
+sample is not a count of every stale file or every live server on that host.
 
 ## tmux works interactively but start reports missing tmux
 
