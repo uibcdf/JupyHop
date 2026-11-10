@@ -48,11 +48,11 @@ memory.
 
 ## Current release
 
-The source candidate is **0.3.0**, adding names, consistent terminal choices,
+Version **0.3.0** adds names, consistent terminal choices,
 managed/history counters and shareable diagnostics. See
 [release notes](releases.md) and [installation choices](installation.md).
 
-Version **0.2.0** is available from the [uibcdf Conda channel](https://anaconda.org/uibcdf/jupyhop)
+It is available from the [uibcdf Conda channel](https://anaconda.org/uibcdf/jupyhop)
 for Linux and CPython 3.11–3.14. The client needs no local Jupyter. Discovery is
 always partial; supported endpoints and remote prerequisites are listed in
 [Compatibility](compatibility.md).

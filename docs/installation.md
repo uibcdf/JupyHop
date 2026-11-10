@@ -6,14 +6,13 @@ additional computer; live managed-session records stay on the remote host.
 
 ## Conda or mamba
 
-The source candidate is 0.3.0; the currently published channel coordinate is still
-0.2.0=py_0. New 0.3.0 features require its reviewed source/wheel until promotion;
-an installation of 0.2.0 does not include them.
+The current public channel coordinate is **0.3.0=py_0**, including named
+selection, management, history and diagnostic reports.
 
 Create a fresh environment from the public uibcdf and conda-forge channels:
 
 ```console
-mamba create -n jupyhop -c uibcdf -c conda-forge python=3.14 jupyhop=0.2.0
+mamba create -n jupyhop -c uibcdf -c conda-forge python=3.14 jupyhop=0.3.0
 mamba activate jupyhop
 jupyhop --version
 jupyhop --help
@@ -24,13 +23,13 @@ external SSH client. Local Jupyter and tmux are unnecessary. The Python client
 has no mandatory Python-package dependencies.
 
 The package uses a noarch Python payload with an explicit Linux constraint;
-this does not advertise macOS or Windows support. The first published Conda
-build is `0.2.0=py_0`; its [publication evidence](https://github.com/uibcdf/jupyhop/blob/main/devguide/24-conda-publication.md)
+this does not advertise macOS or Windows support. The current published Conda
+build is `0.3.0=py_0`; its [publication evidence](https://github.com/uibcdf/jupyhop/blob/main/devguide/31-03-conda-publication.md)
 records the exact file and SHA256.
 
 ## Source or reviewed wheel
 
-Neither version has been published to PyPI. For the 0.3.0 candidate, use a reviewed source checkout,
+JupyHop has not been published to PyPI. To install a reviewed source checkout,
 use your chosen virtualenv or Conda environment:
 
 ```console

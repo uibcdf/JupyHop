@@ -1,8 +1,8 @@
 # 06 — Development roadmap
 
 **Status:** M0–M6 local and GitHub CI gates passed, including account-fixture
-cleanup. Version 0.2.0 is published on the uibcdf Conda channel and its public
-documentation is live; PyPI is unpublished. See the [distribution report](24-conda-publication.md)
+cleanup. Version 0.3.0 is published on the uibcdf Conda channel and its public
+documentation is live; PyPI is unpublished. See the [distribution report](31-03-conda-publication.md)
 and [documentation report](25-public-documentation.md). M7 is optional. Dependency-ordered milestones,
 **not** a release timeline. Each milestone has an independently demonstrable
 vertical slice; security is a gate at every stage. Never advertise proposed CLI
@@ -115,7 +115,7 @@ uibcdf channel workflow and observed publication status.
 This is stabilization of M0–M6, not a dependency on optional M7 features. Keep the
 finite acceptance matrix distinct from a claim of universal compatibility.
 
-## 0.3.0 — Session usability candidate
+## 0.3.0 — Session usability
 
 The [post-pilot proposal](29-03-session-ux-design.md) addresses friendly names,
 consistent interactive selection, inventory/history summaries, explicit
@@ -124,8 +124,9 @@ in source; [30](30-03-implementation.md) records passed local, four-Python hoste
 and installed-wheel qualification. The thin manage menu reuses the shared
 layer; resume is only an open alias and never restarts a stopped kernel. Existing
 UUID/--yes scripting, unmanaged ownership and foreground SSH lifetime guards are
-retained. Package publication is a separate approved action; the Conda baseline
-remains 0.2.0 until promotion. Optional M7 platforms/services remain outside scope.
+retained. The separately authorized Conda publication passed four installed
+clients, exact-file promotion and independent public receiving; see [31](31-03-conda-publication.md).
+Optional M7 platforms/services remain outside scope.
 
 ## M7 — Optional extensions (separate scope decisions)
 

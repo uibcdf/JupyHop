@@ -1,5 +1,8 @@
 # 24 — Conda distribution through UIBCDF infrastructure
 
+This is the historical 0.2.0 publication report. The current 0.3.0 publication is
+recorded in [31](31-03-conda-publication.md), reusing the same workflow.
+
 Status: 0.2.0 build py_0 published to uibcdf/main, with source acceptance,
 four installed Conda clients and independent public receiving verified.
 The maintainer explicitly authorized publishing a usable package to uibcdf for

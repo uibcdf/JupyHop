@@ -6,7 +6,7 @@ JupyHop is an open-source project for **discovering, opening, launching, managin
 
 It is designed for researchers, data scientists, developers, and small teams who already have SSH access to workstations or servers and want to work with their remote notebooks as easily as with local ones.
 
-> **Project status: 0.3.0 — qualified Linux source candidate.** Session names, consistent terminal choices, a management menu, managed/history summaries, confirmed stop-and-archive and shareable diagnostics extend the tested Linux workflows. Acceptance observes 394 tests per CPython 3.11–3.14, installed upgrades, native SSH passwords and browser reconnection. The published Conda package is still 0.2.0 until separate promotion; neither version is on PyPI. See [implementation and acceptance evidence](devguide/30-03-implementation.md).
+> **Project status: 0.3.0 — published on the uibcdf Conda channel for Linux.** Session names, consistent terminal choices, a management menu, managed/history summaries, confirmed stop-and-archive and shareable diagnostics extend the tested workflows. Acceptance observes 394 tests per CPython 3.11–3.14, installed upgrades, native SSH passwords and browser reconnection. The same Conda archive passed four installed clients before promotion and independent public installation. JupyHop is not on PyPI. See [implementation acceptance](devguide/30-03-implementation.md) and [publication evidence](devguide/31-03-conda-publication.md).
 
 Start with the [public documentation](https://www.uibcdf.org/jupyhop/).
 Its sources include the [quickstart](docs/quickstart.md), [compatibility matrix](docs/compatibility.md)
@@ -24,9 +24,9 @@ through a real SSH gateway. Its usability findings inform the
 [0.3.0 design baseline](devguide/29-03-session-ux-design.md) and
 [implementation report](devguide/30-03-implementation.md). Those improvements
 are not available in the older 0.2.0 package.
-Version 0.2.0 is available on the [uibcdf Conda channel](https://anaconda.org/uibcdf/jupyhop)
+Version 0.3.0 is available on the [uibcdf Conda channel](https://anaconda.org/uibcdf/jupyhop)
 for Linux. Distribution follows the shared UIBCDF build/test/staging/promotion
-workflow; see [publication evidence](devguide/24-conda-publication.md).
+workflow; see [publication evidence](devguide/31-03-conda-publication.md).
 
 ## The problem
 
@@ -338,8 +338,8 @@ See [security and reliability](devguide/04-security-and-reliability.md), [discov
 ## Development roadmap
 
 M0–M6 acceptance is recorded for the documented support boundary, including
-hosted GitHub CI. Version 0.2.0 establishes the operational baseline; the 0.3.0
-source candidate adds the post-pilot session/diagnostic usability increment.
+hosted GitHub CI. Version 0.2.0 established the operational baseline; published
+0.3.0 adds the post-pilot session/diagnostic usability increment.
 The full roadmap is:
 
 1. **M0 — Validate design assumptions:** discovery, auth handoff, process managers, tunnel lifetime, and remote helper.
@@ -356,20 +356,17 @@ For detailed milestones, acceptance criteria, design decisions, and known constr
 ## Installation
 
 Use Linux, Python 3.11–3.14 and the OpenSSH client.
-For the published client:
-
-This channel command currently installs the older 0.2.0 interface. Use reviewed
-0.3.0 source/wheel below for the new menu/names until its separate promotion.
+Install the published client:
 
 ```console
-mamba create -n jupyhop -c uibcdf -c conda-forge python=3.14 jupyhop=0.2.0
+mamba create -n jupyhop -c uibcdf -c conda-forge python=3.14 jupyhop=0.3.0
 mamba activate jupyhop
 jupyhop --version
 ```
 
 Conda includes OpenSSH. Follow the [quickstart](docs/quickstart.md); see
 [remote preparation](docs/remote-setup.md) for the Jupyter environment and
-[updating](docs/upgrading.md) for an existing client. Version 0.2.0 is not on PyPI.
+[updating](docs/upgrading.md) for an existing client. JupyHop is not on PyPI.
 
 For development from a source checkout:
 

@@ -8,11 +8,11 @@
 > The [0.2.0 operational stabilization candidate](22-02-stabilization.md) is prepared,
 > with [observed progress](23-02-stabilization-evidence.md) for real-site,
 > native SSH passwords/keys, endurance and installed-upgrade acceptance.
-> [Conda distribution status](24-conda-publication.md) is tracked separately;
+> [Conda distribution status](31-03-conda-publication.md) is tracked separately;
 > no PyPI publication is included.
-> Source candidate **0.3.0** adds the post-pilot session/diagnostic UX. Its
-> [implementation and qualification](30-03-implementation.md) are separate from
-> the published 0.2.0 package and the original design proposal.
+> Published **0.3.0** adds the post-pilot session/diagnostic UX. Its
+> [implementation acceptance](30-03-implementation.md) and
+> [Conda publication](31-03-conda-publication.md) retain their exact source and artifact identities.
 
 JupyHop is a lightweight, SSH-native tool to launch, discover, manage, and reconnect to remote Jupyter sessions without deploying JupyterHub.
 
@@ -97,6 +97,8 @@ This directory is the project's design source of truth. Update specifications an
   servers, selected-only stop and explicit archival completion.
 - [0.3.0 session UX proposal](29-03-session-ux-design.md): names/choosers,
   inventory/history visibility, confirmed stop-and-archive and actionable diagnosis;
-  proposed behavior, not shipped functionality.
-- [0.3.0 implementation](30-03-implementation.md): progress and observed acceptance,
-  kept separate from the proposed contract and the published 0.2.0 package.
+  historical proposal, with the implemented contract recorded separately.
+- [0.3.0 implementation](30-03-implementation.md): observed source acceptance,
+  kept separate from the proposed contract and Conda publication.
+- [0.3.0 Conda publication](31-03-conda-publication.md): exact qualified source,
+  one archive, four installed clients, promotion and independent public receiving.

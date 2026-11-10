@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.3.0 — session usability candidate
+## 0.3.0 — session usability
 
 - Always show a terminal chooser for open without a selector, including a single
   candidate. Add exact managed --name selection, resume as an open alias and a
@@ -28,8 +28,9 @@
 
 Source acceptance passes 394 tests on each supported Python plus installed,
 native-password, account-isolation and browser gates; see [30](devguide/30-03-implementation.md).
-The public Conda package remains 0.2.0 until a separate approved promotion; no
-0.3.0 publication or new physical infrastructure pilot is claimed here.
+Build `0.3.0=py_0` is published on uibcdf/main after four installed Conda clients
+and independent public receiving passed; see [publication evidence](devguide/31-03-conda-publication.md).
+There is no PyPI publication or new physical infrastructure pilot for 0.3.0.
 
 ## 0.2.0 — pre-1.0 stabilization
 

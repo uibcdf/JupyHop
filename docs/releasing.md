@@ -1,11 +1,10 @@
 # Preparing a release
 
-The current Conda release is 0.2.0. This repository has not published it to PyPI.
+The current Conda release is 0.3.0. This repository has not published it to PyPI.
 Builds, CI artifacts, commits and tags do not constitute a package publication.
 Uploading a release is a separate explicit maintainer action after artifact review.
-The current source candidate is 0.3.0. Its report tracks qualification separately
-from the already published 0.2.0 coordinate; see
-[0.3.0 evidence](https://github.com/uibcdf/jupyhop/blob/main/devguide/30-03-implementation.md).
+The 0.3.0 reports track [source qualification](https://github.com/uibcdf/jupyhop/blob/main/devguide/30-03-implementation.md)
+separately from [Conda publication](https://github.com/uibcdf/jupyhop/blob/main/devguide/31-03-conda-publication.md).
 
 Package versions and release tags use exactly `x.y.z`, for example `0.1.0`,
 `0.1.1` or `0.2.0`. Tags use the same number, without a `v` prefix. Do not use
@@ -54,12 +53,12 @@ is explicitly approved.
 
 ## Conda packages on uibcdf
 
-The maintainer authorized publishing the tested 0.2.0 candidate to uibcdf.
-The [Conda report](https://github.com/uibcdf/jupyhop/blob/main/devguide/24-conda-publication.md) records the reused UIBCDF
+The maintainer authorized publishing tested 0.2.0 and 0.3.0 packages to uibcdf.
+The [0.3.0 Conda report](https://github.com/uibcdf/jupyhop/blob/main/devguide/31-03-conda-publication.md) records the reused UIBCDF
 actions, Linux-only noarch decision and observed publication status. This route
 does not publish PyPI, create a tag or create a GitHub Release.
 
-The coordinate `0.2.0=py_0` is already published. For a future reviewed,
+The coordinates `0.2.0=py_0` and `0.3.0=py_0` are already published. For a future reviewed,
 unoccupied coordinate, wait for the exact main commit's six source jobs to pass,
 then substitute the approved commit, numeric version and integer build number
 in this template:

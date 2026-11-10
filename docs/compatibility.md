@@ -1,7 +1,6 @@
 # Compatibility and version policy
 
-JupyHop 0.3.0 is the current Linux source candidate; 0.2.0 remains the public
-Conda baseline until promotion. Compatibility means the specific
+JupyHop 0.3.0 is the current public Linux Conda release. Compatibility means the specific
 workflows/versions observed below, not every Jupyter Server 2 deployment. The
 client needs OpenSSH and CPython 3.11–3.14; it has zero mandatory Python packages
 and needs no local Jupyter. Free-threaded Python, macOS and Windows are untested.
@@ -83,7 +82,7 @@ by that observation. Physical-client and site-policy limits remain explicit.
 
 | Contract | Current version / behavior |
 | --- | --- |
-| Client package | Source candidate 0.3.0; published Conda baseline 0.2.0 pending promotion; no PyPI publication |
+| Client package | Published Conda 0.3.0=py_0, qualified on Python 3.11–3.14; no PyPI publication |
 | Doctor wire | 1.0 |
 | Managed start wire | 1.2; version refusal is a new allowlisted error |
 | Discovery wire | 1.6; distinct sample/scan limit diagnostics, retaining legacy entry_limit |

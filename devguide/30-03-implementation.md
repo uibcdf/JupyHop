@@ -4,7 +4,8 @@ Status: 0.3.0 Linux source acceptance passed, following [29](29-03-session-ux-de
 The 0.2.0 physical pilot is closed in [28](28-02-physical-client-pilot.md).
 The final acceptance section below identifies the exact qualified source/artifacts.
 Earlier sections retain intermediate observations and findings. No 0.3.0 package
-publication or new physical infrastructure pilot is claimed.
+publication or new physical infrastructure pilot is claimed by this source report.
+The subsequent authorized Conda publication is recorded in [31](31-03-conda-publication.md).
 
 ## Read-only managed inventory foundation
 
@@ -119,9 +120,9 @@ report, named open, managed/history counters and explicit compound completion
 without local Jupyter. Temporary artifact-directory/wheel arguments avoid
 replacing any earlier reviewed files in dist.
 
-Current-user guides, README, changelog, security, architecture/protocol/CLI/UX
-specifications, roadmap, decisions and scenario ledger describe the source
-candidate and clearly retain 0.2.0 as the published Conda baseline. A new
+At that stage current-user guides, README, changelog, security,
+architecture/protocol/CLI/UX specifications, roadmap, decisions and scenario
+ledger described the source candidate and retained 0.2.0 as the published Conda baseline. A new
 diagnostics guide provides the optional notebook API and a copyable stdlib cell.
 Strict Sphinx 9.2.0 / MyST 5.1.0 observes 28 HTML pages without warnings; all
 1482 local links/resources/fragments and generated CLI sections pass. The source
@@ -270,7 +271,9 @@ validated HTML, local receipts and reviewed distributions were retained outside
 the repository. No personal SSH configuration, scientific environment/session,
 site network setting or real server was modified by this implementation work.
 
-Next: review and explicitly promote a 0.3.0 Conda build through the existing
-exact-file workflow, independently install it and repeat the guided physical
-client usability pilot. The currently published coordinate remains 0.2.0=py_0.
-No 0.3.0 Conda/PyPI upload, version tag or GitHub Release was created here.
+At source acceptance closeout, the next step was to review and promote a 0.3.0
+Conda build through the existing exact-file workflow, independently install it
+and repeat the guided physical
+client usability pilot. At that point the published coordinate was 0.2.0=py_0.
+No upload, version tag or GitHub Release was created by source acceptance itself;
+see [31](31-03-conda-publication.md) for the subsequent Conda publication.

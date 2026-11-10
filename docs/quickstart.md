@@ -1,19 +1,18 @@
 # Quickstart
 
 JupyHop's client runs on Linux with CPython 3.11–3.14 and OpenSSH. It needs no
-local Jupyter and no Python runtime dependencies. These guides describe the
-0.3.0 source candidate; its qualification is tracked in the
+local Jupyter and no Python runtime dependencies. These guides describe published
+0.3.0; its source qualification is tracked in the
 [implementation report](https://github.com/uibcdf/jupyhop/blob/main/devguide/30-03-implementation.md).
-The published Conda release remains 0.2.0 until separate promotion. Its older
-interface lacks the new names/menu/overview flows; use a reviewed 0.3.0 source or
-wheel for those, as described in [Installation](installation.md#source-or-reviewed-wheel).
+The Conda release includes the names/menu/overview flows described below.
+See [Installation](installation.md) for the supported distribution choices.
 
 ## Install the client
 
 Create a Linux client from the public Conda channel:
 
 ```console
-mamba create -n jupyhop -c uibcdf -c conda-forge python=3.14 jupyhop=0.2.0
+mamba create -n jupyhop -c uibcdf -c conda-forge python=3.14 jupyhop=0.3.0
 mamba activate jupyhop
 jupyhop --version
 ```

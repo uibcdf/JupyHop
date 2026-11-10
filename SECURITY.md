@@ -1,11 +1,10 @@
 # Security policy
 
-JupyHop 0.3.0 is the source pre-1.0 candidate; 0.2.0 is the published Conda baseline
-until promotion. Neither is an independently audited product. The
+JupyHop 0.3.0 is the published pre-1.0 Conda release for Linux. It is not an
+independently audited product. The
 supported boundary is described in [compatibility](docs/compatibility.md) and the
-[threat model](devguide/04-security-and-reliability.md). Until a release is
-published, use a reviewed checkout/artifact; no historical public release receives
-backported security fixes.
+[threat model](devguide/04-security-and-reliability.md). Use the current reviewed
+release; historical public releases do not receive backported security fixes.
 
 Jupyter grants code execution to its authenticated users. JupyHop trusts the
 installed client, your local OpenSSH config (including ProxyCommand/Match exec),

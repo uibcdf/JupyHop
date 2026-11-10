@@ -1,14 +1,14 @@
 # Update the client
 
-The current public Conda release is **0.2.0**. Run these steps on each local
+The current public Conda release is **0.3.0**. Run these steps on each local
 client you want to update. Remote Jupyter environments, existing notebook files
 and managed runners have separate lifetimes and do not need reinstalling for a
 client update.
-The 0.3.0 source candidate adds names, a menu, history and interactive completion;
-its separate qualification is tracked in the
+Version 0.3.0 adds names, a menu, history and interactive completion;
+its source qualification is tracked in the
 [implementation report](https://github.com/uibcdf/jupyhop/blob/main/devguide/30-03-implementation.md).
-Until promotion, the Conda command below installs 0.2.0. To evaluate 0.3.0 earlier,
-use only a reviewed source/wheel in a separate client environment.
+The [publication report](https://github.com/uibcdf/jupyhop/blob/main/devguide/31-03-conda-publication.md)
+records the exact Conda build and independent public installation.
 
 ## Before changing the local environment
 
@@ -19,9 +19,10 @@ its local environment, then update from a separate terminal. The remote server
 and kernel remain subject to their launcher and site policy.
 
 Check the [release notes](releases.md) and [compatibility policy](compatibility.md).
-The installed 0.1.0-to-0.2.0 upgrade is tested with the same surviving kernel and
-unchanged remote runner/registry. This does not promise arbitrary future schema
-migrations, downgrades or survival after a remote process exits.
+Installed upgrades from 0.1.0 and 0.2.0 to the actual 0.3.0 client are tested with
+the same surviving kernel and unchanged remote runner/registry. This does not
+promise arbitrary future schema migrations, downgrades or survival after a remote
+process exits.
 
 ## Install the chosen Conda release
 
@@ -29,7 +30,7 @@ For an existing client environment named `jupyhop`:
 
 ```console
 mamba activate jupyhop
-mamba install -c uibcdf -c conda-forge jupyhop=0.2.0
+mamba install -c uibcdf -c conda-forge jupyhop=0.3.0
 jupyhop --version
 ```
 
@@ -41,7 +42,7 @@ managed session when their protocol/state contracts are compatible.
 For source or wheel installations, install the reviewed replacement into the
 chosen client environment using the same method described in
 [Installation](installation.md#source-or-reviewed-wheel). There is no public
-PyPI 0.2.0 release or remote JupyHop package to update.
+PyPI release or mandatory remote JupyHop package to update.
 
 ## Verify by reconnecting
 
