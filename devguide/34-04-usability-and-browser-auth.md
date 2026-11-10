@@ -2,7 +2,11 @@
 
 Date: 2026-11-10. Baseline: published **0.3.0**, source **ce63bf7**.
 Experiment commit: **8e0d5e1**.
-Status: **proposal with an experimental proof of feasibility**. No 0.4.0 client,
+Status: **historical analysis with an experimental proof of feasibility**.
+The requested release now has a detailed [0.4.0 implementation plan](35-04-implementation-plan.md).
+That plan is authoritative for scope, CLI/wire/settings choices and gates; it
+refines the design to issue cookies remotely instead of bringing the native token
+to the client. The original analysis/evidence below is retained by date. No 0.4.0 client,
 managed authentication mode, package or release is implemented by this document.
 The current [authentication](09-session-lifecycle-and-auth.md),
 [security](04-security-and-reliability.md) and [UX](12-user-experience.md) contracts

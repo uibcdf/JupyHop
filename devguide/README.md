@@ -108,6 +108,9 @@ This directory is the project's design source of truth. Update specifications an
 - [Documentation onboarding implementation](33-documentation-onboarding-implementation.md):
   rewritten entry/task guides, fixture demonstrations, preview metadata, observed
   technical acceptance and pending reader/external validation.
-- [0.4.0 usability and browser authentication proposal](34-04-usability-and-browser-auth.md):
-  identifier/credential distinction, SSH-authorized native cookie handoff, bounded
-  release priorities, disposable proof and security/compatibility gates.
+- [0.4.0 usability and browser authentication analysis](34-04-usability-and-browser-auth.md):
+  historical identifier/credential analysis, original disposable cookie-handoff
+  proof and the questions refined by the implementation plan below.
+- [0.4.0 implementation plan](35-04-implementation-plan.md): authoritative release
+  scope, explicit CLI modes, cookie-only private protocol, settings compatibility,
+  bounded handoff, failure recovery, staged work and A01–A24 acceptance matrix.
