@@ -1,8 +1,10 @@
 # 30 — 0.3.0 implementation and acceptance
 
-Status: 0.3.0 source candidate in qualification, following [29](29-03-session-ux-design.md).
+Status: 0.3.0 Linux source acceptance passed, following [29](29-03-session-ux-design.md).
 The 0.2.0 physical pilot is closed in [28](28-02-physical-client-pilot.md).
-No 0.3.0 publication or complete feature acceptance is claimed yet.
+The final acceptance section below identifies the exact qualified source/artifacts.
+Earlier sections retain intermediate observations and findings. No 0.3.0 package
+publication or new physical infrastructure pilot is claimed.
 
 ## Read-only managed inventory foundation
 
@@ -64,7 +66,7 @@ jump-side rejection to that explicit local file. A new CI-only acceptance driver
 uses the existing exclusively provisioned Unix test account to check native
 default 0600/0644 acceptance, native write-permission policy and the actual classifier, then removes
 only its newly created config by inode. It refuses ordinary accounts and an
-existing config. Its native account result is pending hosted observation.
+existing config. Its native-policy finding and final acceptance are recorded below.
 
 Discovery wire 1.6 adds sample_limit/scan_limit while retaining entry_limit as a
 legacy marker. Filling the sample no longer falsely marks a later fully scanned
@@ -87,9 +89,8 @@ tests pass, including echo restoration and independent forward cleanup. Two
 crowded/multiple-runtime integration cases pass after retaining the compatible
 noninteractive multiple-server diagnostic. Strict types cover 25 source modules.
 
-Public documentation, full installed candidate qualification, the native
-default-config account experiment and four-Python hosted acceptance remain to
-be completed before calling 0.3.0 operational.
+At this stage public documentation, installed candidate qualification, native
+default-config acceptance and four-Python hosted checks remained incomplete.
 
 ## Whole-suite and terminal follow-up
 
@@ -141,8 +142,8 @@ with SSHTransport.run forbidden and a synthetic scientific memory marker present
 The report has the correct context/package metadata, excludes the marker and
 leaves it unchanged. No real scientific environment/session is tested.
 
-Candidate hosted acceptance and native default-config account results remain
-pending. No 0.3.0 Conda/PyPI publication is authorized by these tests.
+At this stage candidate hosted acceptance and native default-config results were
+pending. These tests do not authorize a 0.3.0 Conda/PyPI publication.
 
 ## Registry capacity boundary
 
@@ -203,3 +204,73 @@ actual classifier payload in unit regression. It does not infer distribution
 policy in production, add accounts/groups, weaken permissions or change OpenSSH.
 The conservative owned-file remedy stays chmod 600. Native fixtures run and clean
 up before the longer suites, so a prerequisite failure is diagnosed promptly.
+
+## Final source acceptance — 2026-11-10
+
+The implementation acceptance anchor is
+**8bca6ab4f7466fac6dceda0516f95427e71ef28d**. All six
+[source jobs](https://github.com/uibcdf/jupyhop/actions/runs/42786776464)
+and both [documentation jobs](https://github.com/uibcdf/jupyhop/actions/runs/42786776216)
+completed successfully. Documentation closeout commits follow this anchor;
+they do not replace the artifact identity recorded here.
+
+| Check or experiment | Observed result |
+| --- | --- |
+| Complete Linux suite on CPython 3.11, 3.12, 3.13 and 3.14 | 394 passes per interpreter: 318 unit and 76 disposable SSH/kernel integrations |
+| Lint, formatting, strict types | Passed in all four source jobs; 25 installed-source modules checked |
+| Jupyter Server 2.17.0 and 2.20.0 | Existing access and supported/refused launch boundaries passed |
+| Actual installed candidate without local Jupyter | Support report, named open, history/counters, compound completion and legacy UUID scripting passed through ProxyJump on all four Pythons |
+| Installed upgrades from trusted 0.1.0 and published 0.2.0 source | Same live notebook/kernel/session/PID/memory/progress, concurrent old/new clients and immutable runner/registry passed on all four Pythons |
+| Native private terminal SSH | Actual Unix password direct/jump open, managed start, retry, cancellation, deadline, terminal restoration and headless refusal passed |
+| Two actual non-root Unix accounts | Private registry/kernel access and lifecycle isolation passed; only generated accounts/homes and private sshd removed |
+| Native default config | Loaded 0600/0644; private-group 0664 accepted by Ubuntu; 0666 rejected and actual curated remedy passed; exclusive config removed |
+| Browser | Ordinary and managed login, authenticated kernel WebSocket execution and independent-client same-memory reconnection passed |
+| Sphinx and source examples | Strict build and deployment passed; 28 pages, 1482 local references, all generated CLI sections, 77 CLI/two TOML/six JSON examples |
+| Distribution and Conda source gate | Hosted wheel/sdist inspected locally against exact clean source; check-source passed with the actual complete/executed hosted matrix; nothing uploaded to a package registry |
+
+The [distribution artifact](https://github.com/uibcdf/jupyhop/actions/runs/42786776464/artifacts/13749478904)
+contains the inspected wheel, sdist and SHA256SUMS. Its ZIP digest is
+b9e229d15854c7ec55a547c8c8d3d479400e83670ee1a8674135008aa7f15e2d.
+The individual artifact hashes are:
+
+```text
+c2310b708f9a08eeac81a3b38b63fea6552b0a6514a2a19af64505419e977c5d  jupyhop-0.3.0-py3-none-any.whl
+3b154ba7cf18df99e7641ddd47288e11e39d12f5be37c4b1f490c8830f0788cb  jupyhop-0.3.0.tar.gz
+```
+
+The implemented decisions are D49–D55: one shared selector/lifecycle layer,
+read-only bounded inventory, pinned UUID authority, explicitly confirmed compound
+completion, allowlisted diagnostics and native OpenSSH policy/lifetime reuse.
+The two additional correctness fixes enforce the existing 128-record boundary
+before reservation and retain verified pinned-process exit evidence. Registry
+schema 1.0, existing immutable runners, zero mandatory Python dependencies and
+the no-mandatory-remote-installation model remain valid in the tested upgrades.
+
+Files are reviewable in the
+[complete implementation diff](https://github.com/uibcdf/jupyhop/compare/3b79a08...8bca6ab).
+New source modules are selection.py, controls.py, session_inventory.py,
+_inventory_remote.py and diagnostics.py. Existing CLI/discovery/fleet/SSH/
+connection/managed/lifecycle/protocol modules implement the shared flow and guards.
+The new native permission experiment, installed package/release/source gates,
+four focused unit modules and test_session_ux_ssh.py provide the new acceptance;
+existing lifecycle, connection, managed and publication tests were extended.
+README, changelog, security, public Sphinx guides and the architecture/CLI/
+security/testing/decisions/scenario/protocol/discovery/UX ledger are synchronized.
+
+Accepted scope covers names/selectors, managed counters/history, explicit
+stop-and-archive, native diagnostics and optional notebook reporting. It does not
+include macOS, exhaustive discovery, automatic archive deletion, restoration of
+dead memory, remote restart/logout-policy testing or new lifecycle authority over
+unmanaged servers. Archive totals remain bounded/partial when necessary. Ctrl-C
+inside management can require fresh native SSH authentication. The physical
+infrastructure pilot remains evidence for 0.2.0; 0.3.0 uses isolated qualification.
+
+The temporary Sphinx environment and its isolated package cache were removed;
+validated HTML, local receipts and reviewed distributions were retained outside
+the repository. No personal SSH configuration, scientific environment/session,
+site network setting or real server was modified by this implementation work.
+
+Next: review and explicitly promote a 0.3.0 Conda build through the existing
+exact-file workflow, independently install it and repeat the guided physical
+client usability pilot. The currently published coordinate remains 0.2.0=py_0.
+No 0.3.0 Conda/PyPI upload, version tag or GitHub Release was created here.

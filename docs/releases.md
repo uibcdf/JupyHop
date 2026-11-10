@@ -2,10 +2,11 @@
 
 ## 0.3.0 — Session usability candidate
 
-Source implementation is in qualification; the Conda channel remains at 0.2.0
+Source acceptance passes 394 tests on each supported Python, installed upgrades,
+native SSH/password and browser/account gates; the Conda channel remains at 0.2.0
 until the new artifact's separate promotion. The
 [implementation evidence](https://github.com/uibcdf/jupyhop/blob/main/devguide/30-03-implementation.md)
-tracks remaining gates without labeling proposed/publication work as complete.
+records exact commits, artifacts and limits separately from package publication.
 
 - Named managed selection with --name; consistent terminal choosers even for one
   ready server; resume is an alias for open.

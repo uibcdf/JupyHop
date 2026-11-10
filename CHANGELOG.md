@@ -23,8 +23,11 @@
   diagnostic cell, without mandatory remote JupyHop installation or dependencies.
 - Preserve registry schema 1.0 and live runners. Qualification includes actual
   installed upgrades from 0.2.0 source as well as the historical 0.1.0 baseline.
+- Retain verified pidfd exit evidence in stop replies when a subsequent process
+  observation is unavailable; never apply it to another recorded identity.
 
-Source implementation/qualification is tracked in [30](devguide/30-03-implementation.md).
+Source acceptance passes 394 tests on each supported Python plus installed,
+native-password, account-isolation and browser gates; see [30](devguide/30-03-implementation.md).
 The public Conda package remains 0.2.0 until a separate approved promotion; no
 0.3.0 publication or new physical infrastructure pilot is claimed here.
 

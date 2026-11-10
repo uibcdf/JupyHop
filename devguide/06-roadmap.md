@@ -120,8 +120,8 @@ finite acceptance matrix distinct from a claim of universal compatibility.
 The [post-pilot proposal](29-03-session-ux-design.md) addresses friendly names,
 consistent interactive selection, inventory/history summaries, explicit
 stop-and-archive completion and actionable diagnostics. These are now implemented
-in source; [30](30-03-implementation.md) records local results and pending
-hosted/installed-candidate qualification. The thin manage menu reuses the shared
+in source; [30](30-03-implementation.md) records passed local, four-Python hosted
+and installed-wheel qualification. The thin manage menu reuses the shared
 layer; resume is only an open alias and never restarts a stopped kernel. Existing
 UUID/--yes scripting, unmanaged ownership and foreground SSH lifetime guards are
 retained. Package publication is a separate approved action; the Conda baseline

@@ -6,7 +6,7 @@ JupyHop is an open-source project for **discovering, opening, launching, managin
 
 It is designed for researchers, data scientists, developers, and small teams who already have SSH access to workstations or servers and want to work with their remote notebooks as easily as with local ones.
 
-> **Project status: 0.3.0 — source candidate in qualification.** Session names, consistent terminal choices, a management menu, managed/history summaries, confirmed stop-and-archive and shareable diagnostics extend the tested Linux workflows. CPython 3.11–3.14 and OpenSSH remain the support boundary. The published Conda package is still 0.2.0 until separate promotion; neither version is on PyPI. See [implementation, observed tests and pending qualification](devguide/30-03-implementation.md).
+> **Project status: 0.3.0 — qualified Linux source candidate.** Session names, consistent terminal choices, a management menu, managed/history summaries, confirmed stop-and-archive and shareable diagnostics extend the tested Linux workflows. Acceptance observes 394 tests per CPython 3.11–3.14, installed upgrades, native SSH passwords and browser reconnection. The published Conda package is still 0.2.0 until separate promotion; neither version is on PyPI. See [implementation and acceptance evidence](devguide/30-03-implementation.md).
 
 Start with the [public documentation](https://www.uibcdf.org/jupyhop/).
 Its sources include the [quickstart](docs/quickstart.md), [compatibility matrix](docs/compatibility.md)
