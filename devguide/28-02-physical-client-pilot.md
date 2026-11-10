@@ -132,3 +132,16 @@ Observed local documentation checks:
 
 These are local checks, distinct from the operator pilot and any later hosted
 workflow/deployment result.
+
+The documentation candidate d31aba25d8e50f50ced6cd8149da1a346e384afc passes the
+[Pages workflow](https://github.com/uibcdf/jupyhop/actions/runs/42767471012),
+including build/check and deployment. Independent HTTPS receiving verification
+from the development environment returned 403; the web reader could not access
+the guides either. Deployment success is observed, but public receiving content
+was not independently confirmed in this closeout.
+
+Its [source workflow](https://github.com/uibcdf/jupyhop/actions/runs/42767471013)
+passes all six jobs: 321 tests on each Python 3.11–3.14, installed upgrades,
+packaging, browser, native password/account cleanup and server comparisons.
+These hosted observations refer to that candidate; later 0.3.0 implementation
+requires its own acceptance rather than inheriting these results.
