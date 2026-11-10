@@ -100,6 +100,7 @@ def check_source(sha, version):
                 "Run pytest --run-integration",
                 "Run python -m experiments.package_smoke",
                 "Verify installed client upgrade from 0.1.0 using the actual candidate",
+                "Verify installed client upgrade from published 0.2.0 source",
             }
             if job["name"] == "linux (3.14)":
                 required |= {
@@ -107,6 +108,7 @@ def check_source(sha, version):
                     "Run python -m experiments.browser_smoke --managed --reconnect",
                     "Verify real Unix account isolation",
                     "Verify native Unix SSH password workflows",
+                    "Verify default SSH configuration permission feedback",
                     "Remove isolated account fixture",
                 }
             executed = {

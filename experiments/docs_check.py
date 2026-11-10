@@ -115,6 +115,7 @@ def check(root):
         "quickstart.html",
         "existing-servers.html",
         "managed-sessions.html",
+        "diagnostics.html",
         "cli.html",
     }
     if not required <= {path.name for path in pages}:

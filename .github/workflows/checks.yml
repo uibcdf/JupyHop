@@ -32,6 +32,10 @@ jobs:
         run: |
           candidate_wheel="$(python -c 'from pathlib import Path; print(next(Path("dist").glob("jupyhop-*.whl")))')"
           python -m experiments.client_upgrade --candidate-wheel "$candidate_wheel"
+      - name: Verify installed client upgrade from published 0.2.0 source
+        run: |
+          candidate_wheel="$(python -c 'from pathlib import Path; print(next(Path("dist").glob("jupyhop-*.whl")))')"
+          python -m experiments.client_upgrade --candidate-wheel "$candidate_wheel" --baseline-ref 6e0438eeb39a3bc8b92acb48545e55b343b52279
       - if: matrix.python == '3.14'
         uses: actions/upload-artifact@v4
         with:

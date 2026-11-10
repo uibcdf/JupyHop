@@ -19,8 +19,12 @@ from experiments.jupyter_fixture import JupyterFixture
 from experiments.lab import SSHLab
 
 
-def exercise(client_prefix=None):
-    wheels = list(Path("dist").glob("jupyhop-*.whl")) if client_prefix is None else []
+def exercise(client_prefix=None, *, wheel=None):
+    wheels = (
+        ([wheel] if wheel is not None else list(Path("dist").glob("jupyhop-*.whl")))
+        if client_prefix is None
+        else []
+    )
     if client_prefix is None and len(wheels) != 1:
         raise RuntimeError("Expected exactly one built JupyHop wheel in dist")
     with SSHLab() as lab, JupyterFixture(lab.root / "manual", runtime=lab.runtime) as fixture:
@@ -89,6 +93,32 @@ def exercise(client_prefix=None):
         report = json.loads(result.stdout)
         if not report["ok"] or report["data"]["identity"]["uid"] != os.getuid():
             raise RuntimeError("Installed wheel diagnostic failed")
+        support = subprocess.run(
+            [
+                cli,
+                "doctor",
+                "destination",
+                "--ssh-config",
+                str(lab.config),
+                "--remote-python",
+                sys.executable,
+                "--report",
+                "--json",
+            ],
+            cwd=lab.root,
+            env=environment,
+            check=True,
+            capture_output=True,
+            timeout=25,
+        )
+        public = json.loads(support.stdout)
+        if (
+            public["report_version"] != 1
+            or not public["outcome"]["ok"]
+            or "identity" in public["remote"]
+            or str(lab.home) in support.stdout.decode()
+        ):
+            raise RuntimeError("Installed wheel support report failed")
         client_config = lab.root / "jupyhop-config.toml"
         client_config.write_text(
             f'version = 1\n[profiles.research]\nserver_python = {json.dumps(sys.executable)}\nworkdir = "~"\n[hosts.destination]\nprofile = "research"\n'
@@ -183,12 +213,31 @@ def exercise(client_prefix=None):
             if launched["state"] != "ready" or launched["server"]["origin"] != "managed":
                 raise RuntimeError("Installed wheel managed start failed")
             managed_snapshot = json.loads(Path(launched["record_path"]).read_text())
+            overview = subprocess.run(
+                [
+                    cli,
+                    "status",
+                    "destination",
+                    "--history",
+                    "--json",
+                    "--ssh-config",
+                    str(lab.config),
+                ],
+                cwd=lab.root,
+                env=environment,
+                check=True,
+                capture_output=True,
+                timeout=25,
+            )
+            if json.loads(overview.stdout)["summary"]["ready"] != 1:
+                raise RuntimeError("Installed wheel managed overview failed")
             managed_open = subprocess.Popen(
                 [
                     cli,
                     "open",
                     "destination",
-                    launched["id"],
+                    "--name",
+                    "wheel-managed",
                     "--ssh-config",
                     str(lab.config),
                     "--no-browser",
@@ -241,6 +290,31 @@ def exercise(client_prefix=None):
                 report = json.loads(result.stdout)
                 if report["error"] is not None or report["servers"][0]["state"] != expected:
                     raise RuntimeError("Installed wheel managed lifecycle failed")
+            completed = subprocess.run(
+                [
+                    cli,
+                    "stop",
+                    "destination",
+                    launched["id"],
+                    "--yes",
+                    "--archive",
+                    "--json",
+                    "--ssh-config",
+                    str(lab.config),
+                ],
+                cwd=lab.root,
+                env=environment,
+                check=True,
+                capture_output=True,
+                timeout=30,
+            )
+            completion = json.loads(completed.stdout)
+            if (
+                completion["version"] != 1
+                or completion["stop"]["servers"][0]["state"] != "stopped"
+                or completion["archive"]["archived"]["id"] != launched["id"]
+            ):
+                raise RuntimeError("Installed wheel compound completion failed")
             for _ in range(2):
                 result = subprocess.run(
                     [
@@ -262,6 +336,29 @@ def exercise(client_prefix=None):
                 report = json.loads(result.stdout)
                 if report["archived"]["id"] != launched["id"]:
                     raise RuntimeError("Installed wheel archive failed")
+            historical = subprocess.run(
+                [
+                    cli,
+                    "status",
+                    "destination",
+                    "--history",
+                    "--json",
+                    "--ssh-config",
+                    str(lab.config),
+                ],
+                cwd=lab.root,
+                env=environment,
+                check=True,
+                capture_output=True,
+                timeout=25,
+            )
+            summary = json.loads(historical.stdout)["summary"]
+            if (
+                summary["unarchived"] != 0
+                or summary["archived"] != 1
+                or not summary["archive_count_exact"]
+            ):
+                raise RuntimeError("Installed wheel archive history failed")
         finally:
             if managed_snapshot is not None:
                 subprocess.run(
@@ -272,18 +369,23 @@ def exercise(client_prefix=None):
                     timeout=5,
                 )
     print(
-        "PASS: clean installed client without local Jupyter, profiles/fleet inventory, existing-server access, start/open/status/stop/archive via ProxyJump and owned tunnel cleanup"
+        "PASS: clean installed client without local Jupyter, support report, profiles/fleet, named open, managed/history inventory, compound completion, existing access and lifecycle via ProxyJump with owned cleanup"
     )
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument(
+    selection = parser.add_mutually_exclusive_group()
+    selection.add_argument(
         "--client-prefix",
         type=Path,
         help="Use an already installed clean client, e.g. a Conda prefix",
     )
-    exercise(parser.parse_args().client_prefix)
+    selection.add_argument(
+        "--wheel", type=Path, help="Use one reviewed wheel without changing existing dist artifacts"
+    )
+    args = parser.parse_args()
+    exercise(args.client_prefix, wheel=args.wheel)
 
 
 if __name__ == "__main__":

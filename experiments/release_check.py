@@ -1,5 +1,6 @@
 """Inspect local release artifacts without network access or package execution."""
 
+import argparse
 import ast
 import configparser
 import hashlib
@@ -17,7 +18,7 @@ def safe_path(name):
     assert not path.is_absolute() and ".." not in path.parts, "Unsafe archive path"
 
 
-def main():
+def main(directory=Path("dist")):
     project = tomllib.loads(Path("pyproject.toml").read_text())["project"]
     version = project["version"]
     assert re.fullmatch(r"(?:0|[1-9][0-9]*)(?:\.(?:0|[1-9][0-9]*)){2}", version), (
@@ -33,8 +34,8 @@ def main():
         )
     )
     assert version == declared, "Client and package versions differ"
-    wheels = list(Path("dist").glob("*.whl"))
-    sources = list(Path("dist").glob("*.tar.gz"))
+    wheels = list(directory.glob("*.whl"))
+    sources = list(directory.glob("*.tar.gz"))
     assert len(wheels) == len(sources) == 1, "Keep exactly one release wheel/sdist in dist"
     wheel, source = wheels[0], sources[0]
     assert wheel.name == f"jupyhop-{version}-py3-none-any.whl"
@@ -115,11 +116,13 @@ def main():
         line = hashlib.sha256(artifact.read_bytes()).hexdigest() + "  " + artifact.name
         checksums.append(line)
         print(line)
-    Path("dist/SHA256SUMS").write_text("\n".join(checksums) + "\n", encoding="ascii")
+    (directory / "SHA256SUMS").write_text("\n".join(checksums) + "\n", encoding="ascii")
     print(
         "PASS: matching release versions, MIT metadata, entrypoint, zero mandatory dependencies and complete safe artifacts"
     )
 
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("directory", nargs="?", type=Path, default=Path("dist"))
+    main(parser.parse_args().directory)
