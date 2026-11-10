@@ -3,9 +3,13 @@
 Run with the experiments dependencies and Chrome installed. Only SSHLab targets,
 synthetic credentials and private browser profiles are used. Native token reads
 are scoped to a known fixture runtime file over the selected SSH connection; no production credential protocol or managed-auth mode is added.
+Use --remote-cookie to issue the native cookie remotely for the local forwarding
+Host; the native token then stays out of the SSH reply. The default retains the
+original comparison experiment. Neither path is a production credential API.
 No real SSH configuration, browser profile or scientific session is accessed.
 """
 
+import argparse
 import html
 import json
 import os
@@ -80,7 +84,7 @@ def chrome(root):
         shutil.rmtree(profile, ignore_errors=True)
 
 
-def fixture_token(tunnel, fixture, report, server):
+def fixture_token(tunnel, fixture, report, server, *, local_port=None):
     """Exercise a private SSH read on one known fixture, not general discovery."""
     request = {
         "source": files("jupyhop").joinpath("_discovery_probe.py").read_text(),
@@ -88,6 +92,7 @@ def fixture_token(tunnel, fixture, report, server):
         "name": fixture.record.name,
         "scope": report["identity"]["scope"],
         "expected": server.get("observed_id", server["id"]),
+        "local_port": local_port,
     }
     bootstrap = r"""import json, os, sys
 try:
@@ -100,13 +105,35 @@ try:
             result = namespace['_candidate'](directory, request['name'], request['directory'], request['scope'])
             if result['state'] != 'ready' or result['id'] != request['expected']:
                 raise ValueError
+            return result
         checked()
         value = namespace['_read_record'](directory, request['name'])
         credential = value.get('token')
         if not isinstance(credential,str) or not 1 <= len(credential) <= 4096 or any(ord(c)<33 or ord(c)>126 for c in credential):
             raise ValueError
-        checked()
-        print(json.dumps({'token': credential}))
+        current = checked()
+        port = request['local_port']
+        if port is None:
+            print(json.dumps({'token': credential}))
+        else:
+            if type(port) is not int or not 1 <= port <= 65535:
+                raise ValueError
+            import http.client
+            from urllib.parse import quote
+            connection = http.client.HTTPConnection('127.0.0.1', current['port'], timeout=3)
+            try:
+                base = current['base_url']
+                connection.request('GET', base+'login?next='+quote(base,safe=''), headers={'Host':'127.0.0.1:'+str(port), 'Authorization':'token '+credential})
+                response = connection.getresponse()
+                if response.status != 302:
+                    raise ValueError
+                cookies = [v for k,v in response.getheaders() if k.lower() == 'set-cookie']
+                if not cookies or sum(map(len,cookies)) > 4096:
+                    raise ValueError
+                checked()
+                print(json.dumps({'cookies': cookies}))
+            finally:
+                connection.close()
     finally:
         os.close(directory)
 except Exception:
@@ -119,6 +146,11 @@ except Exception:
     if result.returncode or len(result.stdout) > 8192:
         raise RuntimeError("Private fixture credential read refused; raw output suppressed")
     value = json.loads(result.stdout)
+    if local_port is not None:
+        if set(value) != {"cookies"} or not isinstance(value["cookies"], list):
+            raise RuntimeError("Private fixture cookie response invalid; raw output suppressed")
+        assert fixture.info["token"].encode() not in result.stdout
+        return value["cookies"]
     if set(value) != {"token"} or not isinstance(value["token"], str):
         raise RuntimeError("Private fixture credential response invalid; raw output suppressed")
     return value["token"]
@@ -292,7 +324,7 @@ def kernel_roundtrip(devtools, base, *, create):
     )
 
 
-def visit(lab, transport, fixture, label, *, create=False, password=False):
+def visit(lab, transport, fixture, label, *, create=False, password=False, remote_cookie=False):
     report = discover(transport)
     server = select_server(report, None, interactive=False)
     with open_connection(transport, report, server) as (tunnel, _):
@@ -316,11 +348,31 @@ def visit(lab, transport, fixture, label, *, create=False, password=False):
                 assert refused, "Nonprivate runtime metadata must not release a credential"
             finally:
                 fixture.record.chmod(original_mode)
-        credential = (
-            fixture.password if password else fixture_token(tunnel, fixture, report, server)
-        )
-        assert credential
-        cookies = cookie_headers(base, credential, password=password)
+        if remote_cookie and not password:
+            cookies = fixture_token(tunnel, fixture, report, server, local_port=tunnel.local_port)
+            credential = fixture.info["token"]  # Leak-check marker held only by the test harness.
+            expected = re.sub(r"[^a-zA-Z0-9]", "-", "username-" + urlsplit(base).netloc)
+            parsed = SimpleCookie()
+            for header in cookies:
+                parsed.load(header)
+            assert expected in parsed and parsed[expected]["httponly"]
+            assert (
+                parsed[expected]["path"] == urlsplit(base).path and not parsed[expected]["domain"]
+            )
+            with requests.Session() as client:
+                client.trust_env = False
+                response = client.get(
+                    base + "api/sessions",
+                    headers={"Cookie": expected + "=" + parsed[expected].coded_value},
+                    timeout=5,
+                )
+                assert response.status_code == 200
+        else:
+            credential = (
+                fixture.password if password else fixture_token(tunnel, fixture, report, server)
+            )
+            assert credential
+            cookies = cookie_headers(base, credential, password=password)
         root = lab.root / label
         root.mkdir(mode=0o700)
         with handoff(root, base, cookies) as (launch, target, proof, state):
@@ -366,13 +418,31 @@ def visit(lab, transport, fixture, label, *, create=False, password=False):
 
 
 def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--remote-cookie",
+        action="store_true",
+        help="Mint the native cookie remotely; do not return the runtime token over SSH.",
+    )
+    args = parser.parse_args()
     with SSHLab() as lab:
         with JupyterFixture(lab.root / "native-token", runtime=lab.runtime, lab=True) as fixture:
             first = visit(
-                lab, SSHTransport("destination", config=lab.config), fixture, "first", create=True
+                lab,
+                SSHTransport("destination", config=lab.config),
+                fixture,
+                "first",
+                create=True,
+                remote_cookie=args.remote_cookie,
             )
             config = independent_client(lab, "second-client", jump=False)
-            second = visit(lab, SSHTransport("remote", config=config), fixture, "second")
+            second = visit(
+                lab,
+                SSHTransport("remote", config=config),
+                fixture,
+                "second",
+                remote_cookie=args.remote_cookie,
+            )
             assert first["kernel"] == second["kernel"] and first["session"] == second["session"]
             print(
                 "PASS: native token -> Jupyter-issued cookie -> private-file POST -> browser/HTTP/WebSocket, no browser login prompt"
@@ -392,6 +462,10 @@ def main():
             print(
                 "PASS: existing 0.3 managed password -> native login cookie -> browser handoff; password still required once"
             )
+    if args.remote_cookie:
+        print(
+            "PASS: native cookie issued on the remote side for the local forwarding Host; no runtime token in either SSH reply"
+        )
     print(
         "PASS: GET/invalid proof/origin/host refused; replay and expired proof refused; no secret URL history"
     )
