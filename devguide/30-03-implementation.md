@@ -1,6 +1,6 @@
 # 30 — 0.3.0 implementation and acceptance
 
-Status: implementation in progress, following [29](29-03-session-ux-design.md).
+Status: 0.3.0 source candidate in qualification, following [29](29-03-session-ux-design.md).
 The 0.2.0 physical pilot is closed in [28](28-02-physical-client-pilot.md).
 No 0.3.0 publication or complete feature acceptance is claimed yet.
 
@@ -57,7 +57,7 @@ have conditional remedies, while includes/jump-side errors do not get guessed
 to be local. The default local path is derived from passwd, as OpenSSH does,
 rather than assuming an overridden HOME controls its config location.
 
-A disposable ssh -G -F experiment found that this OpenSSH accepts explicit-file
+A disposable ssh -G -F experiment with OpenSSH 10.2p1 found that it accepts explicit-file
 modes 0600, 0644 and 0664. That differs from the default config's write check:
 do not add an independent rejection policy for --ssh-config or misattribute a
 jump-side rejection to that explicit local file. A new CI-only acceptance driver
@@ -106,3 +106,54 @@ for a refreshed inventory. Unexpected socket loss still fails closed; there is
 no automatic mux/network fallback. Both terminal cases pass and leave their
 fixture server healthy. The focused affected suite observes 58 passing cases;
 lint and strict types pass. Candidate CI must include these follow-up changes.
+
+## Numeric candidate, installed gates and public documentation
+
+Package/source version is now 0.3.0 with no suffix/tag. The actual-wheel upgrade
+gate additionally uses trusted 0.2.0 source at
+6e0438eeb39a3bc8b92acb48545e55b343b52279; the historical 0.1.0 gate remains.
+Conda source qualification requires those executed steps plus native default
+configuration permission acceptance. Installed smoke now checks the shareable
+report, named open, managed/history counters and explicit compound completion
+without local Jupyter. Temporary artifact-directory/wheel arguments avoid
+replacing any earlier reviewed files in dist.
+
+Current-user guides, README, changelog, security, architecture/protocol/CLI/UX
+specifications, roadmap, decisions and scenario ledger describe the source
+candidate and clearly retain 0.2.0 as the published Conda baseline. A new
+diagnostics guide provides the optional notebook API and a copyable stdlib cell.
+Strict Sphinx 9.2.0 / MyST 5.1.0 observes 28 HTML pages without warnings; all
+1482 local links/resources/fragments and generated CLI sections pass. The source
+gate accepts 77 CLI, two TOML and six JSON examples without executing them.
+Shell examples with output redirection retain their separately reviewed scope.
+
+The actual local 0.3.0 wheel/sdist pass safe-content, metadata/version, MIT,
+entrypoint, Python classifiers and complete-source inspection. The clean
+installed-wheel smoke passes without local Jupyter, including support report,
+named open, history/counters, compound completion and preserved old UUID scripting
+through ProxyJump. The installed 0.2.0-to-0.3.0 wheel experiment also passes:
+upgraded, concurrent old and independent new clients retain the same live kernel,
+session, PID, memory/progress and immutable runner/registry bytes; only its own
+test UUID is stopped/archived.
+
+The optional API is additionally exercised inside an actual disposable kernel,
+with SSHTransport.run forbidden and a synthetic scientific memory marker present.
+The report has the correct context/package metadata, excludes the marker and
+leaves it unchanged. No real scientific environment/session is tested.
+
+Candidate hosted acceptance and native default-config account results remain
+pending. No 0.3.0 Conda/PyPI publication is authorized by these tests.
+
+## Registry capacity boundary
+
+Review of the new slot overview exposed a missing old start guard: records()
+accepted 128 entries, but reservation could then create a 129th, making later
+bounded reads fail. Start now reads/counts under its existing exclusive lock and
+returns the allowlisted registry_full error before creating a session directory.
+It gives a known-negative outcome and status/archive remedy, not an unknown
+launch claim. No new stored schema or automatic cleanup is introduced.
+
+The regression prepares only synthetic failed records in a disposable SSHLab,
+checks unchanged record bytes after refusal at 128, archives one verified inactive
+entry and verifies that a real managed launch then fills exactly the freed slot.
+Its failure cleanup is restricted to the experiment's own possible launcher.

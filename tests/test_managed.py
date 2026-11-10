@@ -123,6 +123,14 @@ def test_failed_launch_is_actionable_and_not_claimed_stopped(error, kind):
         require_ready({"id": "a" * 32, "state": "starting", "error": error})
 
 
+def test_full_registry_refusal_is_actionable_and_does_not_claim_unknown_launch():
+    with pytest.raises(LaunchError) as error:
+        require_ready({"id": "a" * 32, "state": "failed", "error": "registry_full"})
+    message = str(error.value)
+    assert "128 unarchived" in message and "archive" in message
+    assert "No session was created" in message and "may remain" not in message
+
+
 @pytest.mark.parametrize("name", ["../outside", "-option", "project;id", "a\nname", "", "x" * 65])
 def test_start_name_validation_before_remote_execution(name):
     with patch.object(SSHTransport, "run") as run:

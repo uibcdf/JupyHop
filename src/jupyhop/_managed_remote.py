@@ -618,8 +618,11 @@ def _prepare(request: dict[str, Any]) -> dict[str, Any]:
     runner = _runner_source()
     with Registry(create=True) as registry:
         with registry.lock():
-            if any(value["name"] == name for value in registry.records()):
+            records = registry.records()
+            if any(value["name"] == name for value in records):
                 raise ManagedProblem("name_conflict")
+            if len(records) >= 128:
+                raise ManagedProblem("registry_full")
             if os.path.lexists(os.path.join(registry.root, "archive", sid)):
                 raise ManagedProblem("id_conflict")
             try:

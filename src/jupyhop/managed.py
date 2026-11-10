@@ -21,6 +21,7 @@ _ERRORS = {
     "corrupt_state",
     "incompatible_registry",
     "registry_busy",
+    "registry_full",
     "state_write_failed",
     "state_limit_or_corruption",
     "name_conflict",
@@ -227,6 +228,11 @@ def start(
 def require_ready(report: dict[str, Any]) -> None:
     error = report["error"]
     context = f"Session request {report['id']}: "
+    if error == "registry_full":
+        raise LaunchError(
+            context
+            + "the remote registry already contains 128 unarchived records. Inspect status and archive verified inactive entries before starting another session. No session was created for this request."
+        )
     if error == "unsupported_server_version":
         raise PrerequisiteError(
             context

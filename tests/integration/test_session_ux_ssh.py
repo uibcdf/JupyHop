@@ -6,17 +6,98 @@ import signal
 import subprocess
 import sys
 import time
+from importlib.resources import files
 from pathlib import Path
 
 import pytest
 
 from experiments.lab import SSHLab
+from experiments.m0_spike import execute
 from experiments.managed_fixture import ManagedFixture
 from jupyhop.lifecycle import lifecycle, require_lifecycle_ok
+from jupyhop.managed import start
 from jupyhop.session_inventory import inspect_sessions, summary
 from jupyhop.ssh import SSHTransport
 
 pytestmark = pytest.mark.integration
+
+
+def test_full_registry_refuses_without_creating_record_then_archive_releases_capacity():
+    with SSHLab() as lab:
+        program = (
+            files("jupyhop").joinpath("_managed_remote.py").read_bytes()
+            + b"""
+with Registry(create=True) as registry, registry.lock():
+    for index in range(128):
+        sid=f"{index:032x}"
+        os.mkdir(sid,0o700,dir_fd=registry.sessions)
+        runtime=os.path.join(registry.root,'sessions',sid,'runtime')
+        record={'schema':SCHEMA,'id':sid,'owner_uid':os.getuid(),'name':f'retired-{index}',
+            'state':'failed','manager':'tmux','runtime':runtime,'workdir':os.path.expanduser('~'),
+            'server_python':sys.executable,'socket':os.path.join(registry.root,'missing.sock'),
+            'base_url':'/jupyhop/'+sid+'/','boot_id':boot_id(),'pid':None,'port':None,
+            'process_start':None,'socket_inode':None,'runner_sha256':hashlib.sha256(b'pass').hexdigest(),
+            'error':'launch_failed'}
+        with registry.session(sid) as descriptor:
+            _write(descriptor,'launch.py',b'pass')
+            _save(descriptor,'record.json',record)
+"""
+        )
+        transport = SSHTransport("destination", config=lab.config, timeout=40)
+        prepared = transport.run(["python3", "-I", "-B", "-"], stdin=program)
+        assert prepared.returncode == 0
+        before = {str(p): p.read_bytes() for p in lab.home.rglob("record.json")}
+        try:
+            refused = start(
+                transport,
+                server_python=sys.executable,
+                name="quota-new",
+                password="fixture-password",
+                session_id="f" * 32,
+            )
+            assert refused["error"] == "registry_full" and refused["record_path"] is None
+            assert {str(p): p.read_bytes() for p in lab.home.rglob("record.json")} == before
+            assert summary(inspect_sessions(transport))["unarchived"] == 128
+            require_lifecycle_ok(lifecycle(transport, "archive", "0" * 32))
+            assert summary(inspect_sessions(transport))["unarchived"] == 127
+            with ManagedFixture(lab, name="quota-new"):
+                assert summary(inspect_sessions(transport))["ready"] == 1
+                assert summary(inspect_sessions(transport))["unarchived"] == 128
+        finally:
+            # A regressed refusal must not leak a fixture's possible launcher.
+            for path in lab.home.rglob("record.json"):
+                if path.parent.name == "f" * 32:
+                    fixture = ManagedFixture(lab)
+                    fixture.sid = "f" * 32
+                    fixture.record = json.loads(path.read_text())
+                    if fixture.record.get("port"):
+                        fixture.url = (
+                            f"http://127.0.0.1:{fixture.record['port']}{fixture.record['base_url']}"
+                        )
+                    fixture.close()
+
+
+def test_optional_diagnostic_api_runs_in_a_live_kernel_without_ssh_or_scientific_state_export():
+    with SSHLab() as lab, ManagedFixture(lab) as fixture, fixture.client() as client:
+        response = client.post(fixture.url + "api/kernels", json={"name": "python3"}, timeout=15)
+        assert response.status_code == 201
+        kernel = response.json()["id"]
+        cookie = "; ".join(f"{item.name}={item.value}" for item in client.cookies)
+        source = str(Path(__file__).resolve().parents[2] / "src")
+        code = f"""import sys,json
+sys.path.insert(0,{source!r})
+from unittest.mock import patch
+from jupyhop.diagnostics import kernel_report
+scientific_marker='PRIVATE_SENTINEL'
+with patch('jupyhop.ssh.SSHTransport.run',side_effect=AssertionError('Unexpected SSH')):
+    result=kernel_report()
+assert scientific_marker=='PRIVATE_SENTINEL'
+print(json.dumps(result))
+"""
+        report = json.loads(execute(fixture.url, "", kernel, code, cookie=cookie))
+        assert report["context"] == "notebook-kernel" and report["report_version"] == 1
+        assert report["packages"]["ipykernel"] is not None
+        assert "PRIVATE_SENTINEL" not in json.dumps(report) and "executable" not in report
 
 
 @pytest.mark.parametrize("host", ["direct", "destination"])
