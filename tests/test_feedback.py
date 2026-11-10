@@ -4,15 +4,80 @@ import os
 import stat
 import subprocess
 import sys
+from importlib.resources import files
+from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import patch
 
 import pytest
 
-from experiments.ssh_permissions_smoke import PROGRAM
+from experiments.ssh_permissions_smoke import PROGRAM, _failure_reason
 from jupyhop import _discovery_probe as probe
 from jupyhop.cli import _servers, main
 from jupyhop.ssh import ssh_failure
+
+
+def test_native_permission_failure_reports_only_fixed_stages_or_exception_classes():
+    assert (
+        _failure_reason(
+            b"PRIVATE_SENTINEL\nRuntimeError: Unsafe default configuration not refused\n"
+        )
+        == "Unsafe default configuration not refused"
+    )
+    assert _failure_reason(b"PRIVATE_SENTINEL\nNameError: private_variable\n") == "NameError"
+    assert _failure_reason(b"RuntimeError: PRIVATE_SENTINEL") == "unknown fixture failure"
+
+
+def test_permission_fixture_executes_actual_classifier_source_and_removes_its_file(
+    tmp_path, capsys
+):
+    token = "0" * 12
+    expected = "jht_" + token + "_a"
+    fake_home = "/home/" + expected
+    uid = os.getuid()
+    if uid == 0:
+        pytest.skip("The fixture intentionally refuses root")
+    tmp_path.chmod(0o700)
+    payload = {
+        "uid": uid,
+        "token": token,
+        "errors": files("jupyhop").joinpath("errors.py").read_text(),
+        "ssh": files("jupyhop").joinpath("ssh.py").read_text(),
+    }
+    real_open, real_stat = os.open, Path.stat
+
+    def redirected_open(path, *args, **kwargs):
+        return real_open(tmp_path if path == fake_home + "/.ssh" else path, *args, **kwargs)
+
+    def redirected_stat(path, *args, **kwargs):
+        if str(path) == fake_home + "/.ssh/config":
+            path = tmp_path / "config"
+        return real_stat(path, *args, **kwargs)
+
+    def native_config(argv, **kwargs):
+        assert argv == ["/usr/bin/ssh", "-G", "workstation"]
+        unsafe = stat.S_IMODE((tmp_path / "config").stat().st_mode) == 0o664
+        return subprocess.CompletedProcess(
+            argv,
+            255 if unsafe else 0,
+            stdout=b"",
+            stderr=(
+                f"Bad owner or permissions on {fake_home}/.ssh/config\n".encode() if unsafe else b""
+            ),
+        )
+
+    with (
+        patch.dict(sys.modules),
+        patch("sys.stdin", io.StringIO(json.dumps(payload))),
+        patch("pwd.getpwuid", return_value=SimpleNamespace(pw_name=expected, pw_dir=fake_home)),
+        patch("os.open", side_effect=redirected_open),
+        patch.object(Path, "stat", redirected_stat),
+        patch("subprocess.run", side_effect=native_config) as run,
+    ):
+        exec(compile(PROGRAM, "<fixture-driver>", "exec"), {})
+        assert run.call_count == 3
+    assert json.loads(capsys.readouterr().out)["feedback"] is True
+    assert not (tmp_path / "config").exists()
 
 
 @pytest.mark.parametrize("interactive", [False, True])

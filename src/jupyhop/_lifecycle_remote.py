@@ -106,7 +106,7 @@ def _observe(record: dict[str, Any], scope: str) -> dict[str, Any]:
     return missing_managed([record], set())[0]
 
 
-def _stop(registry: Registry, sid: str, budget: float) -> None:
+def _stop(registry: Registry, sid: str, budget: float) -> tuple[str, int, str] | None:
     pinned = None
     try:
         with registry.lock():
@@ -115,20 +115,20 @@ def _stop(registry: Registry, sid: str, budget: float) -> None:
                 raise ManagedProblem("not_managed")
             state = missing_managed([record], set())[0]["state"]
             if state in {"stale", "stopped"}:
-                return  # Lost old identity, never signal a replacement/rebooted PID.
+                return None  # Lost old identity, never signal a replacement/rebooted PID.
             if not record["pid"]:
                 raise ManagedProblem("launch_unconfirmed")
             try:
                 pinned = PinnedProcess(record["pid"])
             except OSError as error:
                 if error.errno == errno.ESRCH:
-                    return
+                    return None
                 raise ManagedProblem("pidfd_unavailable") from None
             if pinned.exited():
-                return
+                return None
             if not runner_matches(record):
                 if pinned.exited():
-                    return
+                    return None
                 if record.get("stop_requested"):
                     raise ManagedProblem("stop_pending")
                 raise ManagedProblem("unverified_owner")
@@ -148,6 +148,10 @@ def _stop(registry: Registry, sid: str, budget: float) -> None:
                 pass
         if not pinned.exited(min(10, max(0, budget))):
             raise ManagedProblem("stop_pending")
+        # Keep the verified identity and pidfd exit observation for this reply.
+        # A later /proc probe can fail during teardown; it cannot invalidate the
+        # already observed death of this pinned, authenticated runner.
+        return record["boot_id"], record["pid"], record["process_start"]
     finally:
         if pinned is not None:
             pinned.close()
@@ -179,10 +183,11 @@ def lifecycle_main(request: dict[str, Any]) -> None:
                 records = registry.records()
                 if sid is not None and not any(r["id"] == sid for r in records):
                     raise ManagedProblem("not_managed")
+                stopped_identity = None
                 if operation == "stop":
                     assert sid is not None
                     try:
-                        _stop(registry, sid, request["budget"])
+                        stopped_identity = _stop(registry, sid, request["budget"])
                     except ManagedProblem as error:
                         data["error"] = error.code
                     records = registry.records()
@@ -192,6 +197,12 @@ def lifecycle_main(request: dict[str, Any]) -> None:
                     if sid is not None and record["id"] != sid:
                         continue
                     server = _observe(record, data["identity"]["scope"])
+                    if record.get("stop_requested") and stopped_identity == (
+                        record["boot_id"],
+                        record["pid"],
+                        record["process_start"],
+                    ):
+                        server.update({"state": "stopped", "reason": "managed_stopped"})
                     # Readiness recovery after the initiating client disappeared.
                     if server["state"] == "ready" and record["state"] == "starting":
                         registry.update(record["id"], {"state": "ready", "error": None})

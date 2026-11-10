@@ -6,6 +6,7 @@ import os
 import signal
 import subprocess
 import sys
+from contextlib import nullcontext
 from unittest.mock import patch
 
 import pytest
@@ -183,3 +184,52 @@ def test_same_pid_without_launcher_provenance_is_not_stopped(registry):
             remote._stop(registry, sid, 0)
         pinned.return_value.send_term.assert_not_called()
         assert registry.records()[0] == record
+
+
+@pytest.mark.parametrize("exit_confirmed", [False, True])
+def test_stop_retains_pinned_exit_proof_when_the_following_probe_is_unavailable(
+    registry, capsys, exit_confirmed
+):
+    registry, sid, record = registry
+    observation = {"id": sid, "state": "unreachable", "reason": "managed_unreachable"}
+    with (
+        patch.object(remote, "Registry", return_value=nullcontext(registry)),
+        patch.object(remote, "runner_matches", return_value=True),
+        patch.object(remote, "listener_inode", return_value="123"),
+        patch.object(remote, "PinnedProcess") as pinned,
+        patch.object(remote, "_observe", return_value=observation),
+    ):
+        pinned.return_value.exited.side_effect = [False, exit_confirmed]
+        remote.lifecycle_main(
+            {"protocol": {"major": 1, "minor": 3}, "operation": "stop", "id": sid, "budget": 1}
+        )
+        pinned.return_value.send_term.assert_called_once()
+        pinned.return_value.close.assert_called_once()
+    data = json.loads(capsys.readouterr().out)["data"]
+    assert data["servers"][0]["state"] == ("stopped" if exit_confirmed else "unreachable")
+    assert data["error"] == (None if exit_confirmed else "stop_pending")
+    # The observation does not rewrite the stored server state or identity.
+    stored = registry.records()[0]
+    assert stored["state"] == record["state"]
+    assert stored["pid"] == record["pid"]
+    assert stored["stop_requested"] is True
+
+
+def test_stop_exit_proof_cannot_be_applied_to_a_changed_record_identity(registry, capsys):
+    registry, sid, record = registry
+    record["stop_requested"] = True
+    with registry.session(sid) as descriptor:
+        state._save(descriptor, "record.json", record)
+    with (
+        patch.object(remote, "Registry", return_value=nullcontext(registry)),
+        patch.object(remote, "_stop", return_value=(record["boot_id"], record["pid"], "different")),
+        patch.object(
+            remote,
+            "_observe",
+            return_value={"id": sid, "state": "unreachable", "reason": "managed_unreachable"},
+        ),
+    ):
+        remote.lifecycle_main(
+            {"protocol": {"major": 1, "minor": 3}, "operation": "stop", "id": sid, "budget": 1}
+        )
+    assert json.loads(capsys.readouterr().out)["data"]["servers"][0]["state"] == "unreachable"

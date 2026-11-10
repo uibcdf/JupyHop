@@ -70,6 +70,32 @@ finally:
 """
 
 
+def _failure_reason(stderr):
+    # Only fixed fixture stages or exception class names may enter CI output.
+    # Never reflect the remote traceback, paths or arbitrary exception text.
+    for reason in (
+        "Not the explicitly generated fixture account",
+        "Unexpected private fixture SSH directory",
+        "Safe default configuration unexpectedly refused",
+        "Unsafe default configuration not refused",
+        "Default-config remedy was not safely classified",
+        "Fixture config changed; refusing unrelated removal",
+    ):
+        if ("RuntimeError: " + reason).encode() in stderr:
+            return reason
+    for name in (
+        "SyntaxError",
+        "ImportError",
+        "AttributeError",
+        "NameError",
+        "TypeError",
+        "OSError",
+    ):
+        if ("\n" + name + ":").encode() in stderr:
+            return name
+    return "unknown fixture failure"
+
+
 def run(root):
     root, token, _, _ = _prepared(root)
     check(root)
@@ -88,7 +114,11 @@ def run(root):
         "modes_checked": ["0600", "0644", "0664"],
         "feedback": True,
     }:
-        raise RuntimeError("Default SSH config acceptance failed; raw output suppressed")
+        raise RuntimeError(
+            "Default SSH config acceptance failed: "
+            + _failure_reason(result.stderr)
+            + "; raw output suppressed"
+        )
     print(
         "PASS: native default config accepts 0600/0644, rejects 0664; ownership/write remedy is curated; exclusive fixture config removed"
     )

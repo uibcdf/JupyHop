@@ -157,3 +157,31 @@ The regression prepares only synthetic failed records in a disposable SSHLab,
 checks unchanged record bytes after refusal at 128, archives one verified inactive
 entry and verifies that a real managed launch then fills exactly the freed slot.
 Its failure cleanup is restricted to the experiment's own possible launcher.
+
+## Hosted findings and pinned stop evidence
+
+The first hosted candidate, 70559028e6adb41923261dcc2e54adebc995c41c,
+ran [source checks](https://github.com/uibcdf/jupyhop/actions/runs/42784063151)
+and [documentation deployment](https://github.com/uibcdf/jupyhop/actions/runs/42784063299).
+Documentation and both server-compatibility jobs passed. The full suite observed
+388 passes on Python 3.12–3.14; Python 3.11 observed 387 passes and one failure:
+after stop, a subsequent process probe returned unreachable instead of stopped.
+The precise transient /proc failure was not retained in that test output.
+
+Review found that the stop RPC discarded its stronger verified pidfd exit proof
+and used only a fresh, independently fallible observation for the reply. Stop
+now retains the boot/PID/start-time tuple only after provenance checks, recorded
+intent, SIGTERM and a confirmed exit of that pinned process. That proof can mark
+only the same recorded identity stopped in this reply. It does not rewrite stored
+identity/state, treat a pending stop as complete or affect read-only status.
+Three deterministic regressions cover unavailable subsequent probes, unconfirmed
+exit and changed identity. All 17 affected disposable lifecycle/session-UX SSH
+integrations pass locally after this change.
+
+The same hosted run passed both installed upgrades, installed smoke, browser
+reconnection and real-account isolation on 3.14, then failed the new native
+configuration experiment before password acceptance. Its always-run cleanup
+removed both generated accounts and private sshd. The experiment now reports only
+fixed failure stages/exception classes for diagnosis, suppressing raw output;
+an additional temporary-file test exercises its complete classifier payload and
+exclusive-file cleanup. Native acceptance remains pending and is not waived.
