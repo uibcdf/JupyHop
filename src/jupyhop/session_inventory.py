@@ -37,6 +37,9 @@ def _item(entry: Any, *, archived: bool) -> dict[str, str]:
     else:
         if entry["state"] not in DISCOVERY_STATES or entry["reason"] not in DISCOVERY_REASONS:
             raise ValueError
+        expected_reason = "verified" if entry["state"] == "ready" else "managed_" + entry["state"]
+        if entry["reason"] != expected_reason:
+            raise ValueError
         result.update(state=entry["state"], reason=entry["reason"])
     return result
 

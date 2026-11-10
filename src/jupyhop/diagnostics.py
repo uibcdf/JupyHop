@@ -12,7 +12,7 @@ from jupyhop.ssh import SSHTransport, _run_bounded
 
 
 def _numeric_version(value: str | None) -> str | None:
-    match = re.match(r"[0-9]+(?:\.[0-9]+){1,3}", value or "")
+    match = re.match(r"[0-9]+(?:\.[0-9]+){1,3}", (value or "")[:64])
     return match[0] if match else None
 
 

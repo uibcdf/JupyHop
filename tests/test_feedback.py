@@ -81,6 +81,12 @@ def test_connection_timeout_is_not_blended_with_terminal_auth_deadline():
     )
 
 
+def test_permission_classification_survives_an_unavailable_local_passwd_entry():
+    with patch("jupyhop.ssh.pwd.getpwuid", side_effect=KeyError("PRIVATE_SENTINEL")):
+        message = str(ssh_failure(b"Bad owner or permissions on /example/config"))
+    assert "PRIVATE_SENTINEL" not in message and "Inspect the exact file" in message
+
+
 def test_a_full_diagnostic_sample_does_not_mark_later_scanned_directories_limited(tmp_path):
     earlier, later = tmp_path / "earlier", tmp_path / "later"
     earlier.mkdir(mode=0o700)

@@ -171,3 +171,77 @@ def test_named_open_interactive_completion_and_history_leave_other_server_untouc
             and json.loads(stopped.stdout)["servers"][0]["state"] == "stopped"
         )
         assert second.record_path.exists()  # Old scripts remain stop-only.
+
+
+@pytest.mark.parametrize("termination", ["interrupt", "terminate"])
+def test_actual_management_terminal_returns_after_interrupt_or_exits_on_termination(termination):
+    with SSHLab() as lab, ManagedFixture(lab, name="analysis") as fixture:
+        pid, terminal = pty.fork()
+        if pid == 0:
+            environment = dict(
+                os.environ, PYTHONPATH=str(Path(__file__).resolve().parents[2] / "src")
+            )
+            os.execve(
+                sys.executable,
+                [
+                    sys.executable,
+                    "-m",
+                    "jupyhop",
+                    "manage",
+                    "destination",
+                    "--ssh-config",
+                    str(lab.config),
+                    "--no-browser",
+                    "--timeout",
+                    "40",
+                ],
+                environment,
+            )
+        transcript = bytearray()
+        phase = 0
+        reaped = False
+        try:
+            deadline = time.monotonic() + 40
+            while time.monotonic() < deadline:
+                if not select.select([terminal], [], [], 0.1)[0]:
+                    continue
+                try:
+                    chunk = os.read(terminal, 4096)
+                except OSError:
+                    break
+                if not chunk:
+                    break
+                transcript.extend(chunk)
+                assert len(transcript) < 65536
+                if phase == 0 and b"Select an action number" in transcript:
+                    os.write(terminal, b"1\n")
+                    phase = 1
+                elif phase == 1 and b"Select a session number" in transcript:
+                    os.write(terminal, b"1\n")
+                    phase = 2
+                elif phase == 2 and b"Tunnel attached." in transcript:
+                    if termination == "interrupt":
+                        os.write(terminal, b"\x03")
+                    else:
+                        os.kill(pid, signal.SIGTERM)
+                    phase = 3
+                elif phase == 3 and transcript.count(b"Select an action number") >= 2:
+                    os.write(terminal, b"6\n")
+                    phase = 4
+            else:
+                pytest.fail("Management terminal did not complete within its deadline")
+            _, status = os.waitpid(pid, 0)
+            reaped = True
+            assert os.waitstatus_to_exitcode(status) == (0 if termination == "interrupt" else 130)
+            assert phase == (4 if termination == "interrupt" else 3)
+            assert fixture.record_path.exists()
+            with fixture.client() as client:
+                assert client.get(fixture.url + "api/status", timeout=3).status_code == 200
+        finally:
+            if not reaped:
+                try:
+                    os.kill(pid, signal.SIGTERM)
+                except ProcessLookupError:
+                    pass
+                os.waitpid(pid, 0)
+            os.close(terminal)

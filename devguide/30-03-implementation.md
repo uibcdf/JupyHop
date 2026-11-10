@@ -90,3 +90,19 @@ noninteractive multiple-server diagnostic. Strict types cover 25 source modules.
 Public documentation, full installed candidate qualification, the native
 default-config account experiment and four-Python hosted acceptance remain to
 be completed before calling 0.3.0 operational.
+
+## Whole-suite and terminal follow-up
+
+The combined suite initially exposed a duplicate unit/integration module basename;
+the integration module is now test_session_ux_ssh.py. The complete disposable
+regression then observed 378 passing tests in 227.63 seconds on Python 3.14.10.
+
+Follow-up hardening checks inventory state/reason consistency, bounds exported
+version strings and handles a missing local passwd entry without reflecting its
+exception. A real terminal management test also exercises Ctrl-C and SIGTERM.
+Ctrl-C can terminate the foreground SSH master as well as the attached open;
+management explicitly discards only that owned route, then authenticates again
+for a refreshed inventory. Unexpected socket loss still fails closed; there is
+no automatic mux/network fallback. Both terminal cases pass and leave their
+fixture server healthy. The focused affected suite observes 58 passing cases;
+lint and strict types pass. Candidate CI must include these follow-up changes.

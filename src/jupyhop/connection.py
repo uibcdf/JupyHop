@@ -241,3 +241,9 @@ class ConnectionPool:
         with ExitStack() as cleanup:
             for connection in connections:
                 cleanup.callback(connection.close)
+
+    def discard(self, transport: SSHTransport) -> None:
+        """Explicit user tunnel cancellation can also end its foreground master."""
+        connection = self.connections.pop(replace(transport, connections=None), None)
+        if connection is not None:
+            connection.close()

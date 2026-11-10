@@ -473,8 +473,9 @@ def _manage(args: argparse.Namespace, transport: SSHTransport, config: Config) -
                 except _SignalInterrupt:
                     raise
                 except KeyboardInterrupt:
+                    args.connections.discard(transport)
                     print(
-                        "Tunnel closed; remote server remains running. Returning to management.",
+                        "Tunnel closed; remote server remains running. Returning to management; SSH may ask you to authenticate again.",
                         file=sys.stderr,
                     )
             else:

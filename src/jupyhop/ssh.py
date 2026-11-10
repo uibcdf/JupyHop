@@ -186,16 +186,23 @@ def _run_bounded(command: list[str], data: bytes, timeout: float) -> CommandResu
 def _configuration_failure(stderr: bytes, config: Path | None) -> SSHError:
     # The default comes from passwd, not an overridden HOME. Explicit -F uses
     # different OpenSSH checks; its errors must not be guessed to be local.
-    path = Path(pwd.getpwuid(os.getuid()).pw_dir) / ".ssh/config"
+    try:
+        path = Path(pwd.getpwuid(os.getuid()).pw_dir) / ".ssh/config"
+    except (KeyError, OSError):
+        path = None
     label = "local ~/.ssh/config"
     local = False
     for line in stderr.splitlines():
         if line.startswith(b"ssh: "):
             line = line[5:]
         prefix = b"bad owner or permissions on "
-        if line.lower().startswith(prefix) and line[len(prefix) :].strip() == os.fsencode(path):
+        if (
+            path is not None
+            and line.lower().startswith(prefix)
+            and line[len(prefix) :].strip() == os.fsencode(path)
+        ):
             local = config is None
-    if local:
+    if local and path is not None:
         try:
             info = path.stat()
             if stat.S_ISREG(info.st_mode):

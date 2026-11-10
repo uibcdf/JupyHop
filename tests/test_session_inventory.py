@@ -161,7 +161,8 @@ def test_inventory_protocol_negotiation_is_strict(wire, change):
 
 
 @pytest.mark.parametrize(
-    "mutation", ["duplicate", "bad_name", "bad_offset", "false_complete", "unknown_error"]
+    "mutation",
+    ["duplicate", "bad_name", "bad_offset", "false_complete", "unknown_error", "false_ready"],
 )
 def test_malformed_inventory_does_not_reach_user_output(wire, mutation):
     data = wire["data"]
@@ -173,6 +174,8 @@ def test_malformed_inventory_does_not_reach_user_output(wire, mutation):
         data["history"]["next_offset"] = True
     elif mutation == "false_complete":
         data["error"] = "corrupt_state"
+    elif mutation == "false_ready":
+        data["sessions"][0]["state"] = "ready"
     else:
         data["error"] = "PRIVATE_SENTINEL"
     with pytest.raises(ProtocolError) as error:

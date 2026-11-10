@@ -20,3 +20,14 @@ def test_closing_pool_attempts_every_owned_connection_even_if_one_cleanup_fails(
     for close in (first, failed, last):
         close.assert_called_once_with()
     assert not pool.connections
+
+
+def test_explicit_tunnel_cancellation_discards_only_its_owned_route():
+    pool = ConnectionPool(batch=True)
+    first, other = Mock(), Mock()
+    pool.connections = {SSHTransport("first"): first, SSHTransport("other"): other}
+    pool.discard(SSHTransport("first", connections=pool))
+    pool.discard(SSHTransport("first", connections=pool))
+    first.close.assert_called_once_with()
+    other.close.assert_not_called()
+    assert list(pool.connections) == [SSHTransport("other")]
