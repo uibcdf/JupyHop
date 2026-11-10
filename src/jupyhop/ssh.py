@@ -2,10 +2,12 @@
 
 import math
 import os
+import pwd
 import re
 import selectors
 import shlex
 import signal
+import stat
 import subprocess
 import time
 from collections.abc import Sequence
@@ -181,15 +183,53 @@ def _run_bounded(command: list[str], data: bytes, timeout: float) -> CommandResu
             stream.close()
 
 
-def ssh_failure(stderr: bytes) -> SSHError:
+def _configuration_failure(stderr: bytes, config: Path | None) -> SSHError:
+    # The default comes from passwd, not an overridden HOME. Explicit -F uses
+    # different OpenSSH checks; its errors must not be guessed to be local.
+    path = Path(pwd.getpwuid(os.getuid()).pw_dir) / ".ssh/config"
+    label = "local ~/.ssh/config"
+    local = False
+    for line in stderr.splitlines():
+        if line.startswith(b"ssh: "):
+            line = line[5:]
+        prefix = b"bad owner or permissions on "
+        if line.lower().startswith(prefix) and line[len(prefix) :].strip() == os.fsencode(path):
+            local = config is None
+    if local:
+        try:
+            info = path.stat()
+            if stat.S_ISREG(info.st_mode):
+                if info.st_uid not in {os.getuid(), 0}:
+                    return SSHError(
+                        f"OpenSSH rejected ownership of {label}. chmod alone cannot fix ownership; ask the intended owner/administrator to correct it, then retry ordinary ssh. No permissions were changed."
+                    )
+                if info.st_mode & 0o022:
+                    remedy = "chmod 600 ~/.ssh/config"
+                    return SSHError(
+                        f"OpenSSH rejected {label} because it permits group/other writes. If this file belongs to you, run {remedy}, then retry ordinary ssh and JupyHop. A 0700 .ssh directory does not replace the file check. No permissions were changed."
+                    )
+        except OSError:
+            pass
+    return SSHError(
+        "OpenSSH rejected ownership or write permissions of an SSH configuration file. Inspect the exact file and machine using ordinary ssh privately, including any gateway/include. For your own regular file, chmod 600 restricts access; incorrect ownership needs the intended owner/administrator. JupyHop did not change permissions or guess that the file is local."
+    )
+
+
+def ssh_failure(stderr: bytes, *, config: Path | None = None) -> SSHError:
     """Classify known messages without reflecting any untrusted output."""
     lowered = stderr.lower()
+    if b"bad owner or permissions" in lowered:
+        return _configuration_failure(stderr, config)
     if (
         b"host key verification failed" in lowered
         or b"remote host identification has changed" in lowered
     ):
         return SSHError(
             "SSH host-key verification failed. Verify the host fingerprint through a trusted channel and use ssh to manage known_hosts; JupyHop never bypasses verification."
+        )
+    if b"timed out" in lowered or b"timeout during banner" in lowered:
+        return SSHError(
+            "SSH connection/handshake timed out, possibly along the ProxyJump route. Verify ordinary ssh access. --timeout bounds connection/handshake and probes; --ssh-auth-timeout separately bounds terminal authentication. Remote Jupyter state is unknown; inspect status/discover before retrying a start."
         )
     if b"permission denied" in lowered:
         return SSHError(

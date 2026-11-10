@@ -48,5 +48,45 @@ integration cases pass, including actual named CLI open, terminal confirmed
 stop-and-archive, history JSON, unchanged second-server state and stop-only script
 compatibility. This is source acceptance, not publication of 0.3.0.
 
-Actionable diagnosis, public documentation, installed candidate qualification
-and four-Python hosted acceptance remain to be completed.
+## Actionable and shareable diagnostics
+
+The owned OpenSSH master now captures bounded stderr for curated classification,
+including terminal runs. Password/passphrase input remains on native /dev/tty;
+only a fixed retry notice is echoed. Default-config ownership and unsafe writes
+have conditional remedies, while includes/jump-side errors do not get guessed
+to be local. The default local path is derived from passwd, as OpenSSH does,
+rather than assuming an overridden HOME controls its config location.
+
+A disposable ssh -G -F experiment found that this OpenSSH accepts explicit-file
+modes 0600, 0644 and 0664. That differs from the default config's write check:
+do not add an independent rejection policy for --ssh-config or misattribute a
+jump-side rejection to that explicit local file. A new CI-only acceptance driver
+uses the existing exclusively provisioned Unix test account to check native
+default 0600/0644 acceptance, 0664 refusal and the actual classifier, then removes
+only its newly created config by inode. It refuses ordinary accounts and an
+existing config. Its native account result is pending hosted observation.
+
+Discovery wire 1.6 adds sample_limit/scan_limit while retaining entry_limit as a
+legacy marker. Filling the sample no longer falsely marks a later fully scanned
+directory limited. Human discover/list aggregate non-ready unmanaged rows;
+--all restores individual diagnostics and JSON keeps the bounded detail.
+Metadata/ownership/endpoint checks and scan/sample limits remain unchanged.
+
+Doctor --report emits a versioned support JSON containing normalized client and
+selected-remote versions/capabilities, including local results when SSH fails.
+It allowlists output rather than scrubbing arbitrary logs: identities, addresses,
+paths, credentials and scientific state are not collected for export. It never
+uploads. The optional diagnostics.kernel_report API inspects this interpreter's
+package metadata without SSH or Jupyter imports. A notebook import needs JupyHop
+there; ordinary remote operation still requires no remote installation.
+
+Observed: 15 focused feedback/report tests pass, including native-stderr capture
+in both modes, wrong-owner/machine discrimination, unknown result preservation,
+redaction and experiment account guards. Ten disposable native SSH terminal/key
+tests pass, including echo restoration and independent forward cleanup. Two
+crowded/multiple-runtime integration cases pass after retaining the compatible
+noninteractive multiple-server diagnostic. Strict types cover 25 source modules.
+
+Public documentation, full installed candidate qualification, the native
+default-config account experiment and four-Python hosted acceptance remain to
+be completed before calling 0.3.0 operational.

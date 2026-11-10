@@ -56,6 +56,9 @@ jobs:
         run: |
           server_python="$(python -c 'import sys; print(sys.executable)')"
           python -m experiments.m5_account_acceptance --root "$JUPYHOP_TEST_ROOT" --server-python "$server_python"
+      - name: Verify default SSH configuration permission feedback
+        if: matrix.python == '3.14'
+        run: python -m experiments.ssh_permissions_smoke --root "$JUPYHOP_TEST_ROOT"
       - name: Verify native Unix SSH password workflows
         if: matrix.python == '3.14'
         run: |

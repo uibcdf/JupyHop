@@ -357,7 +357,9 @@ def discover(request: dict[str, Any], report: dict[str, Any]) -> None:
                 for index, item in enumerate(entries):
                     if index >= 512:
                         entry["status"] = "limited"
-                        report["issues"].append("entry_limit")
+                        for issue in ("scan_limit", "entry_limit"):
+                            if issue not in report["issues"]:
+                                report["issues"].append(issue)
                         break
                     if _FILE.fullmatch(item.name):
                         candidate = _candidate(directory, item.name, path, scope)
@@ -368,9 +370,9 @@ def discover(request: dict[str, Any], report: dict[str, Any]) -> None:
                         else:
                             # A full diagnostic sample must not prevent finding
                             # a live server later in this or another runtime.
-                            entry["status"] = "limited"
-                            if "entry_limit" not in report["issues"]:
-                                report["issues"].append("entry_limit")
+                            for issue in ("sample_limit", "entry_limit"):
+                                if issue not in report["issues"]:
+                                    report["issues"].append(issue)
                             if candidate["state"] == "ready":
                                 for position in range(MAX_RECORDS - 1, -1, -1):
                                     if report["servers"][position]["state"] != "ready":
@@ -408,7 +410,7 @@ def main() -> None:
     if report["identity"] is None:
         print("Discovery needs Linux /proc and Python >=3.11.", file=sys.stderr)
         sys.exit(4)
-    envelope = {"protocol": {"major": 1, "minor": 3}, "operation": "discover", "data": report}
+    envelope = {"protocol": {"major": 1, "minor": 6}, "operation": "discover", "data": report}
     while len(json.dumps(envelope).encode()) > 60 * 1024:
         if report["servers"]:
             report["servers"].pop()

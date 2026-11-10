@@ -5,6 +5,7 @@ import json
 import signal
 import sys
 import webbrowser
+from collections import Counter
 from pathlib import Path
 from typing import Any
 
@@ -12,6 +13,7 @@ from jupyhop import __version__
 from jupyhop.config import Config, Host, load_config
 from jupyhop.connection import ConnectionPool
 from jupyhop.controls import control, show_inventory
+from jupyhop.diagnostics import support_report
 from jupyhop.discovery import discover, select_server
 from jupyhop.doctor import diagnose
 from jupyhop.errors import JupyHopError, SelectionError
@@ -34,6 +36,11 @@ def _parser() -> argparse.ArgumentParser:
         "doctor", help="Check SSH and one remote Python/Jupyter environment (read-only)."
     )
     _connection_arguments(doctor, multiple=False)
+    doctor.add_argument(
+        "--report",
+        action="store_true",
+        help="Emit a versioned shareable JSON support report with local/remote versions, excluding identities, paths and credentials; never upload it.",
+    )
     for name in ("discover", "list", "open"):
         command = commands.add_parser(
             name,
@@ -55,6 +62,13 @@ def _parser() -> argparse.ArgumentParser:
             default=[],
             help="Additional remote runtime directory (repeatable; absolute or ~/).",
         )
+        if name in {"discover", "list"}:
+            command.add_argument(
+                "--all",
+                dest="all_candidates",
+                action="store_true",
+                help="Show individual unmanaged diagnostics, including stale metadata; JSON always retains the bounded sample.",
+            )
         if name == "open":
             target = command.add_mutually_exclusive_group()
             target.add_argument(
@@ -249,8 +263,35 @@ def _coverage(report: dict[str, Any]) -> None:
         if path["status"] != "ok":
             print(f"Runtime directory {path['status']}: {path['path']}", file=sys.stderr)
     for issue in report["coverage"]["issues"]:
+        if issue == "entry_limit" and any(
+            value in report["coverage"]["issues"] for value in ("sample_limit", "scan_limit")
+        ):
+            continue
+        advice = {
+            "sample_limit": "The retained diagnostic sample is bounded; this is not a total server count. Verified endpoints are still considered within the scan bounds.",
+            "scan_limit": "A runtime directory reached the 512-entry scan bound; search coverage is partial. Inspect known runtime paths.",
+            "entry_limit": "A scan or retained sample reached a bound; a longer SSH timeout cannot enlarge those limits.",
+            "time_limit": "The bounded remote probe reached its time budget. Inspect the selected known paths and environment.",
+        }.get(issue, "Check --runtime-dir, --remote-python and --timeout.")
         print(
-            f"Discovery diagnostic: {issue}. Check --runtime-dir, --remote-python and --timeout.",
+            f"Discovery diagnostic: {issue}. {advice}",
+            file=sys.stderr,
+        )
+
+
+def _servers(report: dict[str, Any], *, all_candidates: bool, prefix: str = "") -> None:
+    hidden: Counter[str] = Counter()
+    for server in report["servers"]:
+        if server["origin"] == "unmanaged" and server["state"] != "ready" and not all_candidates:
+            hidden[server["state"]] += 1
+            continue
+        print(
+            f"{prefix}{server['id']}  {server['origin']}  {server.get('name') or ''}  {server['state']}  port={server['port']}  {server['reason']}"
+        )
+    if hidden:
+        counts = ", ".join(f"{state}={count}" for state, count in sorted(hidden.items()))
+        print(
+            f"{prefix}Unmanaged diagnostics retained in this partial sample: {counts}. Use --all for individual rows; these are not running-server counts.",
             file=sys.stderr,
         )
 
@@ -308,10 +349,9 @@ def _fleet(args: argparse.Namespace, config: Config) -> int:
     else:
         for entry in data["hosts"]:
             if entry["ok"]:
-                for server in entry["report"]["servers"]:
-                    print(
-                        f"{entry['host']}  {server['id']}  {server['origin']}  {server.get('name') or ''}  {server['state']}  port={server['port']}"
-                    )
+                _servers(
+                    entry["report"], all_candidates=args.all_candidates, prefix=entry["host"] + "  "
+                )
     if not any(entry["ok"] for entry in data["hosts"]):
         return 3
     return 14 if any(not entry["ok"] for entry in data["hosts"]) else 0
@@ -546,10 +586,7 @@ def main(argv: list[str] | None = None) -> int:
             if args.json:
                 print(json.dumps(report, ensure_ascii=True))
             else:
-                for server in report["servers"]:
-                    print(
-                        f"{server['id']}  {server['origin']}  {server.get('name') or ''}  {server['state']}  port={server['port']}  {server['reason']}"
-                    )
+                _servers(report, all_candidates=args.all_candidates)
             ready = any(s["state"] == "ready" for s in report["servers"])
             if not ready:
                 print(
@@ -557,6 +594,10 @@ def main(argv: list[str] | None = None) -> int:
                     file=sys.stderr,
                 )
             return 0 if ready else 6
+        if args.report:
+            report, code = support_report(transport, args.remote_python)
+            print(json.dumps(report, ensure_ascii=True, indent=None if args.json else 2))
+            return code
         report = diagnose(transport, args.remote_python)
         if args.json:
             print(json.dumps(report, ensure_ascii=True))

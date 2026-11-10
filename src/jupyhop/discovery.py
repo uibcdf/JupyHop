@@ -5,7 +5,7 @@ from importlib.resources import files
 from pathlib import PurePosixPath
 from typing import Any, Protocol
 
-from jupyhop.errors import DiscoveryError, PrerequisiteError, ProtocolError
+from jupyhop.errors import DiscoveryError, PrerequisiteError, ProtocolError, SelectionError
 from jupyhop.protocol import parse_discovery
 from jupyhop.selection import choose, describe_session, resolve_name
 from jupyhop.ssh import CommandResult, SSHTransport, ssh_failure
@@ -133,6 +133,10 @@ def select_server(
     if not candidates:
         raise DiscoveryError(
             "No verified server found in the searched paths. Discovery is partial: select a known environment with --remote-python or add --runtime-dir. This does not prove no servers are running."
+        )
+    if len(candidates) > 1 and not interactive:
+        raise SelectionError(
+            "Multiple verified servers found. Use discover --json, then open HOST ID; no server was selected."
         )
     return choose(
         candidates, describe_session, interactive=interactive, explicit=identifier is not None

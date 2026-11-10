@@ -266,6 +266,8 @@ def parse_discovery(raw: bytes) -> dict[str, Any]:
                 issue
                 not in (
                     "entry_limit",
+                    "sample_limit",
+                    "scan_limit",
                     "time_limit",
                     "output_limit",
                     "probe_failed",

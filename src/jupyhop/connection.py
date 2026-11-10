@@ -9,6 +9,7 @@ import os
 import re
 import signal
 import subprocess
+import sys
 import tempfile
 import time
 from contextlib import ExitStack
@@ -47,6 +48,7 @@ class SSHConnection:
         self.process: subprocess.Popen[bytes] | None = None
         self.directory: tempfile.TemporaryDirectory[str] | None = None
         self.stderr = bytearray()
+        self.retry_notices = 0
 
     def __enter__(self) -> Self:
         try:
@@ -66,7 +68,7 @@ class SSHConnection:
                 command,
                 stdin=subprocess.DEVNULL,
                 stdout=subprocess.DEVNULL,
-                stderr=None if self.interactive else subprocess.PIPE,
+                stderr=subprocess.PIPE,
                 start_new_session=not self.interactive,
             )
             if self.process.stderr is not None:
@@ -77,8 +79,9 @@ class SSHConnection:
             while not self.control.is_socket():
                 self.alive()
                 if time.monotonic() >= deadline:
+                    deadline_name = "--ssh-auth-timeout" if self.interactive else "--timeout"
                     raise SSHError(
-                        "SSH authentication/startup timed out; remote session state is unknown."
+                        f"SSH authentication/startup timed out ({deadline_name}); remote session state is unknown."
                     )
                 time.sleep(0.05)
             self.check_owner()
@@ -152,8 +155,14 @@ class SSHConnection:
                     raise SSHError(
                         "SSH diagnostics exceeded their size limit; raw output suppressed."
                     )
+            # Native password prompts use /dev/tty, never this pipe. Only a
+            # fixed retry notice is echoed; arbitrary stderr is not reflected.
+            retries = self.stderr.count(b"Permission denied, please try again.")
+            if self.interactive and retries > self.retry_notices:
+                print("Permission denied, please try again.", file=sys.stderr, flush=True)
+                self.retry_notices = retries
         if self.process.poll() is not None:
-            raise ssh_failure(bytes(self.stderr))
+            raise ssh_failure(bytes(self.stderr), config=self.transport.config)
 
     def check_owner(self) -> None:
         self.alive()
