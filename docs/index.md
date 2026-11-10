@@ -1,69 +1,115 @@
-# JupyHop
+---
+myst:
+  html_meta:
+    description: "Open remote Jupyter in your local browser through SSH. Start named sessions, reconnect to living kernels and manage projects without manual tunnels."
+    "property=og:description": "Open remote Jupyter in your local browser through SSH. Start named sessions, reconnect to living kernels and manage projects without manual tunnels."
+---
 
-**Open remote Jupyter sessions through the SSH access you already have.**
+(jupyhop)=
+# Remote Jupyter over SSH
 
-JupyHop discovers existing servers, creates an SSH tunnel and opens Jupyter's
-normal login page. It can also start and manage your own remote servers, then
-reconnect another authorized client to the same surviving notebook and kernel.
-Your notebooks, Python environments and computation stay on the remote computer.
+**Your remote notebooks, in your local browser.**
+
+JupyHop finds your running Jupyter server, connects through your existing SSH
+access and opens your browser. Your notebooks and computations stay remote;
+you do not have to choose ports or build tunnels by hand.
 
 ```console
 jupyhop open workstation
 ```
 
-`workstation` is an alias from your OpenSSH configuration. Direct SSH and
-ProxyJump work with keys, an agent or native terminal password prompts. JupyHop
-chooses forwarding ports automatically. Keep the command running while you work;
-Ctrl-C closes its tunnel; it does not stop the remote server.
+<p class="jh-actions"><a class="jh-button" href="quickstart.html">Install and open your first notebook →</a> <a href="#room-to-grow">See what you can do</a></p>
 
-## Choose your workflow
+**Linux · Python 3.11–3.14 · Existing SSH access**
 
-| You want to… | Start here |
-| --- | --- |
-| Install the Linux client and open your first server | [Quickstart](quickstart.md) |
-| Set up remote Jupyter or locate its environment/runtime | [Prepare the remote host](remote-setup.md) |
-| Open a server someone already started under your remote account | [Existing servers](existing-servers.md) |
-| Start a server with a chosen Python and project directory | [Managed sessions](managed-sessions.md) |
-| Continue the same computation from another client | [Reconnection and recovery](recovery.md) |
-| Reach a workstation through a gateway | [SSH and gateways](ssh.md) |
-| Fix an empty search or a connection error | [Troubleshooting](troubleshooting.md) |
-| Understand a UUID, session state or registry location | [Session reference](sessions.md) |
-| Update an existing local client | [Update the client](upgrading.md) |
+No local Jupyter or central service required. [Version 0.3.0](releases.md) is
+available from the uibcdf Conda channel.
 
-## Existing and managed servers
+## Two ways to begin
 
-An **existing server** was started outside JupyHop. JupyHop discovers and opens
-it; its original launcher controls its lifetime.
+::::{container} jh-grid
+:::{container} jh-card
+<h3 id="jupyter-is-already-running">Jupyter is already running</h3>
 
-A **managed server** was created by `jupyhop start`. It has a remote session UUID
-and private recovery records. JupyHop can check its state, gracefully stop that
-verified server and archive its inactive records. Names/terminal choices resolve
-to an exact managed UUID; explicit confirmation still authorizes stop/archive.
-Interactive stop offers archival after confirmed stop. `manage workstation`
-provides the overview and actions in one terminal.
+Open it through SSH and log in with its existing password or token. No remote
+JupyHop installation is needed.
 
-Both workflows preserve Jupyter authentication. Reconnection preserves memory
-only while the original kernel is alive. A reboot or kernel crash loses that
-memory.
+[Open an existing server →](existing-servers.md)
+:::
+:::{container} jh-card
+<h3 id="you-need-a-new-server">You need a new server</h3>
 
-## Current release
+Start a named session in an existing remote Jupyter environment. Choose your
+project directory and return to it later.
 
-Version **0.3.0** adds names, consistent terminal choices,
-managed/history counters and shareable diagnostics. See
-[release notes](releases.md) and [installation choices](installation.md).
+[Start your first managed session →](quickstart.md#start-and-recover-an-owned-server)
+:::
+::::
 
-It is available from the [uibcdf Conda channel](https://anaconda.org/uibcdf/jupyhop)
-for Linux and CPython 3.11–3.14. The client needs no local Jupyter. Discovery is
-always partial; supported endpoints and remote prerequisites are listed in
-[Compatibility](compatibility.md).
+## Your browser travels; your computation stays
 
-JupyHop uses OpenSSH and user-owned remote processes. It requires no JupyterHub
-deployment or central JupyHop service. It is an independent MIT-licensed project,
-not affiliated with Project Jupyter.
+::::{container} jh-route
+:::{container} jh-route-node
+**Your Linux computer**
+
+JupyHop + browser
+:::
+:::{container} jh-route-link
+**SSH**
+
+Direct or through an optional gateway
+:::
+:::{container} jh-route-node
+**Remote Linux computer**
+
+Jupyter + kernels + notebooks
+:::
+::::
+
+Run JupyHop on the computer where you use the browser. It reuses OpenSSH aliases,
+keys, agents and password prompts, including [ProxyJump](ssh.md#proxyjump).
+The gateway needs SSH access and forwarding permission; Jupyter runs at the
+destination. Keep the local command running while you work. **Ctrl-C closes the
+tunnel and leaves the remote server running** under its existing launcher.
+
+## Room to grow
+
+Start with one connection. Add these capabilities when your work needs them:
+
+- **Return to a computation.** [Resume a named session](recovery.md) from another
+  authorized client. Memory remains available while the same kernel is alive.
+- **Keep projects organized.** [Manage sessions](managed-sessions.md#manage-from-one-terminal)
+  from a terminal menu: choose, inspect and finish work without memorizing IDs.
+- **Choose your scientific Python.** Use an existing remote environment and
+  [select notebook kernels](environments.md) independently.
+- **Work across machines.** [Inspect several SSH hosts and save profiles](configuration.md)
+  for repeated Python/project choices.
+- **Automate and get help.** Use [JSON in scripts](scripting.md),
+  [diagnostic reports](diagnostics.md) and the full [CLI reference](cli.md).
+
+## Is JupyHop a fit?
+
+Use it when you have authorized SSH access to a Linux workstation or server and
+want to use its notebooks from a Linux browser computer. Existing servers can be
+opened; servers started by JupyHop can also be stopped and archived with explicit
+confirmation. Both keep Jupyter authentication enabled.
+
+Discovery is partial and the remote environment must already exist. Reconnection
+cannot restore a stopped kernel's memory. Check the
+[supported server setups](compatibility.md) if your system uses a custom endpoint
+or authentication scheme. JupyHop is an MIT-licensed CLI for individual SSH
+accounts; shared portals, Slurm integration and macOS support are outside the
+current release.
+
+**Ready? [Open your first notebook →](quickstart.md)**
+
+Need help first? [Choose your starting point](getting-started.md) or
+[solve a connection problem](troubleshooting.md).
 
 ```{toctree}
 :caption: Documentation
 :maxdepth: 1
+:hidden:
 
 getting-started
 user-guide

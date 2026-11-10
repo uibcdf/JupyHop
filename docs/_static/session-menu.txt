@@ -1,0 +1,10 @@
+workstation: ready=2  stopped awaiting archive=0  review=0  unarchived=2/128  archived=0
+simulation  managed  ready  bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb  verified
+analysis  managed  ready  aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa  verified
+1: Open/resume an existing server
+2: Stop a managed server (offer archive)
+3: Archive inactive managed evidence
+4: Inspect archived history
+5: Refresh inventory
+6: Exit management
+Select an action number (Enter exits):

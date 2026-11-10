@@ -1,3 +1,10 @@
+---
+myst:
+  html_meta:
+    description: "Browse every JupyHop command and option, generated directly from the released command-line parser."
+    "property=og:description": "Browse every JupyHop command and option, generated directly from the released command-line parser."
+---
+
 # Command-line reference
 
 Commands and options below are generated from JupyHop's CLI. Use

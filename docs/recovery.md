@@ -1,95 +1,112 @@
-# Reconnection and recovery
+---
+myst:
+  html_meta:
+    description: "Return to the same running Jupyter notebook from this or another authorized client. Understand tunnel lifetimes and reconcile interrupted operations."
+    "property=og:description": "Return to the same running Jupyter notebook from this or another authorized client. Understand tunnel lifetimes and reconcile interrupted operations."
+---
 
-The browser, SSH tunnel, Jupyter server and notebook kernel have separate
-lifetimes. Reconnection creates a new route to an existing server; memory is
-preserved only if the original kernel survived.
+(reconnection-and-recovery)=
+# Return to a running notebook
+
+Close a tunnel at one computer and continue from another, without remembering
+ports or copying local session state. JupyHop reconnects you to the existing
+remote server. **Memory remains only while the original kernel is alive.**
+
+If you have not connected yet, start with the [Quickstart](quickstart.md).
 
 ## Reconnect from the same or another client
 
-Close the first browser/tunnel when you finish using that client. On a second
-Linux client, install JupyHop, configure authorized SSH access and supply any
-custom discovery paths needed there. No old client-state directory or port
-assignment needs copying.
+On another Linux browser computer, [install JupyHop](installation.md) and check
+that its ordinary SSH route reaches the same remote account. Each client can
+have its own direct or gateway route. Supply any custom discovery paths there
+too; no old client directory or forwarding port needs copying.
 
-For an existing server:
-
-```console
-jupyhop discover workstation
-jupyhop open workstation SERVER_ID
-```
-
-For a managed server, reuse the exact UUID or current managed name:
+For a named server started with JupyHop, run in your **local terminal**:
 
 ```console
-jupyhop status workstation SESSION_ID
-jupyhop open workstation SESSION_ID
-jupyhop open workstation --name analysis
+jupyhop resume workstation --name analysis
 ```
 
-Log in to Jupyter through its normal page and return to the existing
-notebook/session. Starting a new server or restarting a kernel does not recover
-the old computation. Opening the same notebook file alone cannot restore lost
-in-memory objects.
+For a server started outside JupyHop, or to choose a session by number, run
+**locally**:
 
-The first client's browser/tunnel can also stay open: two authorized clients
-can reach the same surviving server through independent local forwards. Closing
-one forward leaves the other usable. In the second frontend, select the original
-running notebook/session; creating a different kernel gives separate memory.
-JupyHop does not coordinate simultaneous edits to the same notebook file.
+```console
+jupyhop open workstation
+```
+
+Log in through Jupyter's normal page. Select the **original running notebook and
+kernel** in JupyterLab. Opening a new notebook/kernel or restarting one gives
+separate memory. If you used the Quickstart's example, a new cell containing
+`print(continuity_marker)` should print `hello from the remote kernel` when you
+have returned to that living kernel.
+
+Two clients can also stay connected through independent tunnels. Closing one
+does not close the other. JupyHop does not coordinate simultaneous edits to the
+same notebook file.
 
 ## What survives disconnection
 
-| Event | Expected action |
+| Event | What to do |
 | --- | --- |
-| Browser closes | Reopen through the attached tunnel, or run `open` again |
-| Ctrl-C or client terminal closes | Create a new tunnel with `open`; the old owned forward is closed |
-| SSH route or network fails | Restore authorized connectivity, then inspect and reopen |
-| Another configured route reaches the same host/account | Reuse its original managed UUID |
-| Server/kernel exits or the remote host reboots | Report lost/stale process state; live memory cannot be recreated |
+| Browser closes | Reopen through the attached tunnel, or run open again |
+| Ctrl-C or client terminal closes | Run resume/open to create a new tunnel |
+| SSH route or network fails | Restore access, then inspect and reopen; failure does not prove the server stopped |
+| Another SSH route reaches the same host/account | Reuse the current managed name or original UUID |
+| Server/kernel exits or the host reboots | Inspect the observed state; a new connection cannot recreate lost memory |
 
-Managed servers use private tmux, subject to the site's logout/cgroup policy.
-Existing servers use their original launcher. JupyHop never enables linger or
-changes systemd/PAM policy to extend process lifetime. Ask your administrator
-about permitted persistent workloads if the site terminates processes at logout.
+Managed servers use private tmux; existing servers use their original launcher.
+Site logout/cgroup policy can still terminate them. JupyHop does not enable
+linger, change systemd/PAM policy or restart a lost kernel. Ask your administrator
+about permitted persistent workloads when needed.
 
-Two hours of disconnected synthetic computation followed by the same kernel,
-session, memory and progress were observed on a real Linux target. Physical
-home-client suspend/network moves and forced last logout/reboot were not measured;
-see [Compatibility](compatibility.md).
+Same-kernel reconnect, independent clients and a two-hour disconnected synthetic
+workload have been observed. Forced last logout/reboot and physical network
+moves remain separate, unmeasured conditions; see [Compatibility](compatibility.md).
 
 ## Reconcile an interrupted operation
 
-Keep the request UUID printed for a managed launch. If a reply is lost, the
-remote operation may already have taken effect.
+Keep the request UUID printed by managed start. If the connection ends before
+the reply is confirmed, the remote operation may already have happened. Inspect
+**locally**, substituting that exact ID:
 
-| Interrupted operation | Recovery |
+```console
+jupyhop status workstation SESSION_ID
+jupyhop discover workstation
+```
+
+The ID is especially useful here because a name might not have been registered
+yet. Status can reconcile interrupted readiness; it does not restart a server.
+
+| Interrupted operation | Safe next action |
 | --- | --- |
-| Start | Inspect `status HOST UUID` and `discover HOST` before making a new start request |
-| Stop | Inspect the exact UUID's status; retry that UUID when appropriate |
+| Start | Inspect that request UUID and discover before making a new start request |
+| Stop | Inspect that exact UUID's status; retry it when appropriate |
 | Archive | Retry archive with the same UUID to reconcile the move |
-| Stop-and-archive | Inspect the reported phase. A confirmed stop can have unconfirmed archival; retry archive on the same UUID rather than starting another server |
-| Open | Run open again after restoring access; opening does not start a server |
+| Stop-and-archive | Read the reported phase; after a confirmed stop with uncertain archival, retry archive on that UUID |
+| Open | Restore access and run open again; opening does not start a server |
 
 `starting` without a verified PID is unconfirmed intent, not proof of a live
-server. Missing or replaced process identity is stale. An unavailable SSH route
-does not establish that a server has stopped. Preserve records when outcomes
-are uncertain; do not delete state or edit schema numbers to force acceptance.
+server. Missing/replaced identity is stale. An unsuccessful SSH/status request
+is not evidence that nothing started. Preserve uncertain records; do not delete
+state or edit schema numbers to force acceptance. [Troubleshooting](troubleshooting.md)
+gives the next checks for specific messages.
 
 ## Credentials and client upgrades
 
-Use a fresh authorized Jupyter login after credentials change. Browser cookie
-validity follows Jupyter's policy; a private window can help diagnose login.
-JupyHop has no password-reset or credential-cache feature.
+Use the same session's Jupyter password/token at its login page. If credentials
+changed, obtain the current one through your private authorized workflow. Browser
+cookies follow Jupyter's policy; a private window can help diagnose login.
+JupyHop does not cache or reset Jupyter passwords.
 
-The installed 0.1.0-to-0.2.0 client upgrade is tested with a live surviving kernel,
-concurrent old/new clients and unchanged remote runner/registry bytes. A client
-update does not reinstall remote environments or rewrite running launchers.
-Unknown state/protocol versions are refused; arbitrary future migrations are not
-promised. Keep [compatible clients and helpers](compatibility.md).
+[Updating the local client](upgrading.md) does not reinstall remote scientific
+environments or rewrite living launchers. Installed upgrades from 0.1.0 and
+0.2.0 to 0.3.0 have been tested with a surviving kernel and unchanged remote
+runner/registry. Unknown state/protocol versions are refused; arbitrary future
+migrations are not promised. Keep [compatible clients and helpers](compatibility.md).
 
-[Update the client](upgrading.md) gives the Conda procedure and reconnection
-checks. [Session identities, states and storage](sessions.md) explains how to
-distinguish an observed stale/unreachable session from a failed SSH request.
-Interactive stop normally archives after confirmed inactivity. If the UUID has
-left active status, inspect `status HOST --history`; history is evidence rather
-than a resumable kernel. Names reused by new servers never select old archives.
+Interactive stop normally archives after confirmed inactivity. If a UUID has
+left active status, inspect `jupyhop status workstation --history`. History is
+retained evidence, not a resumable kernel, and old archived names are not selectors.
+
+**Next:** [Choose and finish projects in the menu](managed-sessions.md#manage-from-one-terminal)
+or [update a local client](upgrading.md).

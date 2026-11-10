@@ -1,8 +1,28 @@
+---
+myst:
+  html_meta:
+    description: "Save optional JupyHop launch profiles and inspect several SSH hosts. Reuse remote Python paths and project directories without storing credentials."
+    "property=og:description": "Save optional JupyHop launch profiles and inspect several SSH hosts. Reuse remote Python paths and project directories without storing credentials."
+---
+
 # Profiles and multiple hosts
 
 Basic `jupyhop open workstation` needs no JupyHop configuration file. Profiles
 become useful when you repeatedly choose a remote Python, project directory or
 custom discovery path.
+
+## Inspect several machines without extra configuration
+
+If both SSH aliases work, run in your **local terminal**:
+
+```console
+jupyhop list workstation-a workstation-b
+```
+
+Each route keeps its own results and errors. This read-only inventory needs no
+TOML file. To work on two servers at once, open them in separate local terminals;
+each owns an independent tunnel. The sections below add reusable settings only
+when you want them.
 
 ## Create an optional config
 
@@ -20,14 +40,14 @@ workdir = "~/projects/analysis"
 [hosts.workstation-a]
 profile = "research"
 remote_python = "python3"
-runtime_dirs = ["~/custom-runtime"]
 
 [hosts.workstation-b]
 profile = "research"
 ```
 
-Replace example paths with existing remote paths. The host names are existing
-OpenSSH aliases. Keep routing, users, addresses and keys in SSH configuration;
+Create this file on your **local client**. Replace example paths with existing
+remote paths; the profile must be valid on each host that uses it. The host names
+are existing OpenSSH aliases. Keep routing, users, addresses and keys in SSH configuration;
 passwords, tokens, shell commands and activation hooks are not TOML fields.
 
 The config must be your regular, single-link file, at most 64 KiB, without a
@@ -57,9 +77,12 @@ in OpenSSH config.
 
 ## Launch preferences and overrides
 
+After creating that config, run one of these in your **local terminal**:
+
 ```console
 jupyhop start workstation-a --env research
-jupyhop start workstation-a --env research --workdir '~/projects/other'
+jupyhop start workstation-a --env research \
+    --workdir '~/projects/other'
 ```
 
 `--env research` chooses the `profiles.research` entry. It is not a Conda activation
@@ -115,3 +138,6 @@ jupyhop open workstation-a SESSION_ID
 Hostless open searches configured hosts and lets a terminal select when needed.
 Scripts choose an explicit route and exact ID. Open a new terminal invocation for
 each attached forward when working on several servers simultaneously.
+
+**Next:** [Choose another notebook kernel](environments.md),
+[automate inventory with JSON](scripting.md), or [return to managed sessions](managed-sessions.md).

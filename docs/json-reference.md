@@ -1,3 +1,10 @@
+---
+myst:
+  html_meta:
+    description: "Understand JupyHop 0.3.0 JSON output for discovery, multi-host inventory, managed lifecycle, attached tunnels and support reports."
+    "property=og:description": "Understand JupyHop 0.3.0 JSON output for discovery, multi-host inventory, managed lifecycle, attached tunnels and support reports."
+---
+
 # JSON output reference
 
 This page describes **0.3.0 CLI output**, after validation of remote replies.

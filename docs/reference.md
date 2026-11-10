@@ -1,3 +1,10 @@
+---
+myst:
+  html_meta:
+    description: "Find JupyHop command options, JSON contracts, session states, supported platforms, diagnostics and troubleshooting guidance."
+    "property=og:description": "Find JupyHop command options, JSON contracts, session states, supported platforms, diagnostics and troubleshooting guidance."
+---
+
 # Reference and support
 
 Find the exact commands and output contracts, check supported prerequisites, or

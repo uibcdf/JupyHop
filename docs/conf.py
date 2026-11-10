@@ -15,9 +15,11 @@ extensions = ["myst_parser", "sphinx_copybutton", "sphinx.ext.githubpages", "jup
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 nitpicky = True
 myst_heading_anchors = 4
+myst_enable_extensions = ["colon_fence"]
 
 html_theme = "pydata_sphinx_theme"
-html_title = f"JupyHop {release}"
+html_title = "JupyHop"
+templates_path = ["_templates"]
 html_theme_options = {
     "github_url": "https://github.com/uibcdf/jupyhop",
     "show_toc_level": 2,

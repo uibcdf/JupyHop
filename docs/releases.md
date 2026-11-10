@@ -1,17 +1,15 @@
+---
+myst:
+  html_meta:
+    description: "Read JupyHop release notes, including 0.3.0 named sessions, management menu, history, confirmed completion and support reports."
+    "property=og:description": "Read JupyHop release notes, including 0.3.0 named sessions, management menu, history, confirmed completion and support reports."
+---
+
 # Release notes
 
 ## 0.3.0 — Session usability
 
 Version **0.3.0=py_0** is available from [uibcdf on Conda](https://anaconda.org/uibcdf/jupyhop).
-Source acceptance passes 394 tests on each supported Python, installed upgrades,
-native SSH/password and browser/account gates. The
-[implementation evidence](https://github.com/uibcdf/jupyhop/blob/main/devguide/30-03-implementation.md)
-records exact commits, artifacts and limits. The
-[publication report](https://github.com/uibcdf/jupyhop/blob/main/devguide/31-03-conda-publication.md)
-records the single Conda file qualified through four installed clients, its
-digest-bound promotion and independent public installation. There is no PyPI
-publication of 0.3.0.
-
 - Named managed selection with --name; consistent terminal choosers even for one
   ready server; resume is an alias for open.
 - A thin manage menu and managed/history counters. Bounded history stays visibly
@@ -28,6 +26,15 @@ publication of 0.3.0.
 - Registry schema remains 1.0; runners/scientific environments are not migrated.
   The installed-candidate gate includes published 0.2.0 source as a baseline as
   well as historical 0.1.0.
+
+Source acceptance passes 394 tests on each supported Python, installed upgrades,
+native SSH/password and browser/account gates. The
+[implementation evidence](https://github.com/uibcdf/jupyhop/blob/main/devguide/30-03-implementation.md)
+records exact commits, artifacts and limits. The
+[publication report](https://github.com/uibcdf/jupyhop/blob/main/devguide/31-03-conda-publication.md)
+records the single Conda file qualified through four installed clients, its
+digest-bound promotion and independent public installation. There is no PyPI
+publication of 0.3.0.
 
 ## 0.2.0 — Linux stabilization
 

@@ -1,3 +1,10 @@
+---
+myst:
+  html_meta:
+    description: "Understand JupyHop names, session IDs, ready and stale states, managed-session counts, archive history and private record storage."
+    "property=og:description": "Understand JupyHop names, session IDs, ready and stale states, managed-session counts, archive history and private record storage."
+---
+
 # Session identities, states and storage
 
 Use `discover` or `list` to find servers, and `status` to inspect managed records.

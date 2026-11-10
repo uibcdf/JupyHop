@@ -1,3 +1,10 @@
+---
+myst:
+  html_meta:
+    description: "Diagnose SSH and remote Python prerequisites, prepare a shareable JupyHop support report or inspect notebook-kernel package versions."
+    "property=og:description": "Diagnose SSH and remote Python prerequisites, prepare a shareable JupyHop support report or inspect notebook-kernel package versions."
+---
+
 # Diagnostics and support reports
 
 There are three different Python contexts: the local JupyHop client, the selected

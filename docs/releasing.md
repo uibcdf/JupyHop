@@ -1,3 +1,10 @@
+---
+myst:
+  html_meta:
+    description: "Prepare reviewed JupyHop releases with numeric versions, artifact inspection and separate Conda qualification and publication gates."
+    "property=og:description": "Prepare reviewed JupyHop releases with numeric versions, artifact inspection and separate Conda qualification and publication gates."
+---
+
 # Preparing a release
 
 The current Conda release is 0.3.0. This repository has not published it to PyPI.

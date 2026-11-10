@@ -1,3 +1,10 @@
+---
+myst:
+  html_meta:
+    description: "Contribute to JupyHop and build its Sphinx documentation with strict link, CLI-example and metadata checks."
+    "property=og:description": "Contribute to JupyHop and build its Sphinx documentation with strict link, CLI-example and metadata checks."
+---
+
 # Contributing and building documentation
 
 Source, issues and reviewable changes live in the
@@ -54,6 +61,35 @@ Reference pages may explain CLI/JSON contracts, while the tutorials should lead
 to a usable existing or managed session. Keep their ownership and lifetime
 distinction explicit. The [developer guide](https://github.com/uibcdf/jupyhop/tree/main/devguide)
 contains design decisions, experiment reports and acceptance evidence.
+
+## Keep the first-use experience useful
+
+For each task, say where to run its commands, which values to replace, what
+success looks like and what to do next. Prefer names and terminal choices for
+human workflows; retain exact UUIDs for scripts and uncertain-operation recovery.
+Keep optional profiles and implementation details in the deeper guides.
+
+Every public Markdown page has a short, distinct description in its MyST
+`html_meta` front matter, including a matching Open Graph description. The shared
+layout supplies preview titles/URLs and the local share image. Update those
+summaries when a page's purpose changes; inspect rendered desktop/mobile pages,
+keyboard focus, light/dark colors and image alternatives after presentation changes.
+
+To regenerate the notebook image, share card and normalized menu transcript,
+use the development environment with the experiments dependencies, OpenSSH
+server/client, tmux and Chrome installed. From the checkout, run:
+
+```console
+python -m experiments.docs_assets
+```
+
+The experiment uses private loopback SSH/Jupyter fixtures and a fresh sandboxed
+browser profile. It executes the Quickstart's harmless cell, checks its result,
+captures JupyterLab and verifies a two-session management menu. It replaces only
+`first-notebook.png`, `share-card.png` and `session-menu.txt` in `docs/_static/`.
+It closes its own processes and never uses real SSH destinations. Review the
+assets for identifiers/credentials before committing them, then rebuild the site.
+These checks do not substitute for an unassisted walkthrough with new readers.
 
 ## Publication
 

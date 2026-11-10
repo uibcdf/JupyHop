@@ -1,4 +1,12 @@
-# Security and credentials
+---
+myst:
+  html_meta:
+    description: "Understand JupyHop SSH and Jupyter authentication, ownership checks, private settings, safe session control and vulnerability reporting."
+    "property=og:description": "Understand JupyHop SSH and Jupyter authentication, ownership checks, private settings, safe session control and vulnerability reporting."
+---
+
+(security-and-credentials)=
+# Passwords and security
 
 Jupyter grants code execution to authenticated users. Use JupyHop only with
 accounts and SSH routes you are authorized to access. The supported security

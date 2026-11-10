@@ -1,8 +1,94 @@
-/* Keep command examples readable in both theme color modes. */
+/* Use the existing theme's colors and navigation in both light and dark mode. */
 .bd-article-container {
   max-width: 58rem;
 }
 
 .bd-article pre {
   line-height: 1.5;
+}
+
+.jh-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem 1.25rem;
+  margin-block: 1.25rem;
+}
+
+.jh-button {
+  display: inline-block;
+  padding: 0.7rem 1rem;
+  background: #0b625f;
+  color: #fff !important;
+  border: 2px solid transparent;
+  border-radius: 0.4rem;
+  font-weight: 650;
+  line-height: 1.5;
+  text-decoration: none;
+}
+
+.jh-button:hover {
+  background: #084d4b;
+  text-decoration: underline;
+}
+
+.jh-button:focus-visible {
+  outline: 3px solid var(--pst-color-primary);
+  outline-offset: 4px;
+}
+
+.jh-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
+  gap: 1rem;
+  margin-block: 1rem 1.75rem;
+}
+
+.bd-article .jh-card,
+.bd-article .jh-route-node {
+  padding: 1rem 1.25rem;
+  border: 1px solid var(--pst-color-border);
+  border-radius: 0.5rem;
+  background: var(--pst-color-surface);
+}
+
+.bd-article .jh-card h3 {
+  margin-top: 0;
+  font-size: 1.25rem;
+}
+
+.jh-card > :last-child,
+.jh-route-node > :last-child {
+  margin-bottom: 0;
+}
+
+.jh-route {
+  display: grid;
+  grid-template-columns: 1fr 0.85fr 1fr;
+  align-items: center;
+  gap: 0.8rem;
+  margin-block: 1rem;
+  text-align: center;
+}
+
+.jh-route-link::before {
+  display: block;
+  content: "→";
+  font-size: 1.75rem;
+}
+
+.jh-screenshot img {
+  border: 1px solid var(--pst-color-border);
+  border-radius: 0.4rem;
+  box-shadow: 0 0.3rem 1.2rem #0002;
+}
+
+@media (max-width: 640px) {
+  .jh-route {
+    grid-template-columns: 1fr;
+  }
+
+  .jh-route-link::before {
+    content: "↓";
+  }
 }

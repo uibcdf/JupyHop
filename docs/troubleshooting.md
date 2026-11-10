@@ -1,3 +1,10 @@
+---
+myst:
+  html_meta:
+    description: "Fix common JupyHop problems: SSH permissions, missing servers, password prompts, tmux visibility, timeouts and browser connection errors."
+    "property=og:description": "Fix common JupyHop problems: SSH permissions, missing servers, password prompts, tmux visibility, timeouts and browser connection errors."
+---
+
 # Troubleshooting
 
 Begin with `jupyhop --version`, `jupyhop COMMAND --help` and ordinary
@@ -6,22 +13,47 @@ ProxyJump in OpenSSH config. Local SSH configuration, chosen Python executables
 and the remote account are trusted inputs. Raw SSH logs can contain private
 infrastructure details and must be reviewed before sharing.
 
-| Symptom / exit | Action |
+## Find your next check
+
+New to JupyHop? The [Quickstart](quickstart.md) shows the expected successful
+route. If a step went differently, start here:
+
+| What you see | Next check |
 | --- | --- |
-| Invalid arguments/config (2) | Check command help, TOML version/known fields and file ownership/permissions. Config is at most 64 KiB, regular, single-link, without final symlink or group/other write access. |
-| SSH/access/timeout (3) | Verify the route with ordinary SSH, including the gateway. Check selected User and host trust. Use a controlling terminal for native OpenSSH password/passphrase prompts; headless/--batch requires keys/agent or another noninteractive method. --ssh-auth-timeout bounds terminal authentication. No conclusion about remote session state follows. |
-| Host-key mismatch | Verify the new fingerprint independently, then manage known_hosts through your normal SSH procedure. Never disable verification as a workaround. |
-| Missing prerequisites (4) | Read the specific error. `doctor` checks Jupyter only in its selected interpreter. A stdlib-only helper can still discover a server in another environment. Managed start additionally needs compatible Jupyter, tmux, kernels and a valid remote directory. |
-| Invalid remote JSON/schema (5) | Check login-shell banners and the supported helper/client versions. Unknown state versions are refused; do not edit schema numbers or delete state to force acceptance. |
-| No verified candidate or selected ID absent (6) | Discovery is partial. Add known `--runtime-dir` paths or repeat `--remote-python`. Rediscover a replaced endpoint. Check private metadata permissions and the supported endpoint matrix. Do not infer that no server exists. |
-| Selection failure (7) | Select on a terminal, give an exact server ID or use an exact current managed --name for open/status. Automated lifecycle still requires UUID/--yes. Hostless open/selection can also use 7; PIDs never select sessions. |
-| Forwarding failure (8) | Check SSH server forwarding policy, local loopback access and the bastion. A new owned port is selected automatically. No remote server is stopped. |
-| Lifecycle refusal (11) | Use an exact managed UUID in the selected account/host registry. Unmanaged servers cannot be stopped; live or uncertain entries cannot be archived. Recheck status and preserve evidence. |
-| Launch unconfirmed/failed (12) | Record the printed request UUID and inspect status/discover before another start. A server may already exist. Check the remote Python, workdir, version and tmux availability. |
-| Registry full (12, registry_full) | All 128 unarchived slots are used. Inspect status and archive a verified inactive entry. This refusal happens before creating the new request's record/server; existing records remain intact. |
-| Stop/archive pending (13) | The action's result is unknown. Inspect status after stop; retry archive with the same UUID. No forced kill or automatic deletion is attempted. |
-| Partial fleet result (14) | Read each host's result; successful routes remain usable. `list` returns 3 when all selected routes fail, 0 when every route was inspected, even with no ready servers. |
-| Interrupted (130) | Owned local SSH resources are closed. Remote start/stop may already have taken effect; reconcile before retrying. Closing an open forward does not stop remote Jupyter. |
+| “Bad owner or permissions” | [Inspect the exact SSH configuration file](#bad-owner-or-permissions-on-ssh-configuration) |
+| No verified server found | [Locate the server's runtime directory or Python](#ssh-works-but-discovery-is-empty) |
+| A password prompt you do not recognize | [Identify which login is asking](#which-password-do-i-use) |
+| Connection timed out during start | [Inspect the printed request before retrying](#ssh-times-out-during-a-start) |
+| tmux works in a shell but start cannot find it | [Check the noninteractive SSH PATH](#tmux-works-interactively-but-start-reports-missing-tmux) |
+| A browser connection error after Ctrl-C | [Reopen the tunnel](#can-i-close-this-terminal) |
+| Browser opens, but login or notebook execution fails | [Check the current URL, credentials and kernel](#the-browser-opens-the-wrong-page-or-cannot-log-in) |
+| You need help reporting a bug | [Generate and review a support report](#reporting-a-problem) |
+
+## Which password do I use?
+
+| Where the prompt appears | Password to use |
+| --- | --- |
+| OpenSSH prompt in the terminal | That SSH account's password or key passphrase; a gateway can ask separately |
+| New Jupyter session password during start | Choose a new password for this one managed session, then confirm it |
+| Jupyter's browser login page | The chosen managed-session password, or the existing server's own password/token |
+
+If you never set a password for a manually started Jupyter, it may use a token
+from its original private startup output. An SSH password is not that token.
+JupyHop does not retrieve existing credentials or reset them. See the
+[two authentication steps](security.md#two-authentication-steps).
+
+## Can I close this terminal?
+
+While open/start is attached, the terminal keeps your local tunnel alive.
+Ctrl-C closes that tunnel and can leave the browser showing **Server Connection
+Error**. This is expected; it does not by itself mean the remote server stopped.
+Run open/resume again to get a current URL and log back in. Keep the command
+running while using that URL.
+
+Managed servers use tmux and existing servers use their original launcher;
+site policy still controls remote process lifetime. To end a managed server
+and its computations deliberately, use [stop](managed-sessions.md#stop-explicitly).
+[Recovery](recovery.md) explains how to find the original living kernel again.
 
 ## Bad owner or permissions on SSH configuration
 
@@ -204,3 +236,28 @@ exit code, platform and a redacted description of direct versus ProxyJump access
 Replace aliases, account names and paths with examples. Do not attach raw runtime
 JSON, settings, kernel connection files, browser profiles, cookies, private keys,
 token URLs or server logs. Follow [SECURITY.md](security.md) for security reports.
+
+## Error codes
+
+For automation, see [Scripting and exit codes](scripting.md#exit-codes). These
+checks retain uncertainty about remote state after a transport failure.
+
+| Symptom / exit | Action |
+| --- | --- |
+| Invalid arguments/config (2) | Check command help, TOML version/known fields and file ownership/permissions. Config is at most 64 KiB, regular, single-link, without final symlink or group/other write access. |
+| SSH/access/timeout (3) | Verify the route with ordinary SSH, including the gateway. Check selected User and host trust. Use a controlling terminal for native OpenSSH password/passphrase prompts; headless/--batch requires keys/agent or another noninteractive method. --ssh-auth-timeout bounds terminal authentication. No conclusion about remote session state follows. |
+| Host-key mismatch | Verify the new fingerprint independently, then manage known_hosts through your normal SSH procedure. Never disable verification as a workaround. |
+| Missing prerequisites (4) | Read the specific error. `doctor` checks Jupyter only in its selected interpreter. A stdlib-only helper can still discover a server in another environment. Managed start additionally needs compatible Jupyter, tmux, kernels and a valid remote directory. |
+| Invalid remote JSON/schema (5) | Check login-shell banners and the supported helper/client versions. Unknown state versions are refused; do not edit schema numbers or delete state to force acceptance. |
+| No verified candidate or selected ID absent (6) | Discovery is partial. Add known `--runtime-dir` paths or repeat `--remote-python`. Rediscover a replaced endpoint. Check private metadata permissions and the supported endpoint matrix. Do not infer that no server exists. |
+| Selection failure (7) | Select on a terminal, give an exact server ID or use an exact current managed --name for open/status. Automated lifecycle still requires UUID/--yes. Hostless open/selection can also use 7; PIDs never select sessions. |
+| Forwarding failure (8) | Check SSH server forwarding policy, local loopback access and the bastion. A new owned port is selected automatically. No remote server is stopped. |
+| Lifecycle refusal (11) | Use an exact managed UUID in the selected account/host registry. Unmanaged servers cannot be stopped; live or uncertain entries cannot be archived. Recheck status and preserve evidence. |
+| Launch unconfirmed/failed (12) | Record the printed request UUID and inspect status/discover before another start. A server may already exist. Check the remote Python, workdir, version and tmux availability. |
+| Registry full (12, registry_full) | All 128 unarchived slots are used. Inspect status and archive a verified inactive entry. This refusal happens before creating the new request's record/server; existing records remain intact. |
+| Stop/archive pending (13) | The action's result is unknown. Inspect status after stop; retry archive with the same UUID. No forced kill or automatic deletion is attempted. |
+| Partial fleet result (14) | Read each host's result; successful routes remain usable. `list` returns 3 when all selected routes fail, 0 when every route was inspected, even with no ready servers. |
+| Interrupted (130) | Owned local SSH resources are closed. Remote start/stop may already have taken effect; reconcile before retrying. Closing an open forward does not stop remote Jupyter. |
+
+**Next:** retry the relevant [Quickstart step](quickstart.md) after the check,
+or use [Diagnostics](diagnostics.md) when you need a report.

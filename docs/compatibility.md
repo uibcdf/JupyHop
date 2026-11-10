@@ -1,3 +1,10 @@
+---
+myst:
+  html_meta:
+    description: "Check JupyHop Linux and Python support, remote Jupyter requirements, endpoint limits, tested versions and client/registry compatibility."
+    "property=og:description": "Check JupyHop Linux and Python support, remote Jupyter requirements, endpoint limits, tested versions and client/registry compatibility."
+---
+
 # Compatibility and version policy
 
 JupyHop 0.3.0 is the current public Linux Conda release. Compatibility means the specific
@@ -5,8 +12,8 @@ workflows/versions observed below, not every Jupyter Server 2 deployment. The
 client needs OpenSSH and CPython 3.11–3.14; it has zero mandatory Python packages
 and needs no local Jupyter. Free-threaded Python, macOS and Windows are untested.
 The Conda recipe restricts installation to Linux via __linux and Python
->=3.11,<3.15, and supplies OpenSSH. Noarch describes the Python payload, not a
-claim of macOS/Windows support. See [Conda evidence](https://github.com/uibcdf/jupyhop/blob/main/devguide/24-conda-publication.md)
+`>=3.11,<3.15`, and supplies OpenSSH. Noarch describes the Python payload, not a
+claim of macOS/Windows support. See [Conda evidence](https://github.com/uibcdf/jupyhop/blob/main/devguide/31-03-conda-publication.md)
 and [the future macOS investigation](https://github.com/uibcdf/jupyhop/issues/2).
 
 ## Endpoint and remote requirements
@@ -32,19 +39,15 @@ the owned socket and cannot fall back to a fresh connection if it is lost.
 
 ## Observed matrix
 
-M5 verified all 258 earlier tests and clean-wheel workflows on CPython 3.11.18,
-3.12.16, 3.13.18 and 3.14.10 with Server 2.21.1. M6 adds signal handling, live
-password rotation, an 8 MiB content roundtrip and 64 executions with 64 KiB output
-each on one sustained WebSocket through ProxyJump. See
-[the M6 report](https://github.com/uibcdf/jupyhop/blob/main/devguide/20-m6-beta-readiness.md) for the local experiments and
-[the hosted CI follow-up](https://github.com/uibcdf/jupyhop/blob/main/devguide/21-m6-github-ci.md) for the M6 270-test
-baseline on each supported Python. Subsequent [0.2.0 stabilization evidence](https://github.com/uibcdf/jupyhop/blob/main/devguide/23-02-stabilization-evidence.md)
-records additional tests, native terminal authentication and real-site observations.
-The [physical home-client pilot](https://github.com/uibcdf/jupyhop/blob/main/devguide/28-02-physical-client-pilot.md)
-observes the 0.2.0 gateway route and concurrent sessions. The
-[0.3.0 implementation report](https://github.com/uibcdf/jupyhop/blob/main/devguide/30-03-implementation.md)
-separately records the new candidate's local/hosted/installed qualification; old
-passing runs do not substitute for that acceptance.
+The published 0.3.0 source passed 394 tests on each CPython 3.11–3.14, installed
+upgrades from 0.1.0/0.2.0, native SSH passwords, browser reconnect and separate
+Unix-account checks. The same Conda archive was qualified on four installed
+clients before promotion and independent public installation. See the
+[current implementation evidence](https://github.com/uibcdf/jupyhop/blob/main/devguide/30-03-implementation.md)
+and [publication record](https://github.com/uibcdf/jupyhop/blob/main/devguide/31-03-conda-publication.md).
+These are observed workflows, not certification of every Linux/site setup.
+
+The version comparisons below also retain historical observations:
 
 | Server / server Python | Existing open + kernel | Managed start/status/stop/archive |
 | --- | --- | --- |
@@ -67,16 +70,14 @@ an existing 2.17 server with correct private runtime metadata. The earlier
 Alpine/QEMU attempt did not establish a platform-wide incompatibility; musl/Alpine
 managed operation remains unvalidated.
 
-Local Linux and Ubuntu hosted GitHub CI results are both observed; the linked
-CI follow-up records successful four-Python regression/clean-wheel jobs,
-server-version comparisons, Chrome/JupyterLab and actual Unix-account isolation
-with cleanup. Chrome acceptance is separate from API tests. This evidence does
-not establish compatibility with other operating systems, real-site logout
-policies or physical network moves. Those boundaries and the installed-client
-upgrade are tracked in [0.2.0 scope](https://github.com/uibcdf/jupyhop/blob/main/devguide/22-02-stabilization.md) and
-[observed acceptance](https://github.com/uibcdf/jupyhop/blob/main/devguide/23-02-stabilization-evidence.md). The tested
-real-site OS is x86_64 Ubuntu 26.04.1; other Linux distributions are not certified
-by that observation. Physical-client and site-policy limits remain explicit.
+The historical [M6 report](https://github.com/uibcdf/jupyhop/blob/main/devguide/20-m6-beta-readiness.md)
+and [0.2.0 stabilization](https://github.com/uibcdf/jupyhop/blob/main/devguide/23-02-stabilization-evidence.md)
+record earlier server comparisons, sustained WebSocket executions and real-site
+observations. The [physical home-client pilot](https://github.com/uibcdf/jupyhop/blob/main/devguide/28-02-physical-client-pilot.md)
+observes a gateway route and concurrent sessions. Those runs provide context;
+current-release acceptance is recorded separately above. Physical-client moves,
+forced last logout/reboot and arbitrary site policies remain unqualified. The
+real-site OS observation is x86_64 Ubuntu 26.04.1, not a claim about every distro.
 
 ## Client, wire and state versions
 
@@ -99,7 +100,7 @@ bootstrap through verified SSH; there is no installed remote package to upgrade.
 Managed servers retain their original immutable runner/hash. Changing the client
 does not rewrite a running launcher, migrate state or install dependencies.
 
-Legacy M3 and M5 runners are tested with the beta client's status and idempotent
+Legacy M3 and M5 runners are tested with current status and idempotent
 stop without replacement or schema migration. Unknown/incompatible state fails
 closed. Arbitrary historical/future client combinations, migrations and downgrade
 after a future schema change are not promised. Back up private recovery evidence

@@ -1,92 +1,118 @@
-# Open an existing server
+---
+myst:
+  html_meta:
+    description: "Open a Jupyter server already running under your SSH account. Select a server, log in and extend discovery with known environments or runtime paths."
+    "property=og:description": "Open a Jupyter server already running under your SSH account. Select a server, log in and extend discovery with known environments or runtime paths."
+---
 
-Use this workflow when Jupyter is already running under your remote Unix account,
-whether it was launched in a terminal, tmux or another environment. Opening a
-server preserves its original ownership, configuration and launcher.
+(open-an-existing-server)=
+# Open an existing Jupyter server
 
-## Establish SSH access
+Use this workflow when Jupyter is already running under your remote SSH account,
+perhaps in a terminal, tmux or another Conda environment. JupyHop connects you to
+that server and keeps its original configuration and launcher.
 
-First verify your route using ordinary OpenSSH:
+First time using JupyHop? [Install and follow the Quickstart](quickstart.md).
 
-```console
-ssh workstation
-```
+(establish-ssh-access)=
+## Before you begin
 
-Verify a new host fingerprint through your normal trusted channel, then exit the
-SSH shell. Routing and gateway setup are described in [SSH and gateways](ssh.md).
-
-The remote server must have a supported authenticated IPv4 loopback HTTP endpoint
-and private runtime metadata. See [Compatibility](compatibility.md). Its existing
-Jupyter password/token must be available through your authorized private workflow.
-
-To find the environment/runtime or launch a first manual server, follow
-[Prepare the remote host](remote-setup.md). `open` does not start a missing server.
+- [Install the client locally](installation.md) and check that `ssh workstation`
+  reaches the intended account. Replace `workstation` with your SSH alias;
+  [gateway routes](ssh.md#proxyjump) work too.
+- Have an authenticated Jupyter server running remotely, with a
+  [supported endpoint](compatibility.md#endpoint-and-remote-requirements).
+- Have that server's existing **Jupyter password or token** available privately.
+  It is separate from your SSH password. [Remote setup](remote-setup.md) helps
+  locate the environment or create a first manual server.
 
 ## Discover and open
 
-On your local client:
+Run in your **local terminal**:
 
 ```console
-jupyhop discover workstation
 jupyhop open workstation
 ```
 
-On a terminal, open shows a chooser even for one verified candidate. It displays
-the name when managed, origin, observed state and UUID/observation ID. Select one
-to create the loopback forward and open the normal Jupyter login page.
-To select explicitly, copy the exact ID shown by discovery:
+Open searches automatically. Select a server number, even when only one is ready,
+then log in on Jupyter's normal browser page. You can see a
+[chooser and notebook example](quickstart.md#3-open-a-server-that-is-already-running)
+in the Quickstart. There is no forwarding port to configure and no mandatory
+JupyHop TOML file or remote JupyHop package.
 
-```console
-jupyhop open workstation SERVER_ID
-```
-
-An exact managed --name also selects directly; unmanaged servers use their
-observation ID. PIDs are not selectors. The [session reference](sessions.md) explains
-managed UUIDs and unmanaged observation IDs. In scripts or with `--json`,
-ambiguous selection is an error even when a controlling terminal is available.
-No JupyHop TOML file, remote JupyHop installation or manual forwarding-port
-selection is needed for this workflow.
+Keep the command running while you work. **Ctrl-C closes only this tunnel.**
+Run the same open command again to return to a living server/kernel. Its original
+launcher and site policy determine whether it survives disconnection.
+JupyHop cannot stop or archive this externally started server.
 
 ## Authenticate and work
 
-SSH authentication and Jupyter login are separate. Enter the remote account's
-SSH password only in OpenSSH's native prompt. Enter the existing Jupyter
-password/token on Jupyter's login page. JupyHop does not retrieve either secret
-from existing servers or insert it into the printed URL.
+Enter an SSH password only in the terminal's OpenSSH prompt. Enter the existing
+Jupyter password/token in **Jupyter's browser login form**. For a token-auth server,
+obtain the token privately from the original authorized launcher/startup output.
+JupyHop does not retrieve it or insert it into the printed URL. If you never set
+a Jupyter password, a token may be the normal login for that server.
 
-Keep the terminal command running. The local URL belongs to this client and its
-active tunnel; run `open` again on another authorized client to obtain a new URL.
-
-For a client without a browser:
+The printed URL works on this computer while this tunnel is active. On another
+authorized client, run open there to obtain its own URL. For a client without
+automatic browser opening, run **locally**:
 
 ```console
 jupyhop open workstation --no-browser
 ```
 
-Open its printed login URL in a browser on that same client. Ctrl-C closes only
-the owned local SSH resources. The external launcher and site policy determine
-whether the remote server survives disconnection. JupyHop cannot stop or archive
-an existing server.
+Open the printed URL in a browser on that same client. A URL from an older tunnel
+can have a different port. [Recovery](recovery.md) explains same-kernel continuity
+and using two clients.
 
 ## Extend a partial search
 
-Discovery checks known runtime directories and validates candidates. It does not
-enumerate every Conda environment or prove that no servers exist when none are
-found. Additional known paths and helper interpreters can extend coverage:
+“No verified server found” means the known locations did not yield a supported
+live server. It does **not** prove that no Jupyter server is running.
+To inspect those locations without opening anything, run **locally**:
 
 ```console
-jupyhop discover workstation --runtime-dir '~/custom-runtime'
+jupyhop discover workstation
+```
+
+If you know a custom runtime directory or a Python from the server's environment,
+use the corresponding local command, substituting its actual remote path:
+
+```console
+jupyhop open workstation --runtime-dir '~/custom-runtime'
 jupyhop open workstation --remote-python /opt/conda/envs/analysis/bin/python
 ```
 
-Replace the example interpreter with an existing path on the remote host.
-Discovery/open accept repeated `--remote-python` and `--runtime-dir` options.
-The [environment guide](environments.md) explains interpreter selection; profiles
-and host preferences can retain known paths for future invocations. Profiles'
-server Python/workdir settings affect new launches; use host `remote_python` and
-`runtime_dirs` to extend later discovery.
+Repeat `--remote-python` or `--runtime-dir` for several known paths.
+[Find those paths remotely](remote-setup.md#find-an-existing-environment) if needed.
+The helper's standard library is enough for discovery; missing Jupyter packages
+in a system-Python doctor report do not prove another environment has no server.
+JupyHop does not enumerate every Conda environment or inspect arbitrary processes.
 
-Runtime directories/files must be current-user-owned, private (0700/0600) and
-without symlinks. Discovery never removes stale metadata. Unsupported metadata,
-process identities or endpoints remain diagnostics rather than authorization
-to open or control an unrelated process.
+Runtime directories/files must belong to the current remote account, be private
+(0700/0600) and have no symlinks. Discovery never deletes stale metadata.
+[Discovery diagnostics](troubleshooting.md#ssh-works-but-discovery-is-empty)
+explain missing/limited/unsupported results. Save repeated discovery preferences
+in [optional host configuration](configuration.md); launch profiles' server paths
+affect new servers, not existing discovery.
+
+## Select a particular server
+
+For a named server started by JupyHop, run **locally**:
+
+```console
+jupyhop open workstation --name analysis
+```
+
+For an unmanaged server, copy its current observation ID from discover; it is an
+identifier, not a login token. Run **locally**, replacing the placeholder:
+
+```console
+jupyhop open workstation SERVER_ID
+```
+
+PIDs are not selectors. [Session identities](sessions.md) gives the exact rules.
+Scripts must handle ambiguous selection explicitly; see [Scripting](scripting.md).
+
+**Next:** [Reconnect later](recovery.md), or
+[start a managed project](managed-sessions.md) when you want lifecycle control.

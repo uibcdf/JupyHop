@@ -1,3 +1,10 @@
+---
+myst:
+  html_meta:
+    description: "Choose remote Python and Conda environments for JupyHop helpers, Jupyter servers and notebook kernels, with no implicit activation."
+    "property=og:description": "Choose remote Python and Conda environments for JupyHop helpers, Jupyter servers and notebook kernels, with no implicit activation."
+---
+
 # Python and Conda environments
 
 JupyHop selects existing executables by path. There are four distinct Python
@@ -16,6 +23,8 @@ sufficient. A managed server additionally needs compatible Jupyter and a usable
 kernel; [Compatibility](compatibility.md) lists the full boundary.
 
 ## Diagnose an interpreter
+
+Run these checks on your **local client**:
 
 ```console
 jupyhop doctor workstation
@@ -57,7 +66,9 @@ paths, environment variables and site layouts can give them different runtime
 directories. Extend the known search explicitly:
 
 ```console
-jupyhop discover workstation --remote-python /opt/conda/envs/analysis/bin/python --remote-python /opt/conda/envs/other/bin/python
+jupyhop discover workstation \
+    --remote-python /opt/conda/envs/analysis/bin/python \
+    --remote-python /opt/conda/envs/other/bin/python
 jupyhop open workstation --runtime-dir '~/custom-runtime'
 ```
 
@@ -67,8 +78,12 @@ another client when those paths are not otherwise known remotely.
 
 ## Choose a managed environment
 
+Run on your **local client**, substituting existing remote paths:
+
 ```console
-jupyhop start workstation --server-python /opt/conda/envs/analysis/bin/python --workdir '~/projects/analysis' --no-open
+jupyhop start workstation \
+    --server-python /opt/conda/envs/analysis/bin/python \
+    --workdir '~/projects/analysis' --name analysis
 ```
 
 The working directory is remote. Quote `~/...` so your local shell does not expand
@@ -99,3 +114,6 @@ creating a notebook. To continue an existing computation, reconnect to its
 original kernel/session; switching or restarting kernels loses that connection
 to its memory. The [IPython kernel guide](https://ipython.readthedocs.io/en/stable/install/kernel_install.html)
 also describes registering a kernel into a particular server environment.
+
+**Next:** [Start the chosen environment](managed-sessions.md#start) or
+[save a profile](configuration.md) for repeated use.

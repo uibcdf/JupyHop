@@ -1,36 +1,75 @@
-# Installation
+---
+myst:
+  html_meta:
+    description: "Install the JupyHop Linux client with mamba or Conda. Supports Python 3.11–3.14 and includes OpenSSH without requiring local Jupyter."
+    "property=og:description": "Install the JupyHop Linux client with mamba or Conda. Supports Python 3.11–3.14 and includes OpenSSH without requiring local Jupyter."
+---
 
-Install JupyHop on the computer where you will use the browser. The supported
-client platform is Linux with CPython 3.11–3.14. Install only the client on each
-additional computer; live managed-session records stay on the remote host.
+(installation)=
+# Install JupyHop
+
+Install the client on the **Linux computer where you use the browser**.
+You need mamba or Conda for the recommended installation below. Supported client
+Python versions are **3.11, 3.12, 3.13 and 3.14**.
 
 ## Conda or mamba
 
-The current public channel coordinate is **0.3.0=py_0**, including named
-selection, management, history and diagnostic reports.
-
-Create a fresh environment from the public uibcdf and conda-forge channels:
+Run in your **local terminal**:
 
 ```console
 mamba create -n jupyhop -c uibcdf -c conda-forge python=3.14 jupyhop=0.3.0
 mamba activate jupyhop
 jupyhop --version
-jupyhop --help
 ```
 
-Python 3.11, 3.12 and 3.13 are supported too. Conda supplies OpenSSH, the
-external SSH client. Local Jupyter and tmux are unnecessary. The Python client
-has no mandatory Python-package dependencies.
+Expected result:
 
-The package uses a noarch Python payload with an explicit Linux constraint;
-this does not advertise macOS or Windows support. The current published Conda
-build is `0.3.0=py_0`; its [publication evidence](https://github.com/uibcdf/jupyhop/blob/main/devguide/31-03-conda-publication.md)
-records the exact file and SHA256.
+```text
+jupyhop 0.3.0
+```
+
+Prefer Conda? Use the equivalent commands **instead**:
+
+```console
+conda create -n jupyhop -c uibcdf -c conda-forge python=3.14 jupyhop=0.3.0
+conda activate jupyhop
+jupyhop --version
+```
+
+The published uibcdf package includes OpenSSH. **You do not need local Jupyter
+or tmux.** To use another supported Python, change `python=3.14` in the create
+command. On an additional client, repeat this installation and configure its
+ordinary SSH route; remote managed-session records stay on the remote host.
+
+**Next: [Open your first notebook →](quickstart.md#2-check-your-ssh-route)**
+
+If JupyHop is already installed, follow [Update the client](upgrading.md).
+The current Conda build is `0.3.0=py_0`. Its noarch Python payload has an explicit
+Linux constraint; macOS and Windows are outside current support. Detailed
+[publication evidence](https://github.com/uibcdf/jupyhop/blob/main/devguide/31-03-conda-publication.md)
+identifies the tested archive and digest.
+
+## What the remote host needs
+
+You normally **do not install JupyHop remotely**. Use an existing environment
+containing Jupyter, or [prepare one](remote-setup.md).
+
+| What you want to do | Remote prerequisites |
+| --- | --- |
+| Open an existing server | Authorized SSH, Linux, Python 3.11 or later as a helper, and a compatible authenticated Jupyter server with private current-user runtime metadata |
+| Start a new managed server | The helper above, an existing Python with Jupyter Server 2.20 or later (below 3), a usable kernel/frontend, tmux on the SSH command PATH, an existing project directory and stable Linux machine identity |
+| Stop a managed server safely | Linux pidfd support through the selected helper Python or named libc wrappers |
+
+JupyterLab or another suitable frontend is needed remotely to edit notebooks.
+JupyHop selects existing executables directly; it does not install or activate
+scientific environments. Managed start writes private settings/state and a
+runner for its new session. [Compatibility](compatibility.md) lists exact endpoint
+and platform boundaries.
 
 ## Source or reviewed wheel
 
-JupyHop has not been published to PyPI. To install a reviewed source checkout,
-use your chosen virtualenv or Conda environment:
+JupyHop is **not published on PyPI**. In a reviewed source checkout, with your
+chosen virtualenv or Conda environment active, run **locally**:
 
 ```console
 python -m pip install .
@@ -38,23 +77,6 @@ jupyhop --version
 ```
 
 Alternatively install a reviewed wheel with `python -m pip install PATH_TO_WHEEL`.
-These routes require OpenSSH on the client's PATH. Contributors can use the
-editable installation described in [Contributing](contributing.md).
-
-## What the remote host needs
-
-| Workflow | Remote prerequisites |
-| --- | --- |
-| Discover and open | Authorized SSH access, Linux, Python >=3.11 as a helper, an existing compatible authenticated Jupyter server and private current-user runtime metadata |
-| Start a managed server | The above helper, tmux on the remote PATH, an existing Python with Jupyter Server >=2.20,<3 and a usable kernel, an existing working directory and stable Linux machine identity |
-| Safely stop a managed server | Linux pidfd support exposed through the selected helper Python or named libc wrappers |
-
-JupyterLab or another suitable frontend must be present remotely to edit
-notebooks. JupyHop does not install scientific environments, run activation hooks
-or install a remote JupyHop package. For managed start it writes a private runner
-and state for that new session.
-
-For commands to locate or create the remote environment, see
-[Prepare the remote host](remote-setup.md). To replace a client installation
-while retaining a live remote session, follow [Update the client](upgrading.md).
-Check [Compatibility](compatibility.md), then follow the [Quickstart](quickstart.md).
+Both routes need OpenSSH on the client's PATH. The Python client has no mandatory
+Python-package dependencies. Contributors can use the editable installation in
+[Contributing](contributing.md).

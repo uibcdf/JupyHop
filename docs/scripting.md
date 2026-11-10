@@ -1,3 +1,10 @@
+---
+myst:
+  html_meta:
+    description: "Automate JupyHop with explicit SSH aliases, exact IDs, protected password input, JSON results and documented exit codes."
+    "property=og:description": "Automate JupyHop with explicit SSH aliases, exact IDs, protected password input, JSON results and documented exit codes."
+---
+
 # Scripting and exit codes
 
 Use explicit SSH aliases and exact server/session IDs in scripts. A headless

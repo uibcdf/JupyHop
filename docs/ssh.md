@@ -1,4 +1,12 @@
-# SSH and gateways
+---
+myst:
+  html_meta:
+    description: "Use existing OpenSSH aliases, passwords, keys and ProxyJump gateways with JupyHop. Check host trust, SSH file permissions and connection deadlines."
+    "property=og:description": "Use existing OpenSSH aliases, passwords, keys and ProxyJump gateways with JupyHop. Check host trust, SSH file permissions and connection deadlines."
+---
+
+(ssh-and-gateways)=
+# Connect through SSH and gateways
 
 JupyHop uses OpenSSH and the access you already have. Put host addresses, Unix
 users, keys and routing in your SSH configuration. JupyHop's optional TOML stores
@@ -31,10 +39,6 @@ An editable configuration could change the destination or commands SSH executes.
 See the [OpenSSH file requirements](https://man.openbsd.org/ssh_config#FILES)
 and [step-by-step correction](troubleshooting.md#bad-owner-or-permissions-on-ssh-configuration).
 JupyHop does not change ownership or permissions for you.
-Explicit -F/--ssh-config files can follow different OpenSSH permission checks;
-the measured -F case accepted 0664. Use private permissions anyway, but let
-OpenSSH decide rather than assuming every configuration path has the default
-file's rejection policy. Unknown include/gateway errors remain qualified.
 
 ## ProxyJump
 
@@ -119,8 +123,7 @@ shared masters are not adopted. See [Compatibility](compatibility.md) and
 ## Replace a fixed LocalForward workflow
 
 You can keep the existing SSH alias, User, HostName, IdentityFile and ProxyJump
-settings. Use `jupyhop discover workstation`, then `jupyhop open workstation`
-instead of a separate `ssh -L ...` command. JupyHop allocates its own local port
+settings. Use `jupyhop open workstation` instead of a separate `ssh -L ...` command. JupyHop allocates its own local port
 and prints its own login URL each time.
 
 Configured `LocalForward`/`RemoteForward`, `RemoteCommand` and arbitrary shared
@@ -135,3 +138,6 @@ that gateway. `--no-browser` does not make it reachable from a laptop. Install
 and run JupyHop on the laptop/browser computer, using ProxyJump to reach the
 destination. SSH forwarding policy must permit the connection through every
 required hop.
+
+**Next:** once `ssh workstation` succeeds, [open your first notebook](quickstart.md#3-open-a-server-that-is-already-running)
+or [prepare a new remote server](remote-setup.md).

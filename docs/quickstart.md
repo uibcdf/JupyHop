@@ -1,15 +1,21 @@
-# Quickstart
+---
+myst:
+  html_meta:
+    description: "Install JupyHop, open your first remote notebook through SSH, recognize the login prompts and reconnect to the same living kernel."
+    "property=og:description": "Install JupyHop, open your first remote notebook through SSH, recognize the login prompts and reconnect to the same living kernel."
+---
 
-JupyHop's client runs on Linux with CPython 3.11–3.14 and OpenSSH. It needs no
-local Jupyter and no Python runtime dependencies. These guides describe published
-0.3.0; its source qualification is tracked in the
-[implementation report](https://github.com/uibcdf/jupyhop/blob/main/devguide/30-03-implementation.md).
-The Conda release includes the names/menu/overview flows described below.
-See [Installation](installation.md) for the supported distribution choices.
+(quickstart)=
+# Open your first remote notebook
 
-## Install the client
+Install JupyHop on the **local Linux computer where you use the browser**.
+Jupyter will run on the **remote Linux computer**. You need mamba or Conda
+locally and authorized SSH access to that remote computer.
 
-Create a Linux client from the public Conda channel:
+(install-the-client)=
+## 1. Install the client
+
+Run in your **local terminal**, using mamba:
 
 ```console
 mamba create -n jupyhop -c uibcdf -c conda-forge python=3.14 jupyhop=0.3.0
@@ -17,127 +23,153 @@ mamba activate jupyhop
 jupyhop --version
 ```
 
-Conda includes OpenSSH, without local Jupyter or tmux. See
-[Installation](installation.md) for source/wheel alternatives, remote
-prerequisites and additional-client setup.
+Expect `jupyhop 0.3.0`. With Conda, replace `mamba` with `conda` in both commands.
+Python 3.11–3.14 is supported. The package includes OpenSSH; you do not need
+Jupyter or tmux locally. See [Installation](installation.md) for other methods.
 
-## Open a server that is already running
+## 2. Check your SSH route
 
-First establish ordinary SSH access to an existing alias:
+In the **same local terminal**, replace `workstation` with your working SSH alias:
 
 ```console
 ssh workstation
 ```
 
-Verify the host fingerprint through your normal trusted channel, then exit that
-SSH shell. JupyHop keeps strict host checking. In a terminal, OpenSSH handles
-password/passphrase prompts; keys/agent work too. Python never reads or caches
-the SSH password. User, keys, Include/Match and ProxyJump belong in OpenSSH
-configuration. A POSIX-compatible remote login shell and Python >=3.11 are required.
-Headless commands or explicit `--batch` require noninteractive SSH authentication.
-Terminal authentication has its own `--ssh-auth-timeout` (default 120 seconds);
-`--timeout` bounds probes/network startup. No key provisioning is mandatory.
+Verify a new host fingerprint through your usual trusted channel. Once you reach
+the remote shell, run `exit` to return to your local terminal. Password prompts,
+keys and agents all work. If SSH fails, [fix the route first](ssh.md); a private
+workstation can be reached through a [ProxyJump gateway](ssh.md#proxyjump).
 
-`doctor` inspects only its selected Python. A system Python without Jupyter can
-still act as the stdlib discovery helper for servers in Conda/venv environments;
-Jupyter does not need installing into that system Python just to open one.
+**Now choose one path:** if Jupyter is already running, continue below. If you
+need a new server, [skip to managed start](#start-and-recover-an-owned-server).
 
-If none is running yet, follow [Prepare the remote host](remote-setup.md) for a
-manual example, or skip to [Start and recover an owned server](#start-and-recover-an-owned-server).
-`open` searches for an existing server; it never creates one.
+(open-a-server-that-is-already-running)=
+## 3. Open a server that is already running
 
-With your current-user Jupyter server already running remotely:
+The remote host needs Python 3.11 or later and a
+[supported authenticated Jupyter server](compatibility.md) under your SSH
+account. It may run in a different Conda environment. You need its existing
+Jupyter password or token; [remote setup](remote-setup.md) helps locate the
+environment or prepare a first server.
+
+Run **locally**:
 
 ```console
-jupyhop discover workstation
 jupyhop open workstation
 ```
 
-No JupyHop configuration file, remote JupyHop package, tmux or manual tunnel/port
-selection is needed for this workflow. Select a server on the terminal even when
-one is found; an exact ID or managed --name opens directly. Scripts retain
-single-candidate behavior and must select explicitly when ambiguous.
+Open already searches for servers; a separate discover command is optional.
+In a terminal, you see a numbered choice even if only one server is ready.
+For example, with invented data and no additional discovery warnings:
 
-Log in on Jupyter's normal page with the server's existing password/token. JupyHop
-does not retrieve it. Obtain credentials only through the server's authorized
-private workflow; avoid putting them in commands, URLs or bug reports.
-
-Keep `jupyhop open` running. Ctrl-C closes its local forward; the existing server's
-original launcher determines persistence. Use `--no-browser` on a headless client
-and open the printed token-free login URL on that same client.
-
-Discovery is always partial. For a custom runtime path or another helper Python:
-
-```console
-jupyhop discover workstation --runtime-dir '~/custom-runtime'
-jupyhop open workstation --remote-python /absolute/remote/env/bin/python
+```text
+Discovery is partial: only known runtime paths were searched; other environments or paths may exist.
+1: (unnamed)  unmanaged  ready  aaaaaaaaaaaaaaaaaaaaaaaa
+Select a session number (Enter cancels): 1
+http://127.0.0.1:49152/login?next=%2F
+Tunnel attached. Log in with your existing Jupyter password/token. Ctrl-C closes only this tunnel; the remote server is not stopped.
 ```
 
-Runtime directories/files must be current-user-owned, private (0700/0600) and
-without symlinks. Supported endpoints are authenticated IPv4 loopback HTTP;
-see [compatibility](compatibility.md) before using other server configurations.
+Choose a number. The browser opens Jupyter's login page; enter **that server's
+Jupyter password or token** there. An SSH password belongs only in the terminal's
+OpenSSH prompt. A gateway can ask for a separate SSH password. JupyHop does not
+retrieve existing Jupyter credentials; [which password to use](security.md#two-authentication-steps)
+explains the distinction.
+
+Once logged in, open a notebook and select a remote kernel. Try this harmless cell:
+
+```python
+continuity_marker = "hello from the remote kernel"
+print(continuity_marker)
+print(sum(range(10)))
+```
+
+Expected notebook output:
+
+```text
+hello from the remote kernel
+45
+```
+
+```{figure} _static/first-notebook.png
+:alt: JupyterLab displaying a notebook cell and the output hello from the remote kernel followed by 45.
+:class: jh-screenshot
+
+A notebook in a disposable JupyterLab environment. The cell above runs in the
+remote kernel; the browser displays its result.
+```
+
+**You are connected.** Keep the JupyHop terminal running. Ctrl-C closes only its
+tunnel. The browser may then show a connection error; that is expected until you
+reconnect. The existing server's launcher and site policy control its lifetime.
+
+To return, run `jupyhop open workstation` again, log in and select the **existing
+running notebook/kernel**. In a new cell, `print(continuity_marker)` shows the same
+value if that kernel survived. A newly created or restarted kernel has different
+memory. From another authorized Linux client, install JupyHop and use its own
+SSH configuration to reach the same account; no old forwarding port is needed.
+
+**No server found?** The search checks known locations and is always partial.
+[Provide a known runtime path or Python](existing-servers.md#extend-a-partial-search).
+If you have not started Jupyter yet, use the path below.
 
 ## Start and recover an owned server
 
-The remote host also needs tmux, Linux machine identity and an existing Python
->=3.11 with Jupyter Server >=2.20,<3 and a usable kernel. The currently recommended
-tested server is 2.21.1. Environments and project directories must already exist.
-JupyHop does not install them or run Conda activation hooks.
+Choose this path **instead of the existing-server path** when you need a new
+server. You need an existing remote Python with Jupyter Server 2.20 or later
+(below 3), a notebook kernel and a frontend such as JupyterLab. The project
+directory must exist, and tmux must be available to noninteractive SSH commands.
+[Prepare and check these once](remote-setup.md) if needed; JupyHop does not
+install or activate remote Conda environments.
+
+Run **locally**, substituting the actual remote Python and project directory:
 
 ```console
-jupyhop start workstation --server-python /absolute/remote/env/bin/python --workdir '~/projects/analysis' --name analysis --no-open
+jupyhop start workstation \
+    --server-python /absolute/remote/env/bin/python \
+    --workdir '~/projects/analysis' \
+    --name analysis
 ```
 
-Choose a strong new session password when privately prompted. This password is
-independent of SSH; remember it for future clients. The returned UUID remains
-available through status; you can use the chosen name or a terminal selector.
-The server password hash is stored privately on the remote account; the plaintext
-is not retained. Scripts use `--password-stdin` with a protected credential source.
+The prompt sequence is:
+
+1. Choose and confirm a **new Jupyter session password**. Remember it for future
+   browser logins; it is separate from your SSH password and belongs to this session.
+2. Authenticate in any native **SSH** prompts. A gateway may prompt too.
+3. The browser opens. Enter the **new session password** in Jupyter's login form.
+
+The command normally starts the server **and opens it**. Do not start it again
+to reconnect. Create a notebook and try the cell above. After Ctrl-C closes the
+tunnel, return with the name you chose:
 
 ```console
-jupyhop open workstation --name analysis
+jupyhop resume workstation --name analysis
 ```
 
-Work in Jupyter, then close the browser and press Ctrl-C in the CLI. From the
-original or another authorized client:
+Log in and select the original running notebook/kernel. As long as that server
+and kernel survived, their computation and memory remain. A stopped kernel,
+remote reboot or site policy that kills workloads cannot be undone by reconnecting.
+
+(stop-and-retire-a-managed-entry)=
+## Choose sessions and finish work
+
+Run **locally**, after closing an attached tunnel or in another terminal:
 
 ```console
-jupyhop status workstation SESSION_ID
-jupyhop resume workstation
+jupyhop manage workstation
 ```
 
-Authenticate again and reconnect to the original notebook/kernel. If the server
-and kernel survived, their memory remains; opening a notebook file cannot recover
-memory lost through reboot or a crash. Remote last-logout policies can kill even
-tmux workloads. JupyHop does not change systemd/linger/PAM policy or auto-restart.
+The menu shows managed-session counts and offers open/resume, stop, archive,
+history, refresh and exit. You can select by number; no need to remember IDs.
+[See an example menu](managed-sessions.md#manage-from-one-terminal).
 
-## Stop and retire a managed entry
+When you are done with the managed server, choose **Stop** and confirm.
+**Stop terminates all its kernels and computations.** Interactive stop normally
+archives the inactive records too, retaining evidence and releasing the session
+name. Notebooks remain in the project directory. Existing servers started outside
+JupyHop remain open-only.
 
-```console
-jupyhop stop workstation
-```
-
-Choose the managed session and confirm **stop and archive**. Stop terminates that
-server and all its kernels; after confirmed stop, archive retains evidence and
-releases its name. Use --keep-record to keep a stopped record. Scripts retain
-exact UUID plus --yes and stop-only behavior unless --archive is explicit.
-Archive does not delete scientific files or stop orphaned kernels. Neither action
-can control a manually launched server. `jupyhop manage workstation` offers the
-same actions in one terminal with an overview of retained/history records.
-
-After completion, inspect the retained history:
-
-```console
-jupyhop status workstation --history
-```
-
-The [session reference](sessions.md) explains identifiers, observed states and
-where active/archived records live. An exit-0 status query can describe a stale
-or failed session; inspect its state before trying to open it.
-
-If an SSH/start/stop request is interrupted, the remote outcome can be unknown:
-inspect `status`/`discover` before starting again. Retry an interrupted archive
-with the same UUID. Read [troubleshooting](troubleshooting.md) for failure codes
-and [Configuration](configuration.md) for optional profiles and multiple hosts.
-For a reviewable bug-report attachment or a notebook-local check, see
-[Diagnostics](diagnostics.md).
+**Next:** [Learn session management](managed-sessions.md),
+[return from another computer](recovery.md) or
+[save project settings and use several hosts](configuration.md).
+For a different result or an error, start with [Troubleshooting](troubleshooting.md).

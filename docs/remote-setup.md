@@ -1,100 +1,164 @@
+---
+myst:
+  html_meta:
+    description: "Locate or create a remote Jupyter environment, record its Python path and verify tmux on the SSH command PATH before managed launch."
+    "property=og:description": "Locate or create a remote Jupyter environment, record its Python path and verify tmux on the SSH command PATH before managed launch."
+---
+
 # Prepare the remote host
 
-Run this guide **on the remote Linux computer**, after connecting with
-`ssh workstation`. The client and browser stay on your local computer. Opening
-an existing compatible server needs no new installation; use the environment
-and launcher that already provide it.
+Use this guide once to locate a remote Jupyter environment or prepare a new one.
+JupyHop itself normally runs only on your **local browser computer**. Jupyter,
+the project directory and notebook kernels belong on the **remote computer**.
+
+If a server is already running, you may be able to [open it now](existing-servers.md).
+If you want JupyHop to launch one, finish the environment and tmux checks below,
+then [start a managed session](managed-sessions.md#start).
 
 ## Find an existing environment
 
-In the remote environment you intend to use, inspect its interpreter and Jupyter:
+From your **local terminal**, connect using your working SSH alias:
 
 ```console
+ssh workstation
+```
+
+Now in the **remote shell**, activate the environment you normally use for
+Jupyter. With mamba, for example, replace `analysis-env` with its actual name:
+
+```console
+mamba env list
+mamba activate analysis-env
 python -c 'import sys; print(sys.executable)'
 python -I -m jupyter_server --version
 python -m jupyter kernelspec list
+```
+
+Use `conda` instead of `mamba` when appropriate. Record the **absolute Python
+path** printed by the first Python command. The isolated `-I` check matches how
+JupyHop starts its helper/server; [import-mode guidance](environments.md#match-the-interpreters-import-mode)
+explains why packages installed only in a user site may not be visible.
+For managed start, use Jupyter Server 2.20 or later (below 3), a usable kernel and
+a frontend such as JupyterLab. The tested recommended stack uses Server 2.21.1.
+
+For an existing server, locate the runtime path in **the shell/environment that
+launched it**, preserving any custom `JUPYTER_RUNTIME_DIR`:
+
+```console
 python -m jupyter --runtime-dir
 ```
 
-Copy the absolute Python path and, for an existing server, its actual runtime
-directory. If the server was launched with a custom `JUPYTER_RUNTIME_DIR`, use
-that path: an unrelated shell or environment need not report the same directory.
-The [Jupyter directory reference](https://docs.jupyter.org/en/latest/use/jupyter-directories.html)
-explains these environment variables.
+Environments often share this directory, but custom paths can differ. This query
+identifies a path; it does not list or start servers. If you need to extend
+[existing-server discovery](existing-servers.md#extend-a-partial-search), pass the
+actual runtime path or Python path from your local client.
 
-The version check uses the same isolated Python import mode as JupyHop. If it
-fails while an ordinary import works, check
-[environment-local versus user-site packages](environments.md#match-the-interpreters-import-mode).
-
-Back **on the local client**, substitute the copied paths:
+Prepare a working directory on the **remote computer**, if this is a new project:
 
 ```console
-jupyhop doctor workstation --remote-python /absolute/remote/env/bin/python
-jupyhop discover workstation --runtime-dir /absolute/remote/runtime
+mkdir -p "$HOME/projects/analysis"
 ```
-
-`doctor` checks one interpreter's packages and capabilities. It does not test a
-Jupyter login, kernel execution, forwarding policy or server persistence. Missing
-Jupyter in the helper does not prevent discovery of a server in another
-environment. Python >=3.11 and the Linux process/socket checks are still required.
 
 ## Create an environment when needed
 
-If your authorized remote account needs a new environment, the following is an
-example of the tested server stack. Run it **remotely**, with your site's
-permission to install packages and run Jupyter:
+If there is no suitable environment, create one in your **remote shell**, using
+mamba/Conda and your site's permitted installation workflow. This example
+reproduces the tested server stack:
 
 ```console
-mamba create -n jupyter-remote -c conda-forge python=3.14 jupyter_server=2.21.1 jupyterlab=4.6.4 ipykernel=7.4.0 tmux
+mamba create -n jupyter-remote -c conda-forge \
+    python=3.14 jupyter_server=2.21.1 jupyterlab=4.6.4 ipykernel=7.4.0
 mamba activate jupyter-remote
 python -c 'import sys; print(sys.executable)'
+python -I -m jupyter_server --version
 python -m jupyter kernelspec list
-command -v tmux
+mkdir -p "$HOME/projects/analysis"
 ```
 
-Record that Python path. The version pins reproduce the observed stack; review
-upstream fixes and the [compatibility matrix](compatibility.md) when choosing
-other versions. JupyHop does not execute these installation commands for you.
-For managed sessions, tmux must also be discoverable on the noninteractive SSH
-PATH; installing it only in an activated environment may not provide that.
-See [SSH troubleshooting](troubleshooting.md#tmux-works-interactively-but-start-reports-missing-tmux).
+Record the Python path and check that a usable kernel is listed. These pins
+reproduce the observed stack; review fixes and the
+[compatibility matrix](compatibility.md) when choosing other versions.
+JupyHop does not execute these installation commands for you.
 
-You can now return to your **local client** and follow
-[Managed sessions](managed-sessions.md), supplying the recorded Python path.
-Managed launch supplies its own private runtime directory and authentication
-settings. It does not require the manual launch below.
+## Check tmux for managed launch
+
+Managed start uses tmux to run independently of the local tunnel. A tmux binary
+installed only inside an activated Conda environment may not be visible to
+ordinary SSH commands. **Selecting `--server-python` does not activate Conda.**
+
+Exit the remote shell. From your **local terminal**, check the environment
+JupyHop will actually use:
+
+```console
+ssh workstation 'command -v tmux'
+```
+
+If it prints a path such as `/usr/bin/tmux`, continue to the final check below.
+An empty result means preparation is incomplete, even if tmux works after
+interactive activation.
+
+One complete option on **Debian/Ubuntu**, when your site permits system package
+installation, is to reconnect with `ssh workstation` and run **remotely**:
+
+```console
+sudo apt-get install tmux
+```
+
+Exit that shell and repeat the local SSH check. On other systems use the site's
+package-management procedure. If you cannot install system packages, ask the
+administrator to provide tmux on the noninteractive SSH PATH, or arrange an
+approved per-user PATH setting and recheck it. Keep startup output clean.
+Do not continue to managed start until this check returns a usable path.
+[tmux troubleshooting](troubleshooting.md#tmux-works-interactively-but-start-reports-missing-tmux)
+explains the difference between interactive and command SSH environments.
+Opening an existing server does not require tmux.
+
+## Verify and start
+
+From your **local terminal**, substitute the recorded remote Python path:
+
+```console
+jupyhop doctor workstation \
+    --remote-python /absolute/remote/env/bin/python
+```
+
+Expect SSH OK, supported Python/Jupyter versions and `tmux found`. Doctor checks
+that interpreter's prerequisites; it does not start or discover a server.
+A missing-Jupyter result for the system Python does not mean no other environment
+contains Jupyter.
+
+**Next: [Start your named session →](managed-sessions.md#start)**
+Supply the recorded Python and existing project directory. Managed start sets up
+its own private runtime and authentication; you do not need the manual example.
 
 ## Try a manually launched server
 
-This optional example creates an **unmanaged** server for the existing-server
-workflow. Run it **remotely** in the Jupyter environment above. The fresh private
-runtime directory keeps this server's credentials outside the notebook project:
+This is an optional **alternative** for testing the existing-server workflow.
+In your **remote Jupyter environment**, run:
 
 ```console
 mkdir -p "$HOME/projects/jupyhop-demo"
 jupyhop_runtime_dir=$(mktemp -d "$HOME/jupyhop-runtime-XXXXXXXX")
 printf '%s\n' "$jupyhop_runtime_dir"
-JUPYTER_RUNTIME_DIR="$jupyhop_runtime_dir" python -m jupyterlab --no-browser --ServerApp.ip=127.0.0.1 --ServerApp.port=0 --ServerApp.root_dir="$HOME/projects/jupyhop-demo"
+JUPYTER_RUNTIME_DIR="$jupyhop_runtime_dir" python -m jupyterlab \
+    --no-browser --ServerApp.ip=127.0.0.1 --ServerApp.port=0 \
+    --ServerApp.root_dir="$HOME/projects/jupyhop-demo"
 ```
 
-Leave this remote terminal open. Copy the printed runtime directory. From a
-**second local terminal**, substitute that path:
+Leave that terminal running. Keep the token in Jupyter's startup output private;
+if your configuration uses a password, use that password instead. Copy only the
+printed runtime directory. In a **second local terminal**, substitute that path:
 
 ```console
-jupyhop discover workstation --runtime-dir /absolute/remote/jupyhop-runtime-XXXXXXXX
-jupyhop open workstation --runtime-dir /absolute/remote/jupyhop-runtime-XXXXXXXX
+jupyhop open workstation \
+    --runtime-dir /absolute/remote/jupyhop-runtime-XXXXXXXX
 ```
 
-The fresh server normally supplies a token in its remote startup output, unless
-your existing configuration uses a password. Keep that output private and enter
-the token/password in the local Jupyter login form. The upstream
-[authentication guide](https://jupyter-server.readthedocs.io/en/stable/operators/security.html)
-describes this login. Leave authentication enabled; use the local URL printed by
-JupyHop to reach the forwarded endpoint.
+Select the server and enter its token/password in Jupyter's browser login form.
+[Jupyter's authentication guide](https://jupyter-server.readthedocs.io/en/stable/operators/security.html)
+explains that login. Keep authentication enabled and use JupyHop's current local URL.
 
-Ctrl-C in the **local JupyHop terminal** closes the tunnel. Ctrl-C in the
-**remote Jupyter terminal** shuts down this manually launched server, with
-Jupyter's normal confirmation. Its launcher controls persistence. For work that
-must survive closing the remote terminal, use a permitted persistent launcher or
-the [managed workflow](managed-sessions.md). JupyHop cannot stop/archive this
-manual server or clean up its runtime files.
+Ctrl-C in **local JupyHop** closes the tunnel. Ctrl-C in **remote Jupyter** shuts
+down this manual server, with Jupyter's normal confirmation. Its original launcher
+controls persistence; JupyHop cannot stop/archive it or clean up its runtime files.
+For persistent managed work, follow [Managed sessions](managed-sessions.md).

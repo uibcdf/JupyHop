@@ -1,14 +1,16 @@
+---
+myst:
+  html_meta:
+    description: "Update a local JupyHop Conda client and reconnect to existing remote sessions without reinstalling scientific environments or rewriting living launchers."
+    "property=og:description": "Update a local JupyHop Conda client and reconnect to existing remote sessions without reinstalling scientific environments or rewriting living launchers."
+---
+
 # Update the client
 
 The current public Conda release is **0.3.0**. Run these steps on each local
 client you want to update. Remote Jupyter environments, existing notebook files
 and managed runners have separate lifetimes and do not need reinstalling for a
 client update.
-Version 0.3.0 adds names, a menu, history and interactive completion;
-its source qualification is tracked in the
-[implementation report](https://github.com/uibcdf/jupyhop/blob/main/devguide/30-03-implementation.md).
-The [publication report](https://github.com/uibcdf/jupyhop/blob/main/devguide/31-03-conda-publication.md)
-records the exact Conda build and independent public installation.
 
 ## Before changing the local environment
 
@@ -49,11 +51,12 @@ PyPI release or mandatory remote JupyHop package to update.
 From the updated local client:
 
 ```console
-jupyhop status workstation SESSION_ID
-jupyhop open workstation SESSION_ID
+jupyhop status workstation
+jupyhop resume workstation --name analysis
 ```
 
-Authenticate to Jupyter and return to the existing notebook/kernel. Use
+Replace `analysis` with your current managed name; an exact session UUID works
+too. Authenticate to Jupyter and return to the existing notebook/kernel. Use
 `discover`/`open` with the required runtime paths for an unmanaged server.
 Reconnection makes a new local forward; it does not recreate kernel memory.
 
