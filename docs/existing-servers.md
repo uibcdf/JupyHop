@@ -31,15 +31,17 @@ jupyhop discover workstation
 jupyhop open workstation
 ```
 
-With one verified candidate, `open` creates a local loopback forward and opens the
-normal Jupyter login page. With multiple candidates, a terminal lets you choose.
+On a terminal, open shows a chooser even for one verified candidate. It displays
+the name when managed, origin, observed state and UUID/observation ID. Select one
+to create the loopback forward and open the normal Jupyter login page.
 To select explicitly, copy the exact ID shown by discovery:
 
 ```console
 jupyhop open workstation SERVER_ID
 ```
 
-Names and PIDs are not selectors. The [session reference](sessions.md) explains
+An exact managed --name also selects directly; unmanaged servers use their
+observation ID. PIDs are not selectors. The [session reference](sessions.md) explains
 managed UUIDs and unmanaged observation IDs. In scripts or with `--json`,
 ambiguous selection is an error even when a controlling terminal is available.
 No JupyHop TOML file, remote JupyHop installation or manual forwarding-port

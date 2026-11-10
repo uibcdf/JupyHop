@@ -1,6 +1,7 @@
 # Security policy
 
-JupyHop 0.2.0 is a pre-1.0 candidate, not an independently audited product. Its
+JupyHop 0.3.0 is the source pre-1.0 candidate; 0.2.0 is the published Conda baseline
+until promotion. Neither is an independently audited product. The
 supported boundary is described in [compatibility](docs/compatibility.md) and the
 [threat model](devguide/04-security-and-reliability.md). Until a release is
 published, use a reviewed checkout/artifact; no historical public release receives
@@ -27,6 +28,11 @@ There is no PID-only fallback or automatic SIGKILL. Archive preserves inactive
 evidence; it is not a general cleanup command. Site logout policy and process loss
 can defeat persistence, and no tool can recreate lost kernel memory by forwarding
 a port. Read [troubleshooting](docs/troubleshooting.md) before manual recovery.
+Terminal names/choices pin the exact managed UUID before confirmation; they do
+not grant lifecycle authority. Interactive stop offers guarded archival after a
+confirmed stop; script UUID/--yes remains stop-only unless --archive is explicit.
+Overview/history reads never delete or archive. Shareable diagnostic reports
+allowlist metadata and exclude identities/paths; ordinary JSON still needs review.
 
 ## Reporting a vulnerability
 

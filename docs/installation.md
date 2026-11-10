@@ -6,6 +6,10 @@ additional computer; live managed-session records stay on the remote host.
 
 ## Conda or mamba
 
+The source candidate is 0.3.0; the currently published channel coordinate is still
+0.2.0=py_0. New 0.3.0 features require its reviewed source/wheel until promotion;
+an installation of 0.2.0 does not include them.
+
 Create a fresh environment from the public uibcdf and conda-forge channels:
 
 ```console
@@ -26,7 +30,7 @@ records the exact file and SHA256.
 
 ## Source or reviewed wheel
 
-Version 0.2.0 has not been published to PyPI. From a reviewed source checkout,
+Neither version has been published to PyPI. For the 0.3.0 candidate, use a reviewed source checkout,
 use your chosen virtualenv or Conda environment:
 
 ```console

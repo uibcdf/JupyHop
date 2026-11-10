@@ -14,6 +14,14 @@ graceful stop and independent-client kernel continuity](18-m4-lifecycle.md).
 M5 adds [optional local profiles, bounded multi-alias inventory, real account
 isolation and inactive-state archive](19-m5-scientific-workflows.md).
 
+The 0.3.0 source candidate adds one shared inventory/select/confirm/dispatch layer
+for CLI names and the thin manage menu. Read-only managed/history RPC 1.5 sits
+beside existing lifecycle operations; it does not replace their UUID/pidfd/archive
+guards or mutate registry schema 1.0. Discovery 1.6 distinguishes diagnostic bounds.
+Support reports allowlist client/selected-remote facts; the optional notebook
+collector inspects only its current interpreter. No mandatory remote installation,
+daemon or new Python dependency is needed. See [30](30-03-implementation.md).
+
 ```text
 Client machine
   jupyhop CLI

@@ -80,6 +80,15 @@ All behavior must be traceable to [08 — Scenario catalogue](08-scenarios-and-a
 
 ## Required evidence before the MVP is considered complete
 
+The 0.3.0 candidate extends this policy with names/chooser pinning, read-only
+bounded history/counters, compound completion failures, management terminal
+signals, diagnostic allowlisting and actual default-SSH-config permissions in
+the existing exclusively provisioned Unix fixture. Installed qualification must
+exercise the new report, named open, overview/history and explicit compound
+completion without local Jupyter, plus upgrades from 0.2.0 and the historical
+baseline. See [30](30-03-implementation.md); earlier passing runs do not qualify
+new candidate bytes.
+
 Create a traceability ledger mapping every mandatory scenario ID in [08](08-scenarios-and-acceptance.md) to a test name, expected result, observed status, supported version and security assertion. Maintain a known-limitations list for unsupported or partially discoverable Jupyter configurations. Add a usability smoke test starting with only a working SSH alias and a manually launched Jupyter Server. See [10](10-remote-runtime-and-protocol.md), [11](11-discovery-and-connectivity.md), and [12](12-user-experience.md).
 
 ## Definition of done for each milestone

@@ -3,6 +3,9 @@
 The current Conda release is 0.2.0. This repository has not published it to PyPI.
 Builds, CI artifacts, commits and tags do not constitute a package publication.
 Uploading a release is a separate explicit maintainer action after artifact review.
+The current source candidate is 0.3.0. Its report tracks qualification separately
+from the already published 0.2.0 coordinate; see
+[0.3.0 evidence](https://github.com/uibcdf/jupyhop/blob/main/devguide/30-03-implementation.md).
 
 Package versions and release tags use exactly `x.y.z`, for example `0.1.0`,
 `0.1.1` or `0.2.0`. Tags use the same number, without a `v` prefix. Do not use
@@ -23,6 +26,9 @@ checking a package, and wire/registry versions keep their independent contracts.
    The 0.2.0 stabilization also requires native terminal/Unix-password acceptance
    and the actual installed-wheel upgrade from the trusted 0.1.0 baseline. See
    [the experiment instructions](https://github.com/uibcdf/jupyhop/blob/main/experiments/stabilization.md).
+   The 0.3.0 gate additionally covers the published 0.2.0 source baseline,
+   default-config native permission acceptance, new installed report/named-open/
+   history/completion flows and management terminal signals.
 4. Build in a clean checkout/environment with only the chosen release artifacts
    in `dist`, then run:
 

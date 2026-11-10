@@ -1,6 +1,7 @@
 # Compatibility and version policy
 
-JupyHop 0.2.0 is a Linux pre-1.0 stabilization candidate. Compatibility means the specific
+JupyHop 0.3.0 is the current Linux source candidate; 0.2.0 remains the public
+Conda baseline until promotion. Compatibility means the specific
 workflows/versions observed below, not every Jupyter Server 2 deployment. The
 client needs OpenSSH and CPython 3.11–3.14; it has zero mandatory Python packages
 and needs no local Jupyter. Free-threaded Python, macOS and Windows are untested.
@@ -40,6 +41,11 @@ each on one sustained WebSocket through ProxyJump. See
 [the hosted CI follow-up](https://github.com/uibcdf/jupyhop/blob/main/devguide/21-m6-github-ci.md) for the M6 270-test
 baseline on each supported Python. Subsequent [0.2.0 stabilization evidence](https://github.com/uibcdf/jupyhop/blob/main/devguide/23-02-stabilization-evidence.md)
 records additional tests, native terminal authentication and real-site observations.
+The [physical home-client pilot](https://github.com/uibcdf/jupyhop/blob/main/devguide/28-02-physical-client-pilot.md)
+observes the 0.2.0 gateway route and concurrent sessions. The
+[0.3.0 implementation report](https://github.com/uibcdf/jupyhop/blob/main/devguide/30-03-implementation.md)
+separately records the new candidate's local/hosted/installed qualification; old
+passing runs do not substitute for that acceptance.
 
 | Server / server Python | Existing open + kernel | Managed start/status/stop/archive |
 | --- | --- | --- |
@@ -77,11 +83,14 @@ by that observation. Physical-client and site-policy limits remain explicit.
 
 | Contract | Current version / behavior |
 | --- | --- |
-| Client package | 0.2.0; prepared for stabilization, PyPI unpublished; identifiers use x.y.z; Conda status in the distribution report |
+| Client package | Source candidate 0.3.0; published Conda baseline 0.2.0 pending promotion; no PyPI publication |
 | Doctor wire | 1.0 |
 | Managed start wire | 1.2; version refusal is a new allowlisted error |
-| Discovery/status/stop wire | 1.3 |
+| Discovery wire | 1.6; distinct sample/scan limit diagnostics, retaining legacy entry_limit |
+| Status/stop wire | 1.3; existing scripting output preserved |
 | Archive wire | 1.4, sent only for explicit archive |
+| Managed/history inventory wire | 1.5, read-only with bounded archive pages |
+| Support report / managed inventory JSON | Independent version-1 output contracts; opt in with doctor --report or status --history --json |
 | Remote registry | Schema 1.0; exact known schema required for writes |
 | Local TOML / list JSON | Separate version-1 contracts; discover keeps its single-host shape |
 

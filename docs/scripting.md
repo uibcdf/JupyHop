@@ -11,7 +11,19 @@ jupyhop status workstation SESSION_ID --batch --json
 ```
 
 For stop/archive, an exact managed UUID plus `--yes` explicitly authorizes the
-action. Those commands never guess a session from its display name or PID.
+action. Automated mutations never select from a display name or PID. Existing
+UUID --yes stop scripts stay stop-only. To explicitly authorize both phases:
+
+```console
+jupyhop stop workstation SESSION_ID --yes --archive --batch --json
+```
+
+That form uses a versioned compound result, separating stop from archive. An
+uncertain stop does not archive; a confirmed stop with uncertain archival returns
+13 and a same-UUID recovery instruction. `--keep-record` is available for terminal
+users who want stop-only behavior. `manage` and lifecycle name/number selection
+require a terminal; they are not new automation target-resolution rules.
+
 Supply a new managed server's Jupyter password through a protected stdin source
 with `--password-stdin`; this does not provide an SSH password.
 
@@ -54,12 +66,15 @@ The CLI's result shapes differ from the internal remote wire envelopes.
 | Command | Result shape / lifetime |
 | --- | --- |
 | `doctor` | Versioned selected-interpreter diagnostic, including prerequisite results |
+| `doctor --report` | Version-1 shareable support report; local context survives a failed remote check |
 | `discover` | Single-host report with `servers` and partial-search `coverage` |
 | `list` | Local version-1 inventory with a `hosts` array of per-route success/error results |
 | `open` | One connection result with a token-free local URL; process remains attached |
 | `start --no-open` | Managed launch result and request UUID; no attached local tunnel |
 | `status`, `stop` | Managed status report, including its server entries and any allowed error |
 | `archive` | Archive result for the exact managed UUID |
+| `status --history` | Version-1 managed/history inventory and summary; partial/unavailable counts stay explicit |
+| `stop --archive --yes` | Version-1 compound result with separate stop/archive outcomes |
 
 `list HOST --json` uses the fleet envelope even for one host. Use
 `discover HOST --json` when your script expects a single-host discovery report.
@@ -121,3 +136,8 @@ is stale/failed/unreachable. Check `servers[].state` and the
 [state meanings](sessions.md#interpret-an-observed-state) before deciding that a
 server is ready. A lifecycle error may still produce a JSON report before its
 nonzero exit and stderr diagnostic.
+Human status without a selector uses the new read-only overview; status --json
+without --history preserves its earlier managed-server shape/reconciliation.
+Names select read-only open/status directly, but automated stop/archive still
+require an exact UUID. Only --report is intended as a shareable attachment;
+other JSON can contain identities/paths.

@@ -121,6 +121,9 @@ Discovery is **best-effort** and limited to the authenticated remote user's acce
 | UX-06 | Remote environment lacks JupyHop helper | Supported no-install discovery path or clear safe bootstrap instruction | M1/M2 |
 | UX-07 | Local and remote helper incompatible versions | Actionable diagnostic and safe upgrade path | M4/M6 |
 | UX-08 | Remote directory contains spaces, Unicode or tilde | Predictable validated remote path resolution, no argument injection | M5 |
+| UX-09 | One/many named sessions; name reused during confirmation | Visible terminal choices and exact names pin UUIDs; no retargeting or implicit headless lifecycle selection | 0.3 |
+| UX-10 | Stopped records forgotten and growing archive history | Explicit completion offers safe archive; overview separates ready/stopped/review/history with truthful bounded counts | 0.3 |
+| UX-11 | User needs support context from client, selected Python or notebook | Actionable failures and reviewable allowlisted reports; optional local collector never starts kernels or SSH | 0.3 |
 
 ## Acceptance workflow
 

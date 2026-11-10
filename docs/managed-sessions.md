@@ -52,8 +52,8 @@ reads one UTF-8 line from a protected source.
 [Scripting](scripting.md#start-with-a-protected-password-source)
 shows the noninteractive form. There is no Jupyter password reset command.
 
-The returned UUID is the session's stable identifier. Copy it, or find it with
-`jupyhop list workstation`. A new server and local forward receive ports
+The returned UUID is the session's stable identifier. Find it later with status,
+or use its exact managed name or a terminal chooser. A new server and local forward receive ports
 automatically; concurrent sessions do not need fixed port assignments.
 
 To start without attaching a local browser/tunnel:
@@ -71,15 +71,21 @@ start, inspect the original request ID before making another request.
 ```console
 jupyhop status workstation SESSION_ID
 jupyhop open workstation SESSION_ID
+jupyhop open workstation --name analysis
+jupyhop resume workstation
 ```
 
-Use the exact UUID returned by start. `status workstation` can inspect the managed
-registry without selecting a UUID. `open` revalidates the chosen server and makes
+An exact UUID or --name selects directly. Without either, a terminal chooser
+shows names, states, origins and UUIDs, even for one ready candidate. Resume is
+an alias for open. `status workstation` shows a read-only managed overview,
+including stopped records awaiting archive and a bounded archive count.
+`open` revalidates the chosen server and makes
 a fresh forward; it does not restart a healthy server or create a new kernel.
 
 An exit-0 status query means observation succeeded, not that the server is ready.
 Read the [state meanings and storage reference](sessions.md); only `ready`
-candidates can be opened. Status can reconcile an interrupted launch record.
+candidates can be opened. An exact-UUID status or the legacy status --json flow
+can reconcile interrupted launch readiness; the new overview/history is read-only.
 
 Closing the browser or pressing Ctrl-C in `open` leaves the remote server under
 its private tmux launcher. Persistence is subject to site logout/cgroup policy.
@@ -90,12 +96,23 @@ an interrupted operation.
 
 ```console
 jupyhop stop workstation SESSION_ID
+jupyhop stop workstation --name analysis
+jupyhop stop workstation
 ```
 
-Confirm the exact UUID when prompted. **Stopping terminates that server and all
+Use one of these forms. A terminal selector/name is resolved once to its exact
+UUID, which appears in the confirmation. **Stopping terminates that server and all
 its kernels**, including computations in other notebooks attached to the same
 server. The managed UUID selects a server, not a particular notebook or kernel.
-Scripts must supply the exact UUID and `--yes` to authorize the action.
+In ordinary interactive use, the confirmation offers **stop and archive**:
+after a confirmed stop, JupyHop retains evidence in the archive and releases the
+name/slot. You do not need to remember a second housekeeping command. Use
+--keep-record to stop without archival. An uncertain stop never triggers archive.
+If stop succeeds but archive cannot be confirmed, the feedback separates those
+outcomes and tells you to retry archive on that same UUID.
+
+Scripts still require the exact UUID and --yes, and remain stop-only by default.
+Add --archive to explicitly authorize both phases; see [Scripting](scripting.md).
 
 Stop verifies the current host/account, runner and live process identity, then
 uses graceful pidfd signalling. Unsupported or uncertain identities are refused.
@@ -104,17 +121,42 @@ unmanaged server. An interrupted stop may have taken effect: inspect status.
 
 ## Archive inactive records
 
-After the exact managed session is observed inactive:
+For a record retained by --keep-record, a stop-only script or an interrupted
+completion, inspect the overview and select an inactive entry:
 
 ```console
-jupyhop archive workstation SESSION_ID
+jupyhop status workstation
+jupyhop archive workstation
 ```
 
 Archive requires confirmation, moves private records/settings/recovery evidence
 and releases the old display name. It does not delete notebooks, scientific
 files or possible orphaned kernels. Live or uncertain records are refused.
 There is no automatic or permanent archive deletion command.
+An exact UUID or --name can also select an entry directly. The backend verifies
+inactivity again; a displayed stale/failed state alone does not authorize a move.
 
 Archive releases the name and one of the registry's 128 active-record slots.
-Archived UUIDs are no longer returned by status/discovery and cannot be reopened
-or restored by an archive command. Preserve the private archive path if needed.
+At 128 unarchived records, 0.3.0 start refuses before creating another record;
+inspect the overview and archive a verified inactive entry to release capacity.
+It does not delete old records automatically or stop servers to make space.
+Archived UUIDs leave the active registry and cannot be reopened/restored. Inspect
+historical names/UUIDs using `jupyhop status workstation --history`; archived
+names are never selectors for resume. Preserve the returned private archive path
+if needed. History counts can be lower bounds when a page/deadline is reached.
+
+## Manage from one terminal
+
+```console
+jupyhop manage workstation
+```
+
+The menu shares the same overview, selectors and guarded operations. It offers
+open/resume, stop, archive, history, refresh and exit. Inventory/actions reuse
+the invocation's private connection; native passwords stay in OpenSSH.
+After closing an open with Ctrl-C, the foreground SSH connection may also end,
+so returning to the menu can require authentication again. An opened tunnel stays in the
+foreground. Ctrl-C in that open returns to the menu and leaves the remote server
+running; exit closes owned local connections. Stop/archive still need explicit
+confirmation, and unmanaged servers remain open-only. Manage requires a terminal;
+scripts use explicit commands/UUIDs instead.

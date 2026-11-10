@@ -18,11 +18,12 @@ jupyhop discover workstation
 jupyhop open workstation SERVER_ID
 ```
 
-For a managed server, reuse the exact UUID:
+For a managed server, reuse the exact UUID or current managed name:
 
 ```console
 jupyhop status workstation SESSION_ID
 jupyhop open workstation SESSION_ID
+jupyhop open workstation --name analysis
 ```
 
 Log in to Jupyter through its normal page and return to the existing
@@ -66,6 +67,7 @@ remote operation may already have taken effect.
 | Start | Inspect `status HOST UUID` and `discover HOST` before making a new start request |
 | Stop | Inspect the exact UUID's status; retry that UUID when appropriate |
 | Archive | Retry archive with the same UUID to reconcile the move |
+| Stop-and-archive | Inspect the reported phase. A confirmed stop can have unconfirmed archival; retry archive on the same UUID rather than starting another server |
 | Open | Run open again after restoring access; opening does not start a server |
 
 `starting` without a verified PID is unconfirmed intent, not proof of a live
@@ -88,3 +90,6 @@ promised. Keep [compatible clients and helpers](compatibility.md).
 [Update the client](upgrading.md) gives the Conda procedure and reconnection
 checks. [Session identities, states and storage](sessions.md) explains how to
 distinguish an observed stale/unreachable session from a failed SSH request.
+Interactive stop normally archives after confirmed inactivity. If the UUID has
+left active status, inspect `status HOST --history`; history is evidence rather
+than a resumable kernel. Names reused by new servers never select old archives.

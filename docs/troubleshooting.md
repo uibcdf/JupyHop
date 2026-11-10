@@ -14,10 +14,11 @@ infrastructure details and must be reviewed before sharing.
 | Missing prerequisites (4) | Read the specific error. `doctor` checks Jupyter only in its selected interpreter. A stdlib-only helper can still discover a server in another environment. Managed start additionally needs compatible Jupyter, tmux, kernels and a valid remote directory. |
 | Invalid remote JSON/schema (5) | Check login-shell banners and the supported helper/client versions. Unknown state versions are refused; do not edit schema numbers or delete state to force acceptance. |
 | No verified candidate or selected ID absent (6) | Discovery is partial. Add known `--runtime-dir` paths or repeat `--remote-python`. Rediscover a replaced endpoint. Check private metadata permissions and the supported endpoint matrix. Do not infer that no server exists. |
-| Selection failure (7) | Select on a terminal or give an exact server ID. For hostless open, inspect `list --json` and choose an explicit route with `open HOST ID`; zero fleet candidates also use 7. Names/PIDs are not session selectors. |
+| Selection failure (7) | Select on a terminal, give an exact server ID or use an exact current managed --name for open/status. Automated lifecycle still requires UUID/--yes. Hostless open/selection can also use 7; PIDs never select sessions. |
 | Forwarding failure (8) | Check SSH server forwarding policy, local loopback access and the bastion. A new owned port is selected automatically. No remote server is stopped. |
 | Lifecycle refusal (11) | Use an exact managed UUID in the selected account/host registry. Unmanaged servers cannot be stopped; live or uncertain entries cannot be archived. Recheck status and preserve evidence. |
 | Launch unconfirmed/failed (12) | Record the printed request UUID and inspect status/discover before another start. A server may already exist. Check the remote Python, workdir, version and tmux availability. |
+| Registry full (12, registry_full) | All 128 unarchived slots are used. Inspect status and archive a verified inactive entry. This refusal happens before creating the new request's record/server; existing records remain intact. |
 | Stop/archive pending (13) | The action's result is unknown. Inspect status after stop; retry archive with the same UUID. No forced kill or automatic deletion is attempted. |
 | Partial fleet result (14) | Read each host's result; successful routes remain usable. `list` returns 3 when all selected routes fail, 0 when every route was inspected, even with no ready servers. |
 | Interrupted (130) | Owned local SSH resources are closed. Remote start/stop may already have taken effect; reconcile before retrying. Closing an open forward does not stop remote Jupyter. |
@@ -25,8 +26,12 @@ infrastructure details and must be reviewed before sharing.
 ## Bad owner or permissions on SSH configuration
 
 This message comes from OpenSSH before it can use the affected configuration;
-it is different from a rejected SSH password or Jupyter login. JupyHop 0.2.0 may
-add only a generic SSH explanation, so read the preceding native SSH diagnostic.
+it is different from a rejected SSH password or Jupyter login. JupyHop 0.3.0
+classifies configuration failures and gives a conditional ownership/write remedy.
+It identifies a local default file only when the native message and actual file
+metadata support that conclusion. Unknown include/gateway locations remain
+qualified; run ordinary SSH privately to see the exact native path. Earlier
+0.2.0 feedback could be generic even when OpenSSH showed the original rejection.
 
 For an error naming your local ~/.ssh/config, inspect it on the **client**:
 
@@ -54,6 +59,9 @@ with your administrator before changing ownership. For --ssh-config, included
 files or an error from a gateway-side SSH process, identify the exact file and
 machine first. Avoid recursive permission changes or assuming every named path
 belongs to the local client. Once ordinary SSH succeeds, retry JupyHop.
+The default-file check is not a universal preflight for explicit -F files:
+OpenSSH accepted 0664 for that separate case in the experiment. JupyHop retains
+OpenSSH's policy, recommends private files and never silently repairs permissions.
 
 ## SSH times out during a start
 
@@ -118,7 +126,9 @@ such process loss. Explicitly recheck after access is restored.
 | --- | --- |
 | Path `missing` | Confirm the runtime path visible to the actual server, including its launch-time environment variables |
 | Path `unsafe` | Check ownership, private permissions and symlinks on that exact path; do not recursively chmod shared/scientific directories |
-| `entry_limit` or path `limited` | A directory scan or the retained diagnostic sample reached a bound; this label alone does not distinguish them. Verified candidates can still be found and retained. More timeout does not enlarge the sample. |
+| `sample_limit` | The retained diagnostic sample filled. Later verified candidates are still considered within scan/time bounds. It does not mark a completely scanned directory limited or count every stale server/file. |
+| `scan_limit` or path `limited` | A directory reached the 512-entry scan bound. That directory's coverage is partial. |
+| `entry_limit` | Legacy combined marker, retained alongside the more precise limits in 0.3.0. More SSH timeout cannot enlarge scan/sample limits. |
 | `time_limit`, `output_limit` | The probe deadline or output bound curtailed the result. Inspect known paths/environments and distinguish those bounds before changing a deadline. |
 | `interpreter_unavailable` | At least one selected helper could not run; diagnose that interpreter separately with doctor |
 | `managed_state_unavailable` | Managed registry access/validation failed; inspect status and private evidence, keeping incompatible/corrupt records intact |
@@ -130,6 +140,10 @@ Original runtime metadata is never deleted by discovery. Stale entries in a
 partial report are diagnostics; they do not authorize lifecycle control.
 Dozens of stale rows do not mean dozens of servers need stopping. The retained
 sample is not a count of every stale file or every live server on that host.
+Human discover/list summarize these unmanaged diagnostics by default. Use --all
+for individual rows or --json for the complete bounded result. Managed records
+remain visible, including stopped/review entries; inspect status for their
+overview and archive history.
 
 ## tmux works interactively but start reports missing tmux
 
@@ -176,6 +190,10 @@ when needed. A stopped/crashed kernel's memory cannot be recovered by opening it
 notebook file.
 
 ## Reporting a problem
+
+Use [doctor --report](diagnostics.md#prepare-an-issue-attachment) for versioned
+shareable context, or the optional notebook-local check when a kernel is involved.
+Review the output before sharing; ordinary --json is not the public-report mode.
 
 Include the client/helper/Python/Jupyter/OpenSSH/tmux versions, command shape,
 exit code, platform and a redacted description of direct versus ProxyJump access.

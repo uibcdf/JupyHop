@@ -6,7 +6,7 @@ JupyHop is an open-source project for **discovering, opening, launching, managin
 
 It is designed for researchers, data scientists, developers, and small teams who already have SSH access to workstations or servers and want to work with their remote notebooks as easily as with local ones.
 
-> **Project status: 0.2.0 — operational pre-1.0 stabilization candidate.** Existing-server access, managed lifecycle/reconnection, native SSH passwords/keys, profiles, multi-host inventory and safe record archiving are implemented for supported Linux servers and CPython 3.11–3.14 clients. Persistence depends on remote OS policy; reboot/crash does not preserve kernel memory. The candidate is prepared for stabilization and **not published on PyPI**. See [observed acceptance and limits](devguide/23-02-stabilization-evidence.md).
+> **Project status: 0.3.0 — source candidate in qualification.** Session names, consistent terminal choices, a management menu, managed/history summaries, confirmed stop-and-archive and shareable diagnostics extend the tested Linux workflows. CPython 3.11–3.14 and OpenSSH remain the support boundary. The published Conda package is still 0.2.0 until separate promotion; neither version is on PyPI. See [implementation, observed tests and pending qualification](devguide/30-03-implementation.md).
 
 Start with the [public documentation](https://www.uibcdf.org/jupyhop/).
 Its sources include the [quickstart](docs/quickstart.md), [compatibility matrix](docs/compatibility.md)
@@ -21,8 +21,9 @@ workflows from unmeasured physical transitions and site policies.
 The [physical home-client pilot](devguide/28-02-physical-client-pilot.md) now
 confirms managed/manual access, same-kernel reconnection and concurrent sessions
 through a real SSH gateway. Its usability findings inform the
-[0.3.0 design proposal](devguide/29-03-session-ux-design.md); those improvements
-are not implemented in 0.2.0.
+[0.3.0 design baseline](devguide/29-03-session-ux-design.md) and
+[implementation report](devguide/30-03-implementation.md). Those improvements
+are not available in the older 0.2.0 package.
 Version 0.2.0 is available on the [uibcdf Conda channel](https://anaconda.org/uibcdf/jupyhop)
 for Linux. Distribution follows the shared UIBCDF build/test/staging/promotion
 workflow; see [publication evidence](devguide/24-conda-publication.md).
@@ -51,9 +52,10 @@ jupyhop open workstation --no-browser
 
 `open` opens the normal Jupyter login page. Enter your existing password/token.
 Opening existing servers does not retrieve their credentials. Keep the command running.
-Ctrl-C closes its tunnel, leaving the remote server alone. Multiple candidates
-require a terminal selection or an exact ID from `discover`; scripting never
-chooses arbitrarily. No JupyHop TOML configuration is required.
+Ctrl-C closes its tunnel, leaving the remote server alone. A terminal chooser
+appears even for one ready candidate. Exact IDs or managed `--name` select
+directly; scripts retain the one-candidate behavior and refuse ambiguity.
+No JupyHop TOML configuration is required.
 
 To launch a new owned server, select an existing remote Jupyter Python and
 directory. The remote host needs `tmux` on its noninteractive SSH PATH:
@@ -76,11 +78,35 @@ argument exists. If a private prompt cannot hide input, it refuses safely.
 a local tunnel; otherwise the same attached browser/no-browser flow is used.
 
 `discover`/`list` label verified owned servers as `managed` and preserve a stable
-session ID. `open` accepts that exact ID. `status` observes the managed registry and reconciles
-readiness after an interrupted start. `stop` requires an exact managed UUID and
-terminal confirmation; scripts must explicitly use `--yes`. Stopping terminates
-that server's kernels and computations. Unmanaged IDs, names and PIDs cannot
-authorize stop. Discovered servers are never adopted, stopped or restarted.
+session ID. `open` accepts that exact ID or managed `--name`. `resume` is an alias
+for open. Human `status HOST` shows a read-only summary of ready, stopped awaiting
+archive, review and history records; `--history` lists bounded archived evidence.
+Exact-UUID status and legacy status JSON retain interrupted-readiness reconciliation.
+
+Terminal stop/archive can select by exact managed name or a numbered chooser;
+the target is pinned to its UUID and revalidated. Stop's confirmation normally
+offers both stop and archive, with `--keep-record` for stop-only use. Only a
+confirmed stop proceeds to the existing inactivity guard/archive move, releasing
+the name/slot while retaining evidence and notebooks. Uncertain/partial outcomes
+report the phase and same-UUID recovery step.
+
+Scripts retain exact UUID plus `--yes` and stop-only behavior; `--archive`
+explicitly authorizes compound completion. Stop terminates all kernels and
+computations of that server. Names are conveniences, not credentials/authority;
+unmanaged IDs and PIDs cannot authorize stop. Discovered servers are never
+adopted, stopped or restarted.
+
+```console
+jupyhop open workstation --name analysis
+jupyhop resume workstation
+jupyhop status workstation --history
+jupyhop manage workstation
+```
+
+Manage reuses those same inventory/select/confirm/dispatch operations. An open
+stays in the foreground; Ctrl-C returns to the menu, possibly requiring fresh
+SSH authentication after its foreground master ends. Exit closes owned local
+connections. No detached tunnel service is introduced.
 
 Optional launch profiles and host preferences use TOML:
 
@@ -312,7 +338,8 @@ See [security and reliability](devguide/04-security-and-reliability.md), [discov
 ## Development roadmap
 
 M0–M6 acceptance is recorded for the documented support boundary, including
-hosted GitHub CI. Version 0.2.0 prepares those workflows for pre-1.0 stabilization.
+hosted GitHub CI. Version 0.2.0 establishes the operational baseline; the 0.3.0
+source candidate adds the post-pilot session/diagnostic usability increment.
 The full roadmap is:
 
 1. **M0 — Validate design assumptions:** discovery, auth handoff, process managers, tunnel lifetime, and remote helper.
@@ -330,6 +357,9 @@ For detailed milestones, acceptance criteria, design decisions, and known constr
 
 Use Linux, Python 3.11–3.14 and the OpenSSH client.
 For the published client:
+
+This channel command currently installs the older 0.2.0 interface. Use reviewed
+0.3.0 source/wheel below for the new menu/names until its separate promotion.
 
 ```console
 mamba create -n jupyhop -c uibcdf -c conda-forge python=3.14 jupyhop=0.2.0
@@ -362,7 +392,8 @@ or unlock keys in your agent. Scripts use `--batch` with noninteractive SSH acce
 JupyHop does not read/cache SSH passwords or edit SSH configuration.
 `--ssh-config PATH` passes a specific file to OpenSSH; `--timeout SECONDS` bounds each probe/
 network startup (default 20), while `--ssh-auth-timeout SECONDS` bounds terminal
-authentication (default 120). Each route authenticates once per invocation.
+authentication (default 120). Each live private connection authenticates once;
+manage can authenticate again after explicitly closing an open/master with Ctrl-C.
 
 The selected remote Python must be >=3.11. Doctor reports its installed Jupyter
 Server/core versions, the runtime directory visible to that interpreter, the
@@ -371,6 +402,10 @@ produce a diagnostic and exit 4; choose the existing environment using its
 absolute Python path. No remote package, helper, server or tunnel is installed
 or started by doctor. Environment activation is unnecessary; doctor does not
 list running servers or prove their absence/readiness.
+`doctor --report` adds normalized local/selected-remote support context with
+identities, paths and credentials excluded; review before sharing. It uploads
+nothing. See [Diagnostics](docs/diagnostics.md) for the optional notebook API and
+a copyable stdlib cell that needs no remote JupyHop installation.
 
 Discovery uses Jupyter's runtime path when available and standard Linux defaults
 otherwise. For custom or separate environment paths, explicitly extend coverage:
@@ -418,7 +453,8 @@ State lives under `$XDG_STATE_HOME/jupyhop/hosts/<host-account-scope>/sessions/I
 (default `~/.local/state`). Host scope hashes the Linux machine ID and account
 UID so shared HOME directories do not merge different hosts. State directories
 are private 0700; files are 0600. Registry schema 1.0 is separate from wire
-protocols (start 1.2, discovery/status/stop 1.3, archive 1.4). Incompatible state
+protocols (start 1.2, status/stop 1.3, archive 1.4, read-only managed/history
+inventory 1.5, discovery 1.6). Incompatible state
 is refused without automatic migration. No existing
 Jupyter configuration, scientific environment or SSH config is rewritten.
 

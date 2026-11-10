@@ -1,8 +1,12 @@
 # Quickstart
 
 JupyHop's client runs on Linux with CPython 3.11–3.14 and OpenSSH. It needs no
-local Jupyter and no Python runtime dependencies. Version 0.2.0 has not been
-published to PyPI; Conda distribution is described below.
+local Jupyter and no Python runtime dependencies. These guides describe the
+0.3.0 source candidate; its qualification is tracked in the
+[implementation report](https://github.com/uibcdf/jupyhop/blob/main/devguide/30-03-implementation.md).
+The published Conda release remains 0.2.0 until separate promotion. Its older
+interface lacks the new names/menu/overview flows; use a reviewed 0.3.0 source or
+wheel for those, as described in [Installation](installation.md#source-or-reviewed-wheel).
 
 ## Install the client
 
@@ -51,8 +55,9 @@ jupyhop open workstation
 ```
 
 No JupyHop configuration file, remote JupyHop package, tmux or manual tunnel/port
-selection is needed for this workflow. Select a server on the terminal if several
-are found; scripts use its exact ID from `discover`.
+selection is needed for this workflow. Select a server on the terminal even when
+one is found; an exact ID or managed --name opens directly. Scripts retain
+single-candidate behavior and must select explicitly when ambiguous.
 
 Log in on Jupyter's normal page with the server's existing password/token. JupyHop
 does not retrieve it. Obtain credentials only through the server's authorized
@@ -85,12 +90,13 @@ jupyhop start workstation --server-python /absolute/remote/env/bin/python --work
 ```
 
 Choose a strong new session password when privately prompted. This password is
-independent of SSH; remember it for future clients. Copy the returned session ID.
+independent of SSH; remember it for future clients. The returned UUID remains
+available through status; you can use the chosen name or a terminal selector.
 The server password hash is stored privately on the remote account; the plaintext
 is not retained. Scripts use `--password-stdin` with a protected credential source.
 
 ```console
-jupyhop open workstation SESSION_ID
+jupyhop open workstation --name analysis
 ```
 
 Work in Jupyter, then close the browser and press Ctrl-C in the CLI. From the
@@ -98,7 +104,7 @@ original or another authorized client:
 
 ```console
 jupyhop status workstation SESSION_ID
-jupyhop open workstation SESSION_ID
+jupyhop resume workstation
 ```
 
 Authenticate again and reconnect to the original notebook/kernel. If the server
@@ -109,15 +115,22 @@ tmux workloads. JupyHop does not change systemd/linger/PAM policy or auto-restar
 ## Stop and retire a managed entry
 
 ```console
-jupyhop stop workstation SESSION_ID
-jupyhop archive workstation SESSION_ID
+jupyhop stop workstation
 ```
 
-Each action requires its exact managed UUID and terminal confirmation (`--yes`
-explicitly authorizes it in scripts). Stop terminates that server and its kernels.
-Archive requires observed inactivity and moves private records/settings/recovery
-evidence, releasing the old name. It does not delete scientific files or stop
-orphaned kernels. Neither action can control a manually launched server.
+Choose the managed session and confirm **stop and archive**. Stop terminates that
+server and all its kernels; after confirmed stop, archive retains evidence and
+releases its name. Use --keep-record to keep a stopped record. Scripts retain
+exact UUID plus --yes and stop-only behavior unless --archive is explicit.
+Archive does not delete scientific files or stop orphaned kernels. Neither action
+can control a manually launched server. `jupyhop manage workstation` offers the
+same actions in one terminal with an overview of retained/history records.
+
+After completion, inspect the retained history:
+
+```console
+jupyhop status workstation --history
+```
 
 The [session reference](sessions.md) explains identifiers, observed states and
 where active/archived records live. An exit-0 status query can describe a stale
@@ -127,3 +140,5 @@ If an SSH/start/stop request is interrupted, the remote outcome can be unknown:
 inspect `status`/`discover` before starting again. Retry an interrupted archive
 with the same UUID. Read [troubleshooting](troubleshooting.md) for failure codes
 and [Configuration](configuration.md) for optional profiles and multiple hosts.
+For a reviewable bug-report attachment or a notebook-local check, see
+[Diagnostics](diagnostics.md).

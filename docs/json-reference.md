@@ -1,9 +1,10 @@
 # JSON output reference
 
-This page describes the **0.2.0 CLI output**, after validation of remote replies.
-It is distinct from the internal SSH wire envelopes. Only `doctor` retains
+This page describes **0.3.0 CLI output**, after validation of remote replies.
+It is distinct from the internal SSH wire envelopes. Ordinary `doctor --json` retains
 `protocol`, `operation` and `data` at the top level; do not expect those keys in
-the other commands' JSON. `list` has its own local `version: 1` contract.
+the other commands' JSON. Doctor --report is a separate support shape; `list`
+has its own local `version: 1` contract.
 
 Examples below use invented identities and paths. The empty results demonstrate
 shape; they do not claim no remote servers exist. Check exit status and stderr:
@@ -109,6 +110,9 @@ succeed idempotently; it does not restore a session.
 `server` entry. Unconfirmed/failed launches can still emit JSON with their request
 ID and null `server`/`identity`; inspect the nonzero exit and reconcile that UUID
 before another start. `record_path` can be null when no record was established.
+The known registry_full refusal reports failed with null record_path/server:
+0.3.0 did not create a 129th record. It is distinct from an unknown transport
+outcome; inspect/archive existing inactive entries to release capacity.
 
 `open HOST ID --json --no-browser` emits a single object and then stays attached:
 
@@ -143,3 +147,57 @@ Normal output excludes credentials. Identities, local URLs and remote paths stil
 need redaction before sharing. The [version policy](compatibility.md#client-wire-and-state-versions)
 defines the independent client/wire/registry contracts; validate the fields your
 script needs and handle null/non-ready/per-route-error results explicitly.
+
+## Managed overview and history
+
+`status HOST --history --json` explicitly selects the new version-1 inventory
+shape. Human unfiltered status uses the same read-only observations; legacy
+status --json without --history keeps the earlier shape above.
+
+```json
+{
+  "version": 1,
+  "host": "workstation",
+  "identity": {"uid": 1000, "user": "researcher", "scope": "aaaaaaaaaaaaaaaaaaaaaaaa"},
+  "sessions": [],
+  "complete": true,
+  "history": {"entries": [], "offset": 0, "next_offset": null, "complete": true},
+  "error": null,
+  "history_error": null,
+  "summary": {"ready": 0, "stopped": 0, "review": 0, "unarchived": 0, "archived": 0, "archive_count_exact": true}
+}
+```
+
+This is a successful empty managed/history observation, not evidence about
+unmanaged servers. Active entries contain id, name, state and reason. History
+entries contain id, name and record_state; record_state is retained evidence,
+not the current process state or an authorization to resume.
+
+`complete` applies to active managed enumeration. Unknown active counts are null,
+not zero. History has its own completeness/error fields. A partial archive count
+is the number of verified entries on the returned page, a lower bound, not the
+total; check archive_count_exact. Pages contain at most 64 entries; follow a
+non-null next_offset using --history-offset (0–4096). Enumeration can change
+between requests. A later page is never an exact total, even at its end.
+
+## Compound completion and support reports
+
+`stop HOST UUID --yes --archive --json` uses version 1 with host, id, stop and
+archive fields. Stop/archive contain their respective validated legacy reports;
+archive remains null when it was not attempted or no reply was obtained. A
+reported phase failure adds an allowlisted error object. Inspect exit status
+and both phases: stop can succeed while archival is unconfirmed. An SSH failure
+before the first stop reply can still produce no JSON. Ordinary stop --yes
+without --archive retains its original output and stop-only semantics.
+
+`doctor HOST --report` emits report_version 1 with context, client, remote,
+outcome and privacy. Versions are normalized; identities/paths/credentials are
+not copied into it. Remote can be null on failure while client remains useful.
+The optional notebook API uses the same report_version with its own kernel
+context/package-metadata shape; see [Diagnostics](diagnostics.md). Neither form
+uploads or creates kernels. Ordinary doctor --json remains the private-context
+diagnostic described above.
+
+```console
+jupyhop doctor workstation --report --json
+```

@@ -14,6 +14,16 @@ schema 1.0; it atomically moves inactive evidence into `archive/UUID`, without
 rewriting records/runners or deleting data. List inventory and local TOML each
 have separate version-1 contracts. Migrations and automatic deletion remain absent.
 
+The 0.3.0 source candidate adds a read-only inventory operation at wire 1.5 and
+discovery diagnostics at 1.6. Inventory retains the 128 active-record bound and
+returns 64-entry archive pages with bounded offsets/deadlines; unavailable/partial
+counts remain explicit. Discovery distinguishes sample_limit and scan_limit while
+keeping entry_limit as a legacy marker. Status/stop 1.3, archive 1.4 and stored
+schema 1.0 are unchanged. Each client still sends its own bounded source, so an
+old client does not need a remote package update or new enum parser. Installed
+0.2.0-to-candidate qualification is separate from the older observations below;
+see [30](30-03-implementation.md).
+
 M6 retains these contracts. Managed start now requires Server >=2.20,<3 and can
 return allowlisted `unsupported_server_version` before registry creation. Existing
 server access is validated separately. Client package versions do not update

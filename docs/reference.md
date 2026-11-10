@@ -11,6 +11,7 @@ scripting
 json-reference
 sessions
 compatibility
+diagnostics
 troubleshooting
 security
 ```

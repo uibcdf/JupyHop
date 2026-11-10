@@ -5,6 +5,13 @@ Date: 2026-11-10. Status: design proposal following the completed
 client remains 0.2.0. None of the new interfaces below is implemented by this
 document. Existing [UX](12-user-experience.md) and CLI contracts describe 0.2.0.
 
+This is the historical design baseline, recorded before implementation. Current
+source behavior and acceptance are now tracked in
+[30](30-03-implementation.md) and the updated CLI/UX specifications. In particular,
+the selected completion flags are --archive/--keep-record; the menu's Ctrl-C may
+require fresh SSH authentication, and the chooser retains full UUIDs for reliable
+copying/confirmation. The published Conda baseline remains 0.2.0 until promotion.
+
 ## Goal and priorities
 
 Make normal session access and completion understandable without remembering

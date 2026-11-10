@@ -28,7 +28,7 @@ process-manager availability. Missing Jupyter in the system Python does not
 prove there is no running Jupyter server in another environment. The system
 Python may still serve as the discovery helper.
 
-Doctor's systemd-user capability result is diagnostic. Managed launch in 0.2.0
+Doctor's systemd-user capability result is diagnostic. Managed launch
 uses private tmux; a systemd backend is not implemented.
 
 ### Match the interpreter's import mode

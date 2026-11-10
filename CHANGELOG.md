@@ -1,5 +1,33 @@
 # Changelog
 
+## 0.3.0 — session usability candidate
+
+- Always show a terminal chooser for open without a selector, including a single
+  candidate. Add exact managed --name selection, resume as an open alias and a
+  thin manage menu over the same guarded operations. Name/number choices pin UUIDs.
+- Show managed ready/stopped/review counters, retained slot use and bounded archive
+  history. Unknown counts remain unknown; partial history is a lower bound.
+- Reject a new start atomically when 128 unarchived records already exist, before
+  creating a 129th entry. Explain how to release capacity with verified archive.
+- Confirm interactive stop and archive together, retaining evidence and releasing
+  names after confirmed stop. Add --keep-record; UUID --yes scripts retain stop-only
+  behavior unless --archive explicitly authorizes both phases. Report partial
+  completion and same-UUID recovery without automatically retrying uncertain writes.
+- Classify SSH ownership/write failures and connection timeouts with conditional
+  remedies. Capture bounded stderr while native passwords stay on /dev/tty; no
+  automatic permission repair or duplicate OpenSSH policy is introduced.
+- Distinguish discovery sample/scan limits and summarize obsolete unmanaged rows
+  in ordinary output. --all/JSON retain detailed bounded inspection; metadata and
+  endpoint/ownership checks are preserved.
+- Add shareable doctor --report, optional notebook kernel_report and a stdlib
+  diagnostic cell, without mandatory remote JupyHop installation or dependencies.
+- Preserve registry schema 1.0 and live runners. Qualification includes actual
+  installed upgrades from 0.2.0 source as well as the historical 0.1.0 baseline.
+
+Source implementation/qualification is tracked in [30](devguide/30-03-implementation.md).
+The public Conda package remains 0.2.0 until a separate approved promotion; no
+0.3.0 publication or new physical infrastructure pilot is claimed here.
+
 ## 0.2.0 — pre-1.0 stabilization
 
 - Support native terminal SSH passwords/passphrases and keys/agent through one

@@ -99,7 +99,7 @@ has been performed.
 
 **Operational candidate prepared:** [scope, acceptance gates and safe pilot](22-02-stabilization.md)
 and [observed evidence](23-02-stabilization-evidence.md).
-The current package is 0.2.0, unpublished on PyPI. Real manual/managed sessions, a
+The operational baseline package is 0.2.0, unpublished on PyPI. Real manual/managed sessions, a
 7200-second disconnected workload, native terminal/password workflows and the
 installed-client upgrade are covered by the recorded experiments. The maintainer
 requires both native SSH passwords and keys/agent; headless/--batch requires
@@ -115,15 +115,17 @@ uibcdf channel workflow and observed publication status.
 This is stabilization of M0–M6, not a dependency on optional M7 features. Keep the
 finite acceptance matrix distinct from a claim of universal compatibility.
 
-## 0.3.0 — Session usability proposal
+## 0.3.0 — Session usability candidate
 
 The [post-pilot proposal](29-03-session-ux-design.md) addresses friendly names,
 consistent interactive selection, inventory/history summaries, explicit
-stop-and-archive completion and actionable diagnostics. This is unimplemented
-design work, with compatibility and acceptance requirements. Existing 0.2.0
-UUID scripting, unmanaged ownership boundaries and foreground SSH lifetimes
-remain the current contract. Review shared selectors/inventory before adding a
-thin manage menu; a resume alias is optional and never restarts a stopped kernel.
+stop-and-archive completion and actionable diagnostics. These are now implemented
+in source; [30](30-03-implementation.md) records local results and pending
+hosted/installed-candidate qualification. The thin manage menu reuses the shared
+layer; resume is only an open alias and never restarts a stopped kernel. Existing
+UUID/--yes scripting, unmanaged ownership and foreground SSH lifetime guards are
+retained. Package publication is a separate approved action; the Conda baseline
+remains 0.2.0 until promotion. Optional M7 platforms/services remain outside scope.
 
 ## M7 — Optional extensions (separate scope decisions)
 

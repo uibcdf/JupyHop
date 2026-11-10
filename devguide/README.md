@@ -10,6 +10,9 @@
 > native SSH passwords/keys, endurance and installed-upgrade acceptance.
 > [Conda distribution status](24-conda-publication.md) is tracked separately;
 > no PyPI publication is included.
+> Source candidate **0.3.0** adds the post-pilot session/diagnostic UX. Its
+> [implementation and qualification](30-03-implementation.md) are separate from
+> the published 0.2.0 package and the original design proposal.
 
 JupyHop is a lightweight, SSH-native tool to launch, discover, manage, and reconnect to remote Jupyter sessions without deploying JupyterHub.
 

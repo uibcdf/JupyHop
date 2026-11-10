@@ -23,7 +23,9 @@ Keep explicit decisions separate from hypotheses. Add dates, rationale and rejec
 
 - **D07 scope:** best-effort current-user unmanaged discovery/open is part of M2. Exhaustive discovery, unmanaged adoption and lifecycle control are deferred.
 - **D06 secrets:** never store unprotected plaintext secrets or emit them in logs; restricted remote-account storage of required credentials remains a separately reviewed option (not approved by default).
-- **CLI ambiguity:** `open host` may choose exactly one validated candidate; multiple candidates require explicit selection. `stop` is limited to managed sessions and must never guess when ambiguous.
+- **CLI ambiguity:** the original auto-open-one rule is superseded for terminal
+  0.3.0 use by D49 below; noninteractive compatibility remains. Stop stays limited
+  to explicitly selected, verified managed identities.
 - **Portability:** the same alias may have different OpenSSH routing on different clients; an alias alone is not a global host identity.
 
 ## M0 decisions (2026-11-07)
@@ -116,6 +118,22 @@ Experiments, internal review and release limits: [20](20-m6-beta-readiness.md).
 | D47 | Public documentation uses Sphinx/MyST/PyData with CLI help from the actual parser | Reuse Markdown and a small docs-only toolchain. A directive constructs the internal parser without remote operations; checked help replaces duplicate option lists. See the documentation report. |
 | D48 | Publish documentation through official Pages artifacts | The reviewed shared Sphinx publisher targets a force-updated generated branch. This new site uses immutable official actions, a read-only build and Pages/OIDC deployment permissions; no source-branch mutation or package publication. See the documentation report. |
 
+## 0.3.0 decisions (2026-11-10)
+
+Context, alternatives, consequences and observed tests: [design baseline](29-03-session-ux-design.md)
+and [implementation evidence](30-03-implementation.md). These source decisions
+do not claim package publication or a new physical-site pilot.
+
+| ID | Decision | Rationale / security boundary |
+| --- | --- | --- |
+| D49 | Shared terminal selectors, exact managed --name, resume alias and thin manage | Consistent one/many choices; pin UUID before confirmation and revalidate through the existing backend; scripts never mutate by name |
+| D50 | Read-only inventory wire 1.5 and bounded private archive pages | Make retained/history status visible without new schema/index/daemon; incomplete counts stay unknown/lower bounds |
+| D51 | Explicit interactive stop-and-archive confirmation; keep stop-only automation | Remove forgotten manual housekeeping while retaining forensic evidence; archive only after confirmed stop and the existing inactivity guard; separate phase results |
+| D52 | Allowlisted shareable support report and optional local kernel collector | Context/versions without arbitrary log/environment scrubbing or automatic upload; no mandatory remote package |
+| D53 | Discovery wire 1.6 distinguishes sample and scan limits | Preserve bounds and live-endpoint retention, improve wording/aggregation; never delete stale metadata |
+| D54 | Bounded master stderr with native /dev/tty input; trust OpenSSH permission policy | Curate known errors without exposing raw output; default config uses passwd identity, explicit -F differs experimentally and must not be preemptively rejected |
+| D55 | Explicitly discard only the managed route after open's Ctrl-C | Terminal SIGINT can end its foreground SSH master; fresh menu inventory may reauthenticate. Unexpected lost sockets still cannot reconnect/fall back silently |
+
 ## Decisions remaining for their implementation milestones
 
 | Topic | Options / questions | Evidence needed |
@@ -137,10 +155,7 @@ Experiments, internal review and release limits: [20](20-m6-beta-readiness.md).
 | Broader URL variants | IPv6, HTTPS and TLS hostname mismatch | IPv4 HTTP/simple ASCII base paths and browser WebSockets pass; additional variants require live tests |
 | Broader discovery coverage | Additional Conda layouts and legacy runtime formats | Explicit multiple runtime dirs/interpreters and deduplication pass; exhaustive inventory is outside MVP |
 | Browser/tunnel edge cases | Suspend/resume and CLI upgrade during an attached session | Browser/tunnel closure and independent reconnect pass; physical client transitions remain unmeasured |
-| Interactive session selection | Names, consistent single/multiple-candidate choosers, thin manage menu | Physical pilot exposes UUID/picker friction; proposed 0.3.0 behavior and identity guards are in [29](29-03-session-ux-design.md), not implemented |
-| Session inventory/history visibility | Managed state counters and bounded archive inspection | Current status lists unarchived records but has no counts/archive inventory; protocol shape and bounded history reads need review |
-| Interactive completion | Explicitly confirmed stop-and-archive with separate phase outcomes | Manual archive is easily forgotten; retain stop-only automation, proof of inactivity and evidence; no automatic age-based deletion |
-| Actionable diagnostics | SSH permission classification, public reports, discovery limit distinctions | Pilot findings in [28](28-02-physical-client-pilot.md); runtime changes require isolated native-auth/redaction regressions, not assumptions from later successful retries |
+| Broader session UX | Rich environment/workdir presentation, bulk archive and history retention | 0.3.0 implements bounded names/menu/history/completion in [30](30-03-implementation.md); broader automation/deletion needs separate evidence |
 
 ## Architectural decision record format
 

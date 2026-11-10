@@ -8,12 +8,14 @@ M3 implements [managed start/readiness](17-m3-managed-launch.md) with password
 prompt/protected stdin, explicit server Python/workdir, no-open and attached
 browser flows. M4 implements managed status and verified stop with exact UUIDs;
 M5 adds named executable/workdir profiles, multi-host inventory/selection and
-inactive-record archive. Name-based session resolution remains unimplemented.
+inactive-record archive. The 0.3.0 source candidate adds name resolution and the
+shared inventory/selector/completion layer; [30](30-03-implementation.md) records
+implementation and exact qualification evidence.
 
 The [physical-client pilot](28-02-physical-client-pilot.md) motivates a separate
 [0.3.0 proposal](29-03-session-ux-design.md), including an interactive chooser even
-for one candidate and visible retained/archive inventory. The rules below remain
-the shipped 0.2.0 behavior until implementation and acceptance of a new contract.
+for one candidate and visible retained/archive inventory. The current source
+rules below distinguish that candidate from older 0.2.0 behavior/publication.
 
 M6's [quickstart](../docs/quickstart.md), [troubleshooting](../docs/troubleshooting.md)
 and [compatibility policy](../docs/compatibility.md) give the beta's current user
@@ -32,7 +34,10 @@ Prerequisites: the user already has a working OpenSSH alias; the current remote 
 jupyhop open workstation
 ```
 
-Expected: connect using OpenSSH, find validated candidates, choose only if ambiguous, establish a local loopback forward and open an authenticated browser view. If auth requires a password, ask the user to log in normally; if discovery is incomplete, say so clearly.
+Expected: connect using OpenSSH, find validated candidates, show a terminal
+chooser even for one ready server, establish a local loopback forward and open
+the normal authenticated view. Explicit ID/name selects directly. If discovery
+is incomplete, say so clearly; noninteractive ambiguity never guesses.
 
 No mandatory TOML config, manually selected port range, server daemon or admin
 account is required in the supported case. The helper needs an existing Linux
@@ -56,11 +61,14 @@ jupyhop doctor workstation
 Named `--env` profiles use optional TOML v1; CLI values override profile defaults.
 `list` without aliases uses configured hosts; hostless `open` selects across those
 routes. Ambiguity requires a terminal or explicit `open HOST ID`. Stop warns about terminating kernels and needs
-confirmation or explicit `--yes`. It cannot select by name, PID or unmanaged ID.
+confirmation. Terminal names/choices resolve once to an exact UUID; scripts retain
+exact UUID/--yes. PIDs and unmanaged IDs cannot authorize lifecycle actions.
 The server kernel list can differ from its launcher environment. Never silently
 install or activate arbitrary environments.
 
-Archive needs the same exact-UUID confirmation policy and proof of inactivity.
+Archive needs pinned-UUID confirmation and proof of inactivity. Interactive stop
+offers stop and archive together, while --keep-record retains the stopped record;
+--yes scripts stay stop-only unless --archive explicitly authorizes both phases.
 It moves private evidence without deleting data, releases the active name and
 record budget, and never stops orphaned kernels. Unconfirmed/live state is refused.
 List JSON uses a version-1 per-host envelope and exit 14 for partial host failures;
@@ -70,15 +78,22 @@ attempted, and one failed host does not hide results from reachable aliases.
 ## Selection and ambiguity rules
 
 - **Zero candidates:** distinguish complete empty result from incomplete discovery/unreachable host; provide diagnosis and next steps.
-- **One valid candidate:** `open host` may select it automatically.
+- **One valid candidate:** terminal open without a selector shows it for explicit
+  choice; a direct ID/name bypasses the picker. Headless behavior stays compatible.
 - **Multiple candidates:** interactive picker on a TTY; noninteractive calls return an ambiguity error with safe identifiers, not a random selection.
 - **Unmanaged candidate:** open if authorized; refuse `stop`.
-- **`stop host`:** always require an exact managed UUID and confirmation (or
-  explicit `--yes`); never infer a selection, even for a single server.
+- **`stop host`:** a terminal offers eligible managed records and confirmation,
+  including the pinned UUID and kernel effects. Scripts require UUID/--yes.
 - **Name collisions:** display session ID and host/account context; refuse unsafe ambiguous resolution.
 - **Idempotent open:** never restart an already-running remote server just to create a tunnel.
 - **Missing browser:** `--no-browser` provides a documented headless method without printing secrets in generic diagnostics.
 - **Network change:** clearly indicate whether SSH cannot reach the target; don't pretend remote server is stopped.
+
+Managed inventory summarizes ready, stopped awaiting archive, review and history
+without classifying unknown as stopped. Read-only bounded history is explicitly
+partial when an exact count cannot be established. Manage reuses the same logic;
+an opened forward stays attached, Ctrl-C closes its owned route and returns to
+the menu (possibly reauthenticating), and exit closes owned connections.
 
 ## Tunnel lifecycle UX — design decision
 
@@ -92,6 +107,9 @@ The user must know whether `jupyhop open` blocks to keep a forward alive, detach
 - `doctor` distinguishes client SSH failure from remote Jupyter missing, runtime path unsupported, no process manager and version mismatch.
 - Noninteractive mode must never block on an invisible selection or confirmation prompt.
 - On interrupted start, report that remote session state may require reconciliation rather than claiming it stopped.
+- Doctor --report exports only allowlisted support context and retains local
+  results on a failed remote check. Ordinary JSON still needs identity/path
+  redaction. Optional notebook diagnostics require no SSH or kernel creation.
 
 ## Zero-config principle and advanced config
 

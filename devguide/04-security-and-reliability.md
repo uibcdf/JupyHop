@@ -50,6 +50,22 @@ No PID-only fallback, tmux kill, SIGKILL escalation or credential retrieval is
 used. An interrupted stop retains intent; retry revalidates it. State/settings
 are retained rather than risk deleting recovery evidence for orphaned kernels.
 
+0.3.0 adds terminal names/choices above those same guards. Selection is pinned to
+the UUID before confirmation; name reuse cannot retarget it. Read-only SSH
+inventory may precede selector confirmation, but no stop/archive mutation does.
+Exact-UUID commands retain confirmation before SSH. Interactive compound completion
+archives only after confirmed stopped state, then applies the existing inactivity
+guard. Scripts need explicit --archive to add that phase to UUID/--yes stop.
+Overview/history reads never archive or delete; unknown counts stay unknown.
+
+The owned SSH master captures bounded stderr and echoes only a fixed retry
+notice; native password input remains on /dev/tty. Known local default-config
+errors are distinguished only with matching native diagnostic and file metadata.
+Explicit -F/include/jump ambiguity does not justify a local-file guess or a second
+SSH permission policy. No auto chmod/chown or raw diagnostic reflection is added.
+Public support reports collect allowlisted normalized facts rather than arbitrary
+logs, environments or notebook state. Nothing is uploaded automatically.
+
 M5's [archive policy](19-m5-scientific-workflows.md) moves only a verified inactive
 session directory under the same private registry. It releases the active name
 and record budget, preserves hashes/connection evidence and never deletes files

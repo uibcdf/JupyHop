@@ -18,7 +18,7 @@ jupyhop status workstation SESSION_ID --json
 | --- | --- |
 | Managed `id` | A 32-character lowercase hexadecimal UUID, printed without hyphens; use the exact value for open/status/stop/archive on that host/account |
 | Unmanaged `id` | A 24-character hexadecimal observation ID from discovery; use it for open while that endpoint remains verified |
-| `name` | A managed display name; it cannot select a session for open or lifecycle actions |
+| `name` | Exact current managed name, selectable with --name; lifecycle use requires a terminal and confirmation |
 | `observed_id` | Endpoint observation identity; it is not lifecycle authority |
 | PID or port | Diagnostic information; neither selects or authorizes a session |
 
@@ -31,6 +31,8 @@ unmanaged server instead of assuming an old observation ID still identifies it.
 Managed names contain 1–64 ASCII letters, digits, underscores, dots or hyphens,
 starting with a letter or digit. Names remain reserved until explicit archive,
 including after stop. A new session reusing an archived name has a new UUID.
+Names/UUIDs are identifiers, not Jupyter passwords or tokens. Name/number choices
+are pinned to the exact UUID before an action; name reuse cannot retarget it.
 
 ## Interpret an observed state
 
@@ -58,7 +60,7 @@ new state for the remote session. Within a successful remote report,
 `unreachable` can mean that the process exists but its endpoint/provenance cannot
 be verified. Read the accompanying `reason` and per-host error fields.
 
-`status` can reconcile an interrupted launch's private readiness record. It does
+Exact-UUID status and legacy status --json can reconcile an interrupted launch's private readiness record. They do
 not restart a server or run a kernel health check. **Exit 0 means the status
 request succeeded**, even when its server state is `stale`, `failed` or
 `unreachable`. Scripts must inspect `servers[].state`; see
@@ -92,10 +94,31 @@ At most 128 active managed records are retained per host/account registry,
 including inactive records. Use [archive](managed-sessions.md#archive-inactive-records)
 after verified inactivity to release names and this budget. Archives retain
 evidence and possible orphaned-kernel recovery data; they are not running-session
-backups. There is no archive list/restore/delete command or automatic restart.
+backups. There is no restore/delete command or automatic restart.
 
-To inspect the current unarchived registry, use `jupyhop status workstation`.
-It includes stopped entries, which continue reserving their names and slots
-until explicit archive. Version 0.2.0 has no summary counters or archive inventory;
-an empty status does not mean that no historical archives exist. After confirming
-inactivity, use the [manual archive step](managed-sessions.md#archive-inactive-records).
+## Overview and history
+
+```console
+jupyhop status workstation
+jupyhop status workstation --history
+```
+
+The read-only overview shows verified ready servers, stopped records awaiting
+archive, other records requiring review, used unarchived slots out of 128, and
+archived history. It includes stopped entries until archive; an empty active
+registry does not imply an empty history. In ordinary interactive use,
+[stop offers archive in the same confirmation](managed-sessions.md#stop-explicitly).
+
+An unavailable registry produces unknown counters. Starting, stale, failed and
+unreachable records belong in review, not automatically in stopped. Archive is a
+location for historical evidence, not a running-server state or resumable backup.
+Unmanaged observations are separate partial discovery results, not these managed
+counters and not an exhaustive count of live processes.
+
+History returns at most 64 entries per page. An exact archive count is available
+only when the complete history fits the first successful page. Otherwise the
+overview displays a lower bound; it never reports a partial page as the total.
+Follow the suggested status --history --history-offset command for another page
+(offset 0–4096). Pages reflect current directory enumeration, so concurrent
+archive operations can change ordering. See the [JSON contract](json-reference.md).
+Reading the overview/history does not archive or delete records.

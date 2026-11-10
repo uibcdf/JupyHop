@@ -20,7 +20,7 @@ and included files owned by you, without group/other write access. Private
 configuration commonly uses mode 0600.
 
 If OpenSSH reports **Bad owner or permissions**, inspect the exact file named in
-its error. For an ordinary local configuration owned by your account, group or
+its error. For the default local ~/.ssh/config owned by your account, group or
 other **write** permission is unsafe: 0664 is rejected, while 0644 normally
 passes this file check. Mode 0600 is the conservative recommendation. A correctly
 restricted 0700 directory does not replace the file's independent check.
@@ -28,6 +28,10 @@ An editable configuration could change the destination or commands SSH executes.
 See the [OpenSSH file requirements](https://man.openbsd.org/ssh_config#FILES)
 and [step-by-step correction](troubleshooting.md#bad-owner-or-permissions-on-ssh-configuration).
 JupyHop does not change ownership or permissions for you.
+Explicit -F/--ssh-config files can follow different OpenSSH permission checks;
+the measured -F case accepted 0664. Use private permissions anyway, but let
+OpenSSH decide rather than assuming every configuration path has the default
+file's rejection policy. Unknown include/gateway errors remain qualified.
 
 ## ProxyJump
 
@@ -65,7 +69,8 @@ private machine reachable without an existing route.
 In a controlling terminal, OpenSSH handles native password/passphrase prompts.
 Keys and agents work through ordinary OpenSSH configuration too. Each invocation
 owns a private connection per route and reuses it for its probes and forwarding;
-authentication happens once per route/hop in that invocation. Python does not
+authentication happens once per live private connection/hop. Manage can ask
+again after Ctrl-C ends an opened tunnel's foreground master. Python does not
 read, retain or supply your SSH password.
 
 Terminal authentication has a separate deadline:

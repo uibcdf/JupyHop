@@ -11,7 +11,8 @@ M3 now implements `start` using `--server-python`, `--workdir`, `--name`,
 `--password-stdin`, `--no-open` and the attached browser/no-browser flow. Its
 [exact contract](17-m3-managed-launch.md) supersedes proposed `start` examples
 below. Named `--env` profiles and multi-host inventory ship in M5; name-based
-session resolution remains unimplemented. Discovery/list/open distinguish origin.
+session resolution follows in the 0.3.0 source candidate described below.
+Discovery/list/open distinguish origin.
 
 `status` observes managed records and reconciles interrupted launch readiness.
 `stop` accepts only an exact managed UUID, confirms kernel termination (or
@@ -19,6 +20,35 @@ requires `--yes`), and sends SIGTERM through a verified pinned descriptor. It
 retains records/settings. Explicit `archive` moves inactive records/evidence,
 releases the active name/budget, and preserves possible orphaned-kernel data.
 Automatic deletion remains unimplemented.
+
+## 0.3.0 source contract
+
+The [implementation report](30-03-implementation.md) records candidate
+qualification separately from the published 0.2.0 package and historical M3–M5
+contracts above. Current source adds:
+
+- Terminal open always shows a chooser, even for one candidate. Exact UUID or
+  managed --name selects directly; resume is an alias. Noninteractive behavior
+  stays compatible and never guesses among several candidates.
+- Status without a selector shows read-only managed/history counters. Explicit
+  --history --json opts into the version-1 inventory shape; old status --json
+  without that flag preserves its output/reconciliation.
+- Terminal stop/archive can select a managed name or use the shared chooser.
+  Resolve once to the UUID, then confirm and revalidate through existing guards.
+- Interactive stop confirms stop and archive together, with --keep-record for
+  stop-only use. Exact UUID --yes scripts stay stop-only unless --archive is
+  explicit. Stop/archive phases have independent outcomes and recovery steps.
+- Manage is a thin menu over the same inventory/select/confirm/dispatch functions.
+  Ctrl-C from an open returns to the menu, discarding only its owned route and
+  permitting fresh authentication; SIGTERM exits. Unexpected mux loss never
+  silently falls back to a network connection.
+- Human discover/list aggregate non-ready unmanaged rows; --all or JSON retains
+  diagnostic inspection. Sample and scan limits are distinguished, not raised.
+- Doctor --report exports versioned allowlisted support data. The optional
+  notebook collector is local to its interpreter and never performs SSH.
+
+No new TOML/registry schema, installed remote package, detached tunnel service,
+unmanaged lifecycle authority or automatic evidence deletion is introduced.
 
 ## Implemented commands
 
@@ -34,9 +64,17 @@ jupyhop list workstation-a workstation-b --json
 jupyhop open
 jupyhop doctor workstation
 jupyhop discover workstation
+jupyhop open workstation --name analysis
+jupyhop resume workstation
+jupyhop status workstation --history
+jupyhop manage workstation
+jupyhop doctor workstation --report
 ```
 
-Design `start` to print session ID and browser URL only when requested/appropriate; avoid emitting token-bearing URLs in logs, CI, telemetry, or shell history. For `open host`: zero candidates means no result (with coverage diagnostic); one validated candidate may be opened directly; multiple candidates require a TTY selection or explicit ID. For `stop`: never infer which managed session to terminate when ambiguous, and refuse unmanaged candidates. Noninteractive callers require explicit IDs. See [12](12-user-experience.md).
+Start prints its request ID and token-free connection information. Open without
+a selector uses the terminal chooser even for one ready candidate; exact IDs/names
+open directly. A headless single candidate retains the earlier automatic choice;
+ambiguity never guesses. Automated mutations require UUID/--yes. See [12](12-user-experience.md).
 
 ## Behavioral contract
 
@@ -47,8 +85,8 @@ Design `start` to print session ID and browser URL only when requested/appropria
 - `open`: verify the selected managed **or** authorized discovered server, create a fresh local SSH forward, and open the authenticated localhost endpoint; do not restart a healthy server. If credentials cannot safely be obtained, open the login page for explicit authentication.
 - `stop`: stop only a selected **JupyHop-managed** server; refuse unmanaged servers,
   verify the pinned process identity and warn about kernel termination. Retain
-  owned state; explicit archive requires observed inactivity and moves evidence.
-- `archive`: exact managed UUID plus confirmation/--yes; refuse live/unconfirmed
+  evidence; terminal completion offers archive after confirmed stop.
+- `archive`: pinned managed UUID plus confirmation (scripts use UUID/--yes); refuse live/unconfirmed
   identities, preserve evidence and release the active name/budget. No deletion.
 - `doctor`: diagnose SSH access, one remote Python/Jupyter environment, visible
   runtime paths and process-manager availability. It does not create a forward,

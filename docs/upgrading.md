@@ -4,6 +4,11 @@ The current public Conda release is **0.2.0**. Run these steps on each local
 client you want to update. Remote Jupyter environments, existing notebook files
 and managed runners have separate lifetimes and do not need reinstalling for a
 client update.
+The 0.3.0 source candidate adds names, a menu, history and interactive completion;
+its separate qualification is tracked in the
+[implementation report](https://github.com/uibcdf/jupyhop/blob/main/devguide/30-03-implementation.md).
+Until promotion, the Conda command below installs 0.2.0. To evaluate 0.3.0 earlier,
+use only a reviewed source/wheel in a separate client environment.
 
 ## Before changing the local environment
 
@@ -55,3 +60,13 @@ If the client reports incompatible state/protocol, preserve private records and
 check the supported versions. Do not edit schema numbers, delete the registry or
 start a replacement server as a migration step. Report the redacted version/error
 details using [Troubleshooting](troubleshooting.md#reporting-a-problem).
+
+## Interaction changes in 0.3.0
+
+Open without a selector always offers a terminal chooser, even for one candidate.
+An exact UUID or managed --name selects directly. Native headless/JSON ambiguity
+behavior and stop-only UUID --yes scripts remain compatible. Interactive stop now
+explains and offers archival in the same confirmation; --keep-record preserves
+the stopped entry. Use status --history for versioned inventory JSON/history;
+status --json alone retains its earlier shape and reconciliation semantics.
+Archive preserves evidence and notebooks; it cannot recover a dead kernel.

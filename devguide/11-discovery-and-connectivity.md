@@ -22,6 +22,14 @@ Real UID tests reject another account's runtime directory and process, even when
 the requester knows its UUID, path and port. Archived records are not active
 discovery sources. Existing unmanaged servers remain read-only for lifecycle.
 
+0.3.0 discovery wire 1.6 distinguishes the retained sample bound from the
+512-entry directory scan cutoff. A full sample no longer labels a fully scanned
+later runtime limited. Legacy entry_limit remains alongside sample_limit/scan_limit
+for diagnostics; original metadata, time/size limits and endpoint checks stay
+unchanged. Terminal selection is explicit even for one candidate unless an ID/name
+was supplied. Human rows aggregate unmanaged diagnostics; --all/JSON provides
+bounded detail. None of those counts is an exhaustive inventory of processes.
+
 ## Sources of truth and scope
 
 - **Connectivity:** OpenSSH aliases, configuration and trust store on the **current client**, including `Host`, `Include`, `Match`, `ProxyJump`, user identities and host-key validation. Do not build a second SSH parser or select LAN vs external route through guesswork.

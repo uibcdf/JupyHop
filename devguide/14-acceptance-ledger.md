@@ -89,3 +89,6 @@ SEC gates apply from the first relevant prototype onward, not only at release.
 | UX-06 | M1/M2 | M2 stdlib discovery helper; M3 separate stdlib start/open helper | M1–M3 no remote package installation verified; per-session runner written only by start |
 | UX-07 | M4/M6 | Strict protocol/schema refusal, M3/M5 runner acceptance and version policy | Tested rollout/refusal and actionable errors; installed-helper upgrades and migrations are outside beta scope |
 | UX-08 | M5 | Actual CLI/profile launch validates remote relative/tilde/symlink/Unicode/metacharacter paths | Literal path behavior verified without shell activation or injection |
+| UX-09 | 0.3 | test_session_ux.py and disposable test_session_ux_ssh.py | Source names/choosers, UUID pinning, EOF/headless rules, native menu Ctrl-C/SIGTERM pass locally; final candidate qualification in 30 |
+| UX-10 | 0.3 | test_session_inventory.py, test_session_ux.py and installed package smoke | Read-only bounds/unknown counts, history guards and separate stop/archive outcomes pass locally; installed/hosted qualification tracked in 30 |
+| UX-11 | 0.3 | test_feedback.py, test_diagnostics.py, native SSH auth and ssh_permissions_smoke | Local curation/redaction/context tests pass; actual default-config account and final candidate gates tracked in 30 |

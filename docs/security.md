@@ -29,6 +29,11 @@ signalling and refuses uncertainty. Archive requires inactivity and retains
 private records/settings and possible kernel recovery files. Keep archives
 private; they may contain sensitive material. Neither operation acts on an
 unmanaged server or provides cross-user sharing.
+Human names and numbered choices are resolved once to that exact UUID and checked
+again by the existing backend. Name reuse cannot silently retarget an action.
+Terminal stop offers archive only after confirmed stop; scripts authorize that
+extra phase explicitly. Pre-selection inventory may authenticate through SSH,
+but no lifecycle mutation is authorized before confirmation.
 
 Loopback prevents public listening but is not an account-authentication boundary:
 other processes/users on the same computer may be able to reach a loopback
@@ -62,3 +67,6 @@ Do not attach real passwords, private keys, token URLs, cookies, raw runtime/
 settings/kernel files, browser profiles or scientific infrastructure details.
 Use generated examples and redacted versions/command shapes. General failures
 can be reported through [GitHub issues](https://github.com/uibcdf/jupyhop/issues).
+The [support report](diagnostics.md) excludes identities/paths and credentials by
+construction; review it before sharing. Other JSON and terminal transcripts are
+not automatically suitable for public reports.
