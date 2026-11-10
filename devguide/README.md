@@ -102,6 +102,6 @@ This directory is the project's design source of truth. Update specifications an
   kept separate from the proposed contract and Conda publication.
 - [0.3.0 Conda publication](31-03-conda-publication.md): exact qualified source,
   one archive, four installed clients, promotion and independent public receiving.
-- [Documentation onboarding audit](32-documentation-onboarding-audit.md): content
-  coverage, clarity, visual/first-use findings, prioritized improvements and
-  reader-validation criteria.
+- [Documentation onboarding audit](32-documentation-onboarding-audit.md): external
+  discovery, clarity, friendly first use, a progression of capabilities, visual
+  findings and observable reader-validation criteria; recommendations pending.

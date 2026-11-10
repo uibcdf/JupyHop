@@ -1,8 +1,11 @@
-# 32 — Documentation audit: clarity, first use and presentation
+# 32 — Documentation audit: discovery, first use and depth
 
 Date: 2026-11-10. Release reviewed: published 0.3.0.
-Snapshot: **599046e4f04a7324f3e7863c063b4a74604278c8**.
-Status: audit complete; recommendations below await implementation.
+Public-documentation snapshot: **599046e4f04a7324f3e7863c063b4a74604278c8**.
+Expanded review after the first audit at **e210b2d61cd4ec7f2352a204d642ba3c5c72781f**;
+the public guides have not changed between these reviews.
+Status: expert audit complete for the scope below; recommendations await
+implementation and reader validation.
 
 ## Verdict
 
@@ -13,18 +16,34 @@ the first-use material asks readers to absorb too much operational detail before
 they see a complete, reassuring example of success. The product's simpler 0.3.0
 interaction is not consistently reflected in the order of the examples.
 
+The first audit mainly examined what happens **after a reader arrives**. That
+was insufficient for the wider goal: help someone find JupyHop, recognize their
+own problem, feel confident about trying it, and discover its depth. This
+expanded review adds external entry points, a progression of capabilities and
+an explicit standard for friendly instructions. Simplifying the first page
+must still communicate that JupyHop can launch, recover and manage sessions,
+not only open a browser through SSH.
+
 **Recommendation:** improve the entry pages, tutorial sequence and visual
 demonstration within the existing Sphinx site. Retain the technical reference,
 security guarantees and parser-derived CLI. Adding more reference pages or
 changing the documentation framework would not address the main findings.
 
+The audit itself cannot produce engagement. Its recommendations provide a
+testable design brief; whether the documentation feels inviting and easy
+requires the rewrite and observation of actual readers. Search ranking and
+reader conversion are not established by this review.
+
 | Question | Assessment |
 | --- | --- |
+| Can someone find it? | Repository/package links already exist, but empty GitHub About fields, generic page titles and incomplete package-overview metadata weaken the entry experience. Indexing/ranking has not been measured. |
 | Is it complete? | Strong coverage of supported operations and limits. First-use completeness is weaker: expected screens/output, a single guided route and a finished fresh-setup recipe need work. |
 | Is it clear? | The homepage lead is clear. Clarity becomes uneven when examples mix core actions, interpreter roles, scripting rules and implementation history. |
 | Is it attractive? | The theme is tidy, readable and responsive in the inspected views. Product-specific visual explanation and a clear primary action are missing. |
 | Can a reader follow it? | An SSH/Jupyter-experienced reader can. A researcher who needs guidance must make several avoidable navigation/setup decisions. |
 | Does it communicate simplicity? | Only partly. Names, selectors, automatic browser opening and the management menu already reduce work, but the introductory examples often lead with IDs or additional commands. |
+| Does it feel friendly? | The tone is generally factual, but readers need clearer checkpoints, plain explanations and a safe next action when something differs from the example. |
+| Does it communicate power? | The capabilities exist in separate guides. A compact path from one connection to named sessions, multiple hosts and repeatable workflows is missing. |
 | Is it improvable? | Yes: prioritize the first successful connection, show its result, then offer deeper explanations at the relevant step. |
 
 These are an expert content/interface assessment and observed rendering facts.
@@ -43,20 +62,25 @@ UX contracts, the previous documentation reviews
 [publication evidence](31-03-conda-publication.md) provided context.
 
 All **26 public Markdown pages**, their navigation/configuration and the full
-README were read. The review followed links for four reader situations:
+README were read. The review followed links for these reader situations:
 
 | Reader situation | Coverage now | Main friction |
 | --- | --- | --- |
+| Arriving from a repository, package listing or search/deep link | README and package/source metadata link to documentation; task pages have navigation | GitHub About is empty; inspected page summaries/previews are absent; a deep-page arrival needs a clearer route to the first success. |
 | SSH works and Jupyter is already running | Install, SSH, discover/open and login are documented | The shortest route is mixed with optional diagnostics and advanced settings. |
 | SSH works and a new remote server is needed | Environment preparation and managed start exist | The preparation recipe does not itself establish tmux on the noninteractive SSH PATH; the quickstart then uses a detached launch unnecessarily. |
 | Work should continue from another computer | Recovery, independent connections and surviving-kernel conditions are explained | ID-first examples and dense lifetime terminology obscure the ordinary resume action. |
 | Several sessions need inspection or completion | Names, selectors, manage, counters and archive history are documented | The simplest management entry point is introduced late and has no illustrated example. |
+| A successful user wants more control | Profiles, explicit multi-host inventory, JSON and support diagnostics exist | There is no visible growth path distinguishing optional power from requirements for everyday use. |
 
 The live homepage was inspected in Chrome. The exact deployed Pages artifact
 from [documentation run 42837304874](https://github.com/uibcdf/jupyhop/actions/runs/42837304874)
 was also inspected locally at desktop/mobile sizes, in light/dark modes, with
 navigation and search checks. Public HTTPS receiving and offline HTML/example
-checks are recorded below. No scientific server/session was used or modified.
+checks are recorded below. The expanded review also inspected public GitHub
+repository metadata, four delivered HTML heads and Anaconda package/release
+metadata. It did not change these external services. No scientific server/session
+was used or modified.
 
 ## What already works and should be retained
 
@@ -230,6 +254,10 @@ and “Can I close this terminal?”. Introduce terms with plain equivalents:
 “started by JupyHop” before managed provenance/UUID terminology. Format long
 copyable tutorial commands over valid shell continuation lines. Preserve the
 generated full CLI reference for readers who need exact options.
+Check arrivals directly at installation, recovery and troubleshooting too:
+brief context and a visible first-use link should orient someone who never saw
+the homepage. Use reader questions such as “Use Jupyter through an SSH gateway”
+alongside the exact searchable term ProxyJump.
 
 ### F10 — Current guidance still carries historical and developer detail — P2
 
@@ -247,13 +275,96 @@ references. Audit remaining 0.2/MVP/“source candidate” wording by context ra
 than globally replacing versions. Keep one canonical tutorial per task and link
 to it from README/landing pages, reducing repeated workflows that drift apart.
 
+### F11 — External discovery and previews need a coherent entry point — P1
+
+**Evidence:** the public [GitHub repository](https://github.com/uibcdf/jupyhop)
+has no About description, website or topics. README, Python project metadata
+and the current Conda recipe already contain documentation links; this is not
+an absence of all routes to the site. The four inspected live pages return 200
+and have correct canonical URLs. They have no meta description or Open Graph
+title/description/image. The homepage title is `JupyHop — JupyHop 0.3.0`, which
+does not explain its purpose to an unfamiliar reader.
+
+The [Anaconda package overview API](https://api.anaconda.org/package/uibcdf/jupyhop)
+has an empty description, a documentation URL pointing at the GitHub quickstart
+source and `latest_version: "0.2.0"`, although its versions include 0.3.0. The
+[0.3.0 release metadata](https://api.anaconda.org/release/uibcdf/jupyhop/0.3.0)
+independently confirms the qualified archive in `main`. This is an observed
+overview inconsistency, **not a missing 0.3.0 publication**. Its cause and the
+version displayed by the web interface have not been established.
+
+**Action:** make repository, package and documentation entry points consistent.
+Suggested About description: “Open, launch and reconnect to remote Jupyter
+sessions through SSH, with automatic tunnels and session management.” Set its
+website to the public documentation; choose a few accurate topics such as
+`jupyter`, `jupyterlab`, `ssh` and `python`. Review/update the Anaconda overview
+and documentation destination without rebuilding or replacing the published
+archive. These external updates are recommendations, not actions taken here.
+
+Use a descriptive homepage title such as “JupyHop — Remote Jupyter over SSH”,
+task-specific page titles and distinct summaries. Give shared links a concise
+preview using [Open Graph metadata](https://ogp.me/) and an accessible, lightweight
+image if useful. Check the rendered head and actual link preview where supported.
+[Google's title guidance](https://developers.google.com/search/docs/appearance/title-link)
+and [snippet guidance](https://developers.google.com/search/docs/appearance/snippet)
+support descriptive titles and page summaries; search engines may choose other
+text. Missing descriptions/previews do not prove poor indexing, and adding them
+does not guarantee ranking or traffic. No sitemap, analytics or new Sphinx
+dependency is a prerequisite for correcting these concrete omissions.
+
+### F12 — Show a progression of power without enlarging the first task — P1
+
+**Evidence:** [configuration](../docs/configuration.md),
+[managed sessions](../docs/managed-sessions.md), [recovery](../docs/recovery.md)
+and [scripting](../docs/scripting.md) describe useful implemented capabilities.
+They are presented as separate destinations. An introduction reduced to
+install/open alone could leave readers thinking the product only saves one
+SSH command, while a full option catalogue recreates the current overload.
+
+**Action:** show two or three concrete future benefits near the first example:
+return to a running computation, keep projects in named sessions, and inspect
+several SSH hosts. Link a short capability progression, proposed below, with
+task-specific detail available when needed. Show what the user gains before
+the flags that provide it. Keep profiles and automation optional. Do not imply
+that manage launches servers, that it combines all hosts, that discovery is
+exhaustive, or that a stopped kernel's memory can be restored.
+
+### F13 — Make friendliness an instructional contract — P1
+
+**Evidence:** the technical facts and security explanations are useful, but
+F04–F07 leave decisions and recognition of success to the reader. A friendly
+adjective or extra welcome paragraph would not resolve those gaps.
+
+**Action:** apply this contract to every first-use route and its failure branch:
+
+- State **where to run the command, what to do, what to expect and what comes
+  next**. Label the local/remote computer outside copyable commands.
+- Introduce terms when needed: “the remote computer” before helper protocol,
+  “the name you chose” before UUID, and explain a terminal chooser with an example.
+- Explain a problem neutrally: what succeeded, what is uncertain and the next
+  safe check. For partial discovery, say that known locations were checked and
+  show how to provide another path; do not conclude that no server exists.
+- Reassure precisely at the action: closing a tunnel leaves the remote server
+  running; stop terminates its kernels; archive retains an inactive record's
+  evidence. Do not promise recovery after server/kernel termination.
+- Explain each password's owner when its prompt appears. Never ask readers to
+  paste credentials into a report or imply that passwordless SSH is required.
+- Keep ordinary instructions short and complete. Put unusual cases and full
+  reference behind clear links, preserving access to prerequisites and limits.
+
+These are documentation requirements. They do not change CLI output or remove
+existing confirmation/security checks. Test the failure guidance as well as the
+successful path: an unexpected prompt should not leave a reader feeling lost.
+
 ## Proposed entry experience
 
 This is an editorial/design proposal, not implemented UI or a new command set.
 Its purpose is to make the next iteration concrete enough to review.
 
-1. **Recognize the need.** Explain opening notebooks on a remote workstation from
-   a laptop, with computation/data staying remote and no manual port selection.
+1. **Find and recognize the need.** Make repository/package links and page
+   previews lead to a clear promise. Explain opening notebooks on a remote
+   workstation from a laptop, with computation/data staying remote and no manual
+   port selection.
    Identify the CLI and current Linux support immediately.
 2. **Check the starting point.** Ask whether ordinary SSH works and whether
    Jupyter is already running. Link setup only where those prerequisites are missing.
@@ -262,8 +373,9 @@ Its purpose is to make the next iteration concrete enough to review.
 4. **Recognize success.** Show selection, login, a working notebook and the effect
    of keeping/closing the terminal. Authentication stays enabled.
 5. **Return or finish.** Show a named resume/menu and a clearly confirmed stop.
-6. **Deepen when needed.** Offer environments, gateways, profiles, troubleshooting,
-   supported limits, scripts and developer evidence as distinct next destinations.
+6. **See room to grow.** Show a few concrete capabilities early, then offer
+   environments, gateways, profiles, troubleshooting, supported limits, scripts
+   and developer evidence as distinct next destinations.
 
 Suggested opening copy:
 
@@ -275,9 +387,13 @@ Suggested opening copy:
 >
 > Already running Jupyter? Open it. Need a new server? Start one in an existing
 > remote environment. Return later to the same session while its kernel is alive.
+> Name your sessions, manage projects and connect to several SSH hosts as your
+> work grows.
 
-Primary action: **Install and open your first notebook**. Secondary action:
-**Start a remote server**. Display the Linux/SSH requirement beside those actions.
+Primary action: **Install and open your first notebook**. Inside that route,
+offer the already-running/new-server branches. A quieter **See what you can do**
+link leads to the progression below. Display the Linux/SSH requirement beside
+the first action; avoid a row of equally prominent competing destinations.
 
 For the existing-server fast path, make the preconditions explicit: a Linux
 client with mamba/Conda, trusted working `ssh workstation`, a Linux remote helper
@@ -298,7 +414,10 @@ Do not present this as a universal fresh-machine installation or a timed promise
 For a prepared remote environment, the normal new-server action is already:
 
 ```console
-jupyhop start workstation --server-python /absolute/remote/env/bin/python --workdir '~/projects/analysis' --name analysis
+jupyhop start workstation \
+    --server-python /absolute/remote/env/bin/python \
+    --workdir '~/projects/analysis' \
+    --name analysis
 ```
 
 State where to obtain/substitute the actual Python path and existing project
@@ -318,23 +437,59 @@ The gateway needs the existing authorized SSH route, not JupyHop/Jupyter.
 Ordinary remote operation does not need a remote JupyHop installation. Explain
 the optional notebook diagnostic installation separately in its existing guide.
 
+### Make the depth visible in layers
+
+These are supported 0.3.0 capabilities, not a request for more product scope.
+The reader should see the benefits before needing to learn the details.
+
+| Reader's next goal | Demonstration to introduce | Keep explicit |
+| --- | --- | --- |
+| Open a notebook already running remotely | `jupyhop open workstation`, then show the browser result | It opens a verified server under the SSH account; it does not create one. |
+| Start a project and return to its computation | Named start above, then `jupyhop resume workstation --name analysis` | The remote environment/tmux must be ready; memory survives only while the kernel runs. Another authorized client can reconnect. |
+| Choose and finish several projects | `jupyhop manage workstation`, illustrated with two named sessions | It manages one host at a time. Only managed sessions can be stopped/archived; existing servers can be opened. Start is separate. |
+| Inspect several machines | `jupyhop list workstation-a workstation-b` | These are working SSH aliases; inventory is partial and failures remain explicit. |
+| Reuse settings or automate inspection | Link profiles, then show `jupyhop list workstation-a workstation-b --batch --json` | Profiles are optional; `--env` selects a JupyHop profile, not Conda activation. Batch needs noninteractive SSH; ordinary use also supports passwords. |
+
+Add a short “When JupyHop fits” explanation: an individual with authorized SSH
+access, remote environments and a local browser. It is not a shared login portal,
+scheduler or multi-user JupyterHub replacement. Show the actual Linux support
+and bounded discovery rather than making a “works everywhere” claim.
+
+### Give each entry page one job
+
+| Surface | Reader outcome and required content |
+| --- | --- |
+| GitHub/package overview and README | Recognize the problem and CLI, find installation/docs, see one result and a few concrete capabilities. |
+| Homepage and Getting started | Understand fit, choose a route based on readiness and take one obvious next action. |
+| Quickstart, existing-server and remote-setup routes | Complete one task with prerequisites, location labels, checkpoints and a missing-prerequisite branch. Keep a canonical recipe per task. |
+| Managed sessions and Recovery | Return by name, choose between projects, understand the live kernel condition and finish safely. |
+| Configuration, Scripting and reference | Reveal optional depth with working prerequisites; preserve exact flags, JSON contracts and limits. |
+| Troubleshooting and support | Recognize an observed message, understand the next safe check and find a shareable diagnostic/report path without exposing credentials. |
+
 ## Recommended implementation sequence and acceptance
 
-1. **First-use corrections:** F01–F04. Correct rendered requirements; shorten the
-   README entry; provide a visible homepage action; simplify the first successful
-   path while preserving SSH trust and authentication. Check rendered desktop and
-   mobile pages, not just source Markdown.
-2. **Complete the practical journey:** F05–F07. Finish the fresh setup checks;
-   label local/remote steps; show real synthetic output, password roles, named
-   return and menu/finish actions. Keep detailed automation separate.
-3. **Presentation and maintenance:** F08–F10. Add a small diagram/demo, improve
-   navigation/next steps, refresh current-release wording and reduce duplication.
-   Retain stable public URLs where possible, with working links when reorganizing.
+1. **Entry, relevance and promise:** F01–F04 and the entry aspects of F11–F13.
+   Correct rendered requirements; shorten the README; provide a visible first
+   action, fit statement and a few credible capabilities. Draft consistent
+   external descriptions/titles alongside the pages they introduce. Apply the
+   friendly instruction contract from the start; it is not final cosmetic polish.
+2. **First success and a path to deeper use:** F05–F08 and F12–F13. Finish setup
+   checks, label local/remote steps, show synthetic success output, password
+   roles, named return and menu/finish actions. Add the small diagram/demo. Link
+   optional profiles, multiple hosts and automation without making them mandatory.
+3. **Receiving, navigation and validation:** F09–F11 plus the acceptance below.
+   Check deep links, search and current-release wording; reduce duplicate recipes.
+   Retain public URLs or provide working redirects when reorganizing. Synchronize
+   repository/package entry metadata, inspect built desktop/mobile pages and
+   previews, and run the reader walkthrough. Keep the existing Sphinx framework.
 
 Acceptance for that subsequent rewrite should include:
 
 - A new reader can explain what JupyHop does, where it is installed, where Jupyter
   runs and which prerequisite path applies before reading architecture/reference.
+- Repository and package entries lead to the public documentation. Inspected
+  titles/summaries describe the task and release metadata agrees with publication
+  evidence. Preview/canonical URLs are valid; this is not a search-ranking gate.
 - The primary first-use action and platform fit are visible in the initial
   desktop/mobile view. The ordinary success route does not require protocol,
   JSON, UUID storage or developer-release knowledge.
@@ -344,19 +499,46 @@ Acceptance for that subsequent rewrite should include:
 - A prepared reader can reach a usable notebook, disconnect safely, return to
   the same surviving session and finish a synthetic managed session by name/menu.
   Stop still warns about terminating every kernel of that server.
+- A reader can name at least two relevant deeper capabilities and find their
+  instructions, while recognizing that profiles/JSON are optional. They do not
+  infer unsupported cross-user access, platforms or kernel resurrection.
+- A reader can use one deliberately introduced, harmless failure to locate an
+  explanation and a safe next step. They understand which password is requested
+  and whether an uncertain operation should be inspected before retrying.
 - Rendered version requirements are intact. Mobile code scrolling stays contained;
   menus, copy controls, search and light/dark presentation remain usable.
 - Existing strict Sphinx/reference/CLI-example checks pass. Fixture validation of
   changed command recipes remains separate from syntax parsing and never uses
   real scientific workloads.
 
-Then run an **unassisted reader walkthrough** with a small initial group of
-representative SSH-using researchers. Ask them to identify the use case, choose
-the right setup, connect to a prepared disposable server, explain password
-prompts and find resume/finish/help. Record wrong turns, external help and time
-separately for installation, prerequisite setup and first connection. These are
-proposed measurements; this audit does not claim observed reader timings or
-guarantee “working in five minutes”.
+Then run an **unassisted reader walkthrough** with a small qualitative group of
+SSH-using researchers, including readers unfamiliar with tunneling and some
+experienced users. Use prepared disposable environments and these tasks:
+
+1. Begin at the repository or package entry, without being handed the Quickstart
+   URL. Find the docs and explain the purpose, current fit and next action in
+   the reader's own words. Include a separate arrival at a troubleshooting page.
+2. Choose the correct already-running/new-server route from a stated situation;
+   connect, recognize success and explain the password prompts. Observe where
+   prerequisite work is mistaken for an ordinary repeated step.
+3. Disconnect and return to a known living kernel, then finish a synthetic
+   managed session. Observe whether names, selection and stop consequences make
+   sense without coaching.
+4. Find a capability useful beyond the first connection, explain its benefit
+   accurately and locate its guide. Verify that optional settings have not made
+   the simple route appear harder.
+5. Introduce one safe known setup problem and ask for the next check and support
+   route. Do not collect passwords, tokens or unreviewed private reports.
+
+Record wrong turns, requests for external help, misunderstandings and brief
+confidence/clarity feedback. Separate installation, prerequisite setup and first
+connection timings; do not turn one prepared setup into a universal time claim.
+Set success by the observable criteria above, repair recurrent problems, and
+repeat affected tasks. A small qualitative sample is not a conversion-rate or
+ranking study. These tests are proposed and **have not been performed**. If
+owner-accessible search coverage data becomes available later, examine it
+separately; no new tracking, promotion campaign or infrastructure change is
+required by this audit.
 
 ## Validation and evidence ledger
 
@@ -386,14 +568,29 @@ guarantee “working in five minutes”.
 - Rendered HTML confirmed the two unintended blockquotes in F01 despite passing
   the existing build checks. Source/image inspection found no public product
   illustrations; embedded copy/theme icons were excluded from that assessment.
-- The two proposed JupyHop commands in this audit were parsed without execution;
-  local audit/index link targets and private-identifier checks passed.
+- Expanded-review observations, all on 2026-11-10: the GitHub connector returned
+  `description: null`, `homepage: null`, `topics: []`. Fresh public HTTPS requests
+  returned 200 for index, quickstart, managed-sessions and troubleshooting; each
+  has its expected canonical URL and lacks description/inspected Open Graph tags.
+  These describe the delivered HTML head, not search-engine indexing results.
+- The Anaconda overview and 0.3.0 release APIs were inspected separately. The
+  latter confirms `noarch/jupyhop-0.3.0-py_0.tar.bz2`, labels `staging` and `main`,
+  SHA256 015425e8b5a4fdeeb851d6d0a744fde97fb5c369d70c486ac43c8f389a537449.
+  The overview inconsistency in F11 does not invalidate those release facts.
+- Six distinct proposed JupyHop command examples were parsed without execution;
+  63 local file links across the audit/index, private-identifier and code-fence
+  checks passed. This prose-only expansion does not rerun the unchanged public
+  site's build or runtime tests.
 - Screenshots, DOM observations, receiving results and review helpers are retained
   outside the source tree. Owned preview servers and Chrome processes were closed.
-  No end-user study, full accessibility certification, complete external-link
-  crawl, new package qualification or new remote scientific test is claimed here.
+  No end-user study, formal search-engine indexing audit, full accessibility
+  certification, complete external-link crawl, new package qualification or new
+  remote scientific test is claimed here. Keyboard/focus, contrast and image
+  alternatives remain checks for the proposed rendered rewrite.
 
-This task records the audit and adds its developer-guide index entry. Public
-guide content, product behavior, dependencies, packages and site deployment are
-unchanged. The recommended next work is the staged documentation rewrite above,
-followed by the reader walkthrough.
+This task expands the canonical audit and its developer-guide index entry.
+Public guide content, product behavior, dependencies, packages, repository About
+settings and site deployment are unchanged. The recommended next work is the
+staged documentation rewrite above, followed by the reader walkthrough. The
+expanded audit is a more complete brief for an inviting, useful introduction;
+it does not claim the resulting reader experience has already been achieved.
