@@ -95,3 +95,5 @@ This directory is the project's design source of truth. Update specifications an
 - [0.3.0 session UX proposal](29-03-session-ux-design.md): names/choosers,
   inventory/history visibility, confirmed stop-and-archive and actionable diagnosis;
   proposed behavior, not shipped functionality.
+- [0.3.0 implementation](30-03-implementation.md): progress and observed acceptance,
+  kept separate from the proposed contract and the published 0.2.0 package.
