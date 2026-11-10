@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING, Any
 from jupyhop.config import Config
 from jupyhop.discovery import discover
 from jupyhop.errors import JupyHopError, SelectionError
+from jupyhop.selection import choose, describe_session, validate_name
 from jupyhop.ssh import SSHTransport, validate_alias
 
 if TYPE_CHECKING:
@@ -53,34 +54,25 @@ def inventory(
 
 
 def select_inventory(
-    data: dict[str, Any], *, interactive: bool
+    data: dict[str, Any], *, interactive: bool, name: str | None = None
 ) -> tuple[dict[str, Any], dict[str, Any]]:
-    import sys
-
+    if name is not None:
+        validate_name(name)
     candidates = [
         (entry["report"], server)
         for entry in data["hosts"]
         if entry["ok"]
         for server in entry["report"]["servers"]
         if server["state"] == "ready"
+        and (name is None or server.get("name") == name and server["origin"] == "managed")
     ]
-    if len(candidates) == 1:
-        return candidates[0]
     if not candidates:
         raise SelectionError(
             "No verified candidate found across the selected aliases; inspect list --json. Failed or partial discovery does not prove no servers exist."
         )
-    if not interactive:
-        raise SelectionError(
-            "Multiple servers/SSH routes found. Use list --json, then open HOST ID; no route was selected."
-        )
-    for index, (report, server) in enumerate(candidates, 1):
-        print(
-            f"{index}: {report['host']}  {server['id']}  {server['origin']}  {server.get('name') or ''}",
-            file=sys.stderr,
-        )
-    print("Select a server number: ", end="", file=sys.stderr, flush=True)
-    value = sys.stdin.readline().strip()
-    if not value.isascii() or not value.isdigit() or not 1 <= int(value) <= len(candidates):
-        raise SelectionError("Invalid selection; use open HOST ID.")
-    return candidates[int(value) - 1]
+    return choose(
+        candidates,
+        lambda item: f"{item[0]['host']}  {describe_session(item[1])}",
+        interactive=interactive,
+        explicit=name is not None and len(candidates) == 1,
+    )

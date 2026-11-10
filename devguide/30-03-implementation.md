@@ -25,5 +25,28 @@ record/runner byte preservation, private symlink boundaries, bounded history,
 secret allowlisting, parser refusal and the unchanged 64 KiB RPC input bound.
 No real workstation/session was used.
 
-CLI selection/completion, actionable diagnosis, public documentation, installed
-candidate qualification and four-Python hosted acceptance remain to be completed.
+## Shared selection and lifecycle completion
+
+Source CLI now has consistent terminal choices (including one ready candidate),
+exact --name selection, resume as an open alias, a thin manage menu, status
+summaries and explicit --history inspection. Stop/archive selectors pin the UUID
+before confirmation. The interactive stop confirmation authorizes both stop and
+archive by default; --keep-record keeps the stopped record. Existing UUID --yes
+automation remains stop-only unless --archive is explicitly requested.
+
+Compound completion reports its phases separately and archives only after a
+confirmed stopped observation. An uncertain stop never proceeds to archive;
+archive failure preserves a clear same-UUID recovery path. Menu open owns a
+foreground forward; Ctrl-C returns to the menu, while termination propagates
+through the owned connection cleanup.
+
+All 273 existing/inventory unit tests pass plus 18 new UX regressions. Those
+cover named/UUID selection, name reuse during confirmation, cancellation/EOF,
+headless refusal, original JSON scripting, separate compound outcomes and menu
+tunnel return. Strict types pass all 24 source modules. Three disposable SSH
+integration cases pass, including actual named CLI open, terminal confirmed
+stop-and-archive, history JSON, unchanged second-server state and stop-only script
+compatibility. This is source acceptance, not publication of 0.3.0.
+
+Actionable diagnosis, public documentation, installed candidate qualification
+and four-Python hosted acceptance remain to be completed.

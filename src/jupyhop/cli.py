@@ -11,14 +11,16 @@ from typing import Any
 from jupyhop import __version__
 from jupyhop.config import Config, Host, load_config
 from jupyhop.connection import ConnectionPool
+from jupyhop.controls import control, show_inventory
 from jupyhop.discovery import discover, select_server
 from jupyhop.doctor import diagnose
-from jupyhop.errors import JupyHopError, OwnershipError
+from jupyhop.errors import JupyHopError, SelectionError
 from jupyhop.fleet import inventory, select_inventory
-from jupyhop.lifecycle import lifecycle, require_lifecycle_ok, validate_managed_id
 from jupyhop.managed import new_id, password_input, require_ready, start
 from jupyhop.opening import open_connection
-from jupyhop.ssh import SSHTransport
+from jupyhop.selection import choose, validate_name
+from jupyhop.session_inventory import inspect_sessions
+from jupyhop.ssh import SSHTransport, validate_alias
 
 
 def _parser() -> argparse.ArgumentParser:
@@ -35,6 +37,7 @@ def _parser() -> argparse.ArgumentParser:
     for name in ("discover", "list", "open"):
         command = commands.add_parser(
             name,
+            aliases=["resume"] if name == "open" else [],
             help={
                 "discover": "Find verified current-user Jupyter servers (partial, read-only).",
                 "list": "Inventory explicit SSH aliases, or all configured hosts when omitted.",
@@ -53,10 +56,16 @@ def _parser() -> argparse.ArgumentParser:
             help="Additional remote runtime directory (repeatable; absolute or ~/).",
         )
         if name == "open":
-            command.add_argument(
+            target = command.add_mutually_exclusive_group()
+            target.add_argument(
                 "session",
                 nargs="?",
                 help="Exact server ID from discover; required when ambiguous without a TTY.",
+            )
+            target.add_argument(
+                "--name",
+                dest="selector_name",
+                help="Select one exact current managed session name.",
             )
             command.add_argument(
                 "--no-browser",
@@ -106,18 +115,64 @@ def _parser() -> argparse.ArgumentParser:
                 "archive": "Move an inactive managed record to private archive, preserving evidence and releasing its name.",
             }[name],
         )
-        _connection_arguments(control, multiple=False)
-        control.add_argument(
+        _connection_arguments(control, multiple=False, host_nargs="?")
+        target = control.add_mutually_exclusive_group()
+        target.add_argument(
             "session",
-            nargs="?" if name == "status" else None,
-            help="Exact managed session UUID; names and unmanaged IDs are refused.",
+            nargs="?",
+            help="Exact managed UUID; omit for terminal selection (status shows inventory).",
         )
+        target.add_argument(
+            "--name",
+            dest="selector_name",
+            help="Select one exact current managed name; lifecycle selection requires a terminal.",
+        )
+        if name == "status":
+            control.add_argument(
+                "--history",
+                action="store_true",
+                help="Inspect private archive history; --json uses versioned inventory output.",
+            )
+            control.add_argument(
+                "--history-offset",
+                type=int,
+                default=0,
+                help="Bounded archive page offset (0–4096; pages contain at most 64 entries).",
+            )
+        if name == "stop":
+            completion = control.add_mutually_exclusive_group()
+            completion.add_argument(
+                "--archive",
+                dest="archive_after",
+                action="store_true",
+                help="Explicitly authorize archiving after confirmed stop (also for UUID --yes scripts).",
+            )
+            completion.add_argument(
+                "--keep-record",
+                action="store_true",
+                help="Keep the stopped record; interactive stop otherwise offers stop and archive.",
+            )
         if name != "status":
             control.add_argument(
                 "--yes",
                 action="store_true",
                 help="Explicitly authorize this lifecycle action on the exact UUID without a terminal prompt.",
             )
+    manage = commands.add_parser(
+        "manage", help="Inspect sessions and choose open, stop or archive in a terminal."
+    )
+    _connection_arguments(manage, multiple=False, host_nargs="?")
+    manage.add_argument(
+        "--runtime-dir",
+        action="append",
+        default=[],
+        help="Additional known remote runtime directory (repeatable).",
+    )
+    manage.add_argument(
+        "--no-browser",
+        action="store_true",
+        help="Print a login URL while keeping the selected tunnel attached.",
+    )
     return parser
 
 
@@ -200,8 +255,12 @@ def _coverage(report: dict[str, Any]) -> None:
         )
 
 
+class _SignalInterrupt(KeyboardInterrupt):
+    pass
+
+
 def _interrupted(signum: int, frame: Any) -> None:
-    raise KeyboardInterrupt
+    raise _SignalInterrupt
 
 
 def _fleet(args: argparse.Namespace, config: Config) -> int:
@@ -225,9 +284,12 @@ def _fleet(args: argparse.Namespace, config: Config) -> int:
             )
     if args.command == "open":
         report, server = select_inventory(
-            data, interactive=not args.json and sys.stdin.isatty() and sys.stdout.isatty()
+            data,
+            interactive=not args.json and sys.stdin.isatty() and sys.stdout.isatty(),
+            name=args.selector_name,
         )
         args.host, args.session = report["host"], server["id"]
+        args.selector_name = None
         args.remote_python, _ = config.discovery_options(
             args.host, args.remote_python, args.runtime_dir
         )
@@ -260,6 +322,7 @@ def _open(args: argparse.Namespace, transport: SSHTransport, report: dict[str, A
         report,
         args.session,
         interactive=not args.json and sys.stdin.isatty() and sys.stdout.isatty(),
+        name=getattr(args, "selector_name", None),
     )
     handlers = {number: signal.getsignal(number) for number in (signal.SIGTERM, signal.SIGHUP)}
     try:
@@ -305,9 +368,105 @@ def _open(args: argparse.Namespace, transport: SSHTransport, report: dict[str, A
     return 0
 
 
+def _choose_host(config: Config, *, interactive: bool) -> str:
+    if not interactive:
+        raise SelectionError(
+            "Supply an explicit SSH host alias for this command; no SSH command was sent."
+        )
+    value = "<enter another alias>"
+    if config.hosts:
+        value = choose(
+            [*config.hosts, value], str, interactive=True, prompt="Select an SSH host number: "
+        )
+    if value == "<enter another alias>":
+        print("Existing SSH alias (Enter cancels): ", end="", file=sys.stderr, flush=True)
+        value = sys.stdin.readline().strip()
+        if not value:
+            raise SelectionError("Host selection cancelled; no SSH command was sent.")
+    return validate_alias(value)
+
+
+def _manage(args: argparse.Namespace, transport: SSHTransport, config: Config) -> int:
+    descriptions = {
+        "open": "Open/resume an existing server",
+        "stop": "Stop a managed server (offer archive)",
+        "archive": "Archive inactive managed evidence",
+        "history": "Inspect archived history",
+        "refresh": "Refresh inventory",
+        "exit": "Exit management",
+    }
+    history = False
+    while True:
+        observed = inspect_sessions(transport, python=args.remote_python)
+        show_inventory(observed, history=history)
+        history = False
+        try:
+            action = choose(
+                list(descriptions),
+                descriptions.__getitem__,
+                interactive=True,
+                prompt="Select an action number (Enter exits): ",
+            )
+        except SelectionError:
+            return 0
+        if action == "exit":
+            return 0
+        if action in {"history", "refresh"}:
+            history = action == "history"
+            continue
+        try:
+            if action == "open":
+                pythons, paths = config.discovery_options(
+                    args.host, [args.remote_python], args.runtime_dir
+                )
+                report = discover(transport, pythons, paths)
+                _coverage(report)
+                server = select_server(report, None, interactive=True)
+                opening = argparse.Namespace(
+                    **(
+                        vars(args)
+                        | {"session": server["id"], "selector_name": None, "remote_python": pythons}
+                    )
+                )
+                try:
+                    _open(opening, transport, report)
+                except _SignalInterrupt:
+                    raise
+                except KeyboardInterrupt:
+                    print(
+                        "Tunnel closed; remote server remains running. Returning to management.",
+                        file=sys.stderr,
+                    )
+            else:
+                selected = argparse.Namespace(
+                    **(
+                        vars(args)
+                        | {
+                            "command": action,
+                            "session": None,
+                            "selector_name": None,
+                            "yes": False,
+                            "archive_after": False,
+                            "keep_record": False,
+                            "history": False,
+                            "history_offset": 0,
+                        }
+                    )
+                )
+                try:
+                    control(selected, transport)
+                except KeyboardInterrupt:
+                    args.lifecycle_phase = getattr(selected, "lifecycle_phase", None)
+                    raise
+        except JupyHopError as error:
+            print(f"jupyhop: {error}", file=sys.stderr)
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = _parser()
     args = parser.parse_args(argv)
+    if args.command == "resume":
+        args.command = "open"
     launch_id = None
     connections = None
     handlers = {number: signal.getsignal(number) for number in (signal.SIGTERM, signal.SIGHUP)}
@@ -315,10 +474,18 @@ def main(argv: list[str] | None = None) -> int:
         for number in handlers:
             signal.signal(number, _interrupted)
         config = load_config(args.config)
+        if getattr(args, "selector_name", None) is not None:
+            validate_name(args.selector_name)
         connections = ConnectionPool(batch=args.batch, auth_timeout=args.ssh_auth_timeout)
         args.connections = connections
-        if args.command == "list" or args.command == "open" and args.host is None:
+        if args.command == "manage" and (args.json or not sys.stdin.isatty()):
+            raise SelectionError(
+                "Manage requires a terminal; use status --history --json or explicit UUID commands for scripts."
+            )
+        if args.command == "list" or args.command == "open" and args.host is None and config.hosts:
             return _fleet(args, config)
+        if args.host is None:
+            args.host = _choose_host(config, interactive=not args.json and sys.stdin.isatty())
         host = config.hosts.get(args.host, Host())
         args.timeout = 20 if args.timeout is None else args.timeout
         if args.command in {"discover", "open"}:
@@ -327,49 +494,13 @@ def main(argv: list[str] | None = None) -> int:
             )
         else:
             args.remote_python = args.remote_python or host.remote_python
-        if args.command in {"stop", "archive"}:
-            validate_managed_id(args.session)
-            if not args.yes:
-                if not sys.stdin.isatty() or args.json:
-                    raise OwnershipError(
-                        (
-                            "Stopping terminates kernels/computations. "
-                            if args.command == "stop"
-                            else "Archiving moves inactive recovery evidence and releases its name. "
-                        )
-                        + "Supply an exact UUID and --yes, or use a terminal for confirmation. No SSH command was sent."
-                    )
-                print(
-                    (
-                        f"Stop managed session {args.session}? This terminates its kernels and computations. "
-                        if args.command == "stop"
-                        else f"Archive inactive session {args.session}? Its evidence is retained; orphaned kernels are not stopped. "
-                    )
-                    + f"Type {args.command} to confirm: ",
-                    end="",
-                    file=sys.stderr,
-                    flush=True,
-                )
-                if sys.stdin.readline().strip() != args.command:
-                    raise OwnershipError("Lifecycle action cancelled; no SSH command was sent.")
         transport = SSHTransport(
             args.host, config=args.ssh_config, timeout=args.timeout, connections=connections
         )
         if args.command in {"status", "stop", "archive"}:
-            report = lifecycle(transport, args.command, args.session, python=args.remote_python)
-            if args.json:
-                print(json.dumps(report, ensure_ascii=True))
-            else:
-                for server in report["servers"]:
-                    print(
-                        f"{server['id']}  managed  {server['name']}  {server['state']}  {server['reason']}"
-                    )
-                if report.get("archived") is not None:
-                    print(f"Archived {report['archived']['id']} -> {report['archived']['path']}")
-                elif not report["servers"]:
-                    print("No managed session records found in this host/account registry.")
-            require_lifecycle_ok(report)
-            return 0
+            return control(args, transport)
+        if args.command == "manage":
+            return _manage(args, transport, config)
         if args.command == "start":
             profile = config.profile(args.host, args.env)
             password = password_input(args.password_stdin)
@@ -448,9 +579,9 @@ def main(argv: list[str] | None = None) -> int:
     except KeyboardInterrupt:
         message = (
             "jupyhop: archive interrupted; retry archive with the same UUID to reconcile. No automatic deletion was attempted."
-            if args.command == "archive"
+            if args.command == "archive" or getattr(args, "lifecycle_phase", None) == "archive"
             else "jupyhop: stop interrupted; remote outcome is unknown. Use status before retrying."
-            if args.command == "stop"
+            if args.command == "stop" or getattr(args, "lifecycle_phase", None) == "stop"
             else f"jupyhop: interrupted; session request {launch_id} may remain running. Owned tunnel closed; use discover before retrying start."
             if launch_id
             else "jupyhop: interrupted; owned tunnel closed, remote sessions were not modified."

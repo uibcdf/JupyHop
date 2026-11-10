@@ -1,13 +1,13 @@
 """Read-only current-account discovery and explicit server selection."""
 
 import json
-import sys
 from importlib.resources import files
 from pathlib import PurePosixPath
 from typing import Any, Protocol
 
-from jupyhop.errors import DiscoveryError, PrerequisiteError, ProtocolError, SelectionError
+from jupyhop.errors import DiscoveryError, PrerequisiteError, ProtocolError
 from jupyhop.protocol import parse_discovery
+from jupyhop.selection import choose, describe_session, resolve_name
 from jupyhop.ssh import CommandResult, SSHTransport, ssh_failure
 
 
@@ -117,9 +117,13 @@ def discover(
 
 
 def select_server(
-    report: dict[str, Any], identifier: str | None, *, interactive: bool
+    report: dict[str, Any], identifier: str | None, *, interactive: bool, name: str | None = None
 ) -> dict[str, Any]:
+    if identifier is not None and name is not None:
+        raise ValueError("Choose an exact ID or --name, not both.")
     candidates: list[dict[str, Any]] = [s for s in report["servers"] if s["state"] == "ready"]
+    if name is not None:
+        return resolve_name(candidates, name)
     if identifier is not None:
         candidates = [s for s in candidates if s["id"] == identifier]
         if not candidates:
@@ -130,19 +134,6 @@ def select_server(
         raise DiscoveryError(
             "No verified server found in the searched paths. Discovery is partial: select a known environment with --remote-python or add --runtime-dir. This does not prove no servers are running."
         )
-    if len(candidates) == 1:
-        return candidates[0]
-    if not interactive:
-        raise SelectionError(
-            "Multiple verified servers found. Use discover --json, then open HOST ID; no server was selected."
-        )
-    for index, server in enumerate(candidates, 1):
-        print(
-            f"{index}: {server['id']} {server['origin']} 127.0.0.1:{server['port']}{server['base_url']}",
-            file=sys.stderr,
-        )
-    print("Select a server number: ", end="", file=sys.stderr, flush=True)
-    value = sys.stdin.readline().strip()
-    if not value.isascii() or not value.isdigit() or not 1 <= int(value) <= len(candidates):
-        raise SelectionError("Invalid selection. Run open again with an explicit server ID.")
-    return candidates[int(value) - 1]
+    return choose(
+        candidates, describe_session, interactive=interactive, explicit=identifier is not None
+    )
