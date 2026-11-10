@@ -62,7 +62,7 @@ modes 0600, 0644 and 0664. That differs from the default config's write check:
 do not add an independent rejection policy for --ssh-config or misattribute a
 jump-side rejection to that explicit local file. A new CI-only acceptance driver
 uses the existing exclusively provisioned Unix test account to check native
-default 0600/0644 acceptance, 0664 refusal and the actual classifier, then removes
+default 0600/0644 acceptance, native write-permission policy and the actual classifier, then removes
 only its newly created config by inode. It refuses ordinary accounts and an
 existing config. Its native account result is pending hosted observation.
 
@@ -185,3 +185,21 @@ removed both generated accounts and private sshd. The experiment now reports onl
 fixed failure stages/exception classes for diagnosis, suppressing raw output;
 an additional temporary-file test exercises its complete classifier payload and
 exclusive-file cleanup. Native acceptance remains pending and is not waived.
+
+The follow-up at fc73e31116aca0a8206c96bf94f257d33c322540 observed all 393
+tests passing on each supported Python, but native acceptance still failed.
+The narrowed experiment at 3cdf6c2bd376881cfc76009fc4ad0ef5a125f7f2 verified
+that the default config was loaded and the requested modes were present; Ubuntu
+26.04's OpenSSH 10.2p1-2ubuntu3.8 then accepted 0664 in its private user group.
+This is documented distribution behavior, not a JupyHop bypass: the
+[Ubuntu ssh_config FILES contract](https://manpages.ubuntu.com/manpages/resolute/man5/ssh_config.5.html#FILES)
+allows group write when that group contains only the owner. Upstream's
+[readconf permission check](https://github.com/openssh/openssh-portable/blob/V_10_2_P1/readconf.c#L2496)
+does not contain that exception.
+
+The experiment now records either native private-group 0664 result and requires
+0666 world-write rejection plus the curated remedy. Both variants execute the
+actual classifier payload in unit regression. It does not infer distribution
+policy in production, add accounts/groups, weaken permissions or change OpenSSH.
+The conservative owned-file remedy stays chmod 600. Native fixtures run and clean
+up before the longer suites, so a prerequisite failure is diagnosed promptly.

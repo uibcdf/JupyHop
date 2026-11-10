@@ -47,8 +47,12 @@ chmod 600 ~/.ssh/config
 ssh workstation
 ```
 
-For this check, group write is the problem: 0664 is unsafe, while 0644 normally
-passes; 0600 also keeps configuration private. A .ssh directory already at 0700
+Write access is the relevant issue: upstream OpenSSH rejects 0664, while 0644
+normally passes; 0600 also keeps configuration private. Debian/Ubuntu can accept
+group write when the group contains only the owner, as their
+[manual explains](https://manpages.ubuntu.com/manpages/resolute/man5/ssh_config.5.html#FILES).
+Keep OpenSSH as the authority rather than using the mode alone to predict a
+failure. A .ssh directory already at 0700
 needs no permission change for this file-specific failure. SSH configuration can
 select destinations and commands, so unauthorized edits can affect connections.
 The [OpenSSH manual](https://man.openbsd.org/ssh_config#FILES) describes the

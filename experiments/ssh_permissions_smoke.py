@@ -30,20 +30,26 @@ try:
     original=os.fstat(descriptor)
     os.write(descriptor,b'Host workstation\n    HostName workstation.example.org\n    User researcher\n')
     os.fsync(descriptor)
-    for mode in (0o600,0o644,0o664):
+    group_write=None
+    for mode in (0o600,0o644,0o664,0o666):
         os.fchmod(descriptor,mode)
         if stat.S_IMODE(os.fstat(descriptor).st_mode)!=mode:
             raise RuntimeError('Fixture mode did not match requested mode')
         result=subprocess.run(['/usr/bin/ssh','-G','workstation'],capture_output=True,timeout=5)
-        if mode!=0o664:
+        if mode in (0o600,0o644) or mode==0o664 and result.returncode==0:
             if result.returncode!=0:
                 raise RuntimeError('Safe default configuration unexpectedly refused')
             if b'hostname workstation.example.org\n' not in result.stdout or b'user researcher\n' not in result.stdout:
                 raise RuntimeError('Safe default configuration was not loaded')
-        elif result.returncode==0:
-            raise RuntimeError('Unsafe default configuration was accepted')
-        elif b'bad owner or permissions' not in result.stderr.lower():
-            raise RuntimeError('Unsafe default configuration had a different failure')
+            if mode==0o664:
+                group_write='accepted'
+        else:
+            if result.returncode==0:
+                raise RuntimeError('World-writable default configuration was accepted')
+            if b'bad owner or permissions' not in result.stderr.lower():
+                raise RuntimeError('Writable default configuration had a different failure')
+            if mode==0o664:
+                group_write='rejected'
     # Exercise the actual client classifier as this UID, without installing a
     # remote package or assuming the checkout is readable by the fixture UID.
     package=types.ModuleType('jupyhop')
@@ -59,7 +65,7 @@ try:
     message=str(namespace['ssh_failure'](result.stderr))
     if 'group/other writes' not in message or 'chmod 600 ~/.ssh/config' not in message or identity.pw_dir in message:
         raise RuntimeError('Default-config remedy was not safely classified')
-    print(json.dumps({'modes_checked':['0600','0644','0664'],'feedback':True}))
+    print(json.dumps({'modes_checked':['0600','0644','0664','0666'],'group_write':group_write,'feedback':True}))
 finally:
     if descriptor>=0:
         os.close(descriptor)
@@ -85,8 +91,8 @@ def _failure_reason(stderr):
         "Fixture mode did not match requested mode",
         "Safe default configuration unexpectedly refused",
         "Safe default configuration was not loaded",
-        "Unsafe default configuration was accepted",
-        "Unsafe default configuration had a different failure",
+        "World-writable default configuration was accepted",
+        "Writable default configuration had a different failure",
         "Default-config remedy was not safely classified",
         "Fixture config changed; refusing unrelated removal",
     ):
@@ -119,17 +125,26 @@ def run(root):
     result = transport.run(
         ["/usr/bin/python3", "-I", "-B", "-c", PROGRAM], stdin=json.dumps(payload).encode()
     )
-    if result.returncode or json.loads(result.stdout) != {
-        "modes_checked": ["0600", "0644", "0664"],
-        "feedback": True,
-    }:
+    observed = json.loads(result.stdout) if not result.returncode else None
+    if (
+        not isinstance(observed, dict)
+        or observed.get("group_write") not in {"accepted", "rejected"}
+        or observed
+        != {
+            "modes_checked": ["0600", "0644", "0664", "0666"],
+            "group_write": observed["group_write"],
+            "feedback": True,
+        }
+    ):
         raise RuntimeError(
             "Default SSH config acceptance failed: "
             + _failure_reason(result.stderr)
             + "; raw output suppressed"
         )
     print(
-        "PASS: native default config accepts 0600/0644, rejects 0664; ownership/write remedy is curated; exclusive fixture config removed"
+        "PASS: native default config accepts 0600/0644; private-group 0664="
+        + observed["group_write"]
+        + "; rejects 0666; write remedy is curated; exclusive fixture config removed"
     )
 
 

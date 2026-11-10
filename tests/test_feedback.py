@@ -20,16 +20,17 @@ from jupyhop.ssh import ssh_failure
 def test_native_permission_failure_reports_only_fixed_stages_or_exception_classes():
     assert (
         _failure_reason(
-            b"PRIVATE_SENTINEL\nRuntimeError: Unsafe default configuration was accepted\n"
+            b"PRIVATE_SENTINEL\nRuntimeError: World-writable default configuration was accepted\n"
         )
-        == "Unsafe default configuration was accepted"
+        == "World-writable default configuration was accepted"
     )
     assert _failure_reason(b"PRIVATE_SENTINEL\nNameError: private_variable\n") == "NameError"
     assert _failure_reason(b"RuntimeError: PRIVATE_SENTINEL") == "unknown fixture failure"
 
 
+@pytest.mark.parametrize("private_group_accepted", [False, True])
 def test_permission_fixture_executes_actual_classifier_source_and_removes_its_file(
-    tmp_path, capsys
+    tmp_path, capsys, private_group_accepted
 ):
     token = "0" * 12
     expected = "jht_" + token + "_a"
@@ -56,7 +57,8 @@ def test_permission_fixture_executes_actual_classifier_source_and_removes_its_fi
 
     def native_config(argv, **kwargs):
         assert argv == ["/usr/bin/ssh", "-G", "workstation"]
-        unsafe = stat.S_IMODE((tmp_path / "config").stat().st_mode) == 0o664
+        mode = stat.S_IMODE((tmp_path / "config").stat().st_mode)
+        unsafe = mode == 0o666 or mode == 0o664 and not private_group_accepted
         return subprocess.CompletedProcess(
             argv,
             255 if unsafe else 0,
@@ -75,8 +77,10 @@ def test_permission_fixture_executes_actual_classifier_source_and_removes_its_fi
         patch("subprocess.run", side_effect=native_config) as run,
     ):
         exec(compile(PROGRAM, "<fixture-driver>", "exec"), {})
-        assert run.call_count == 3
-    assert json.loads(capsys.readouterr().out)["feedback"] is True
+        assert run.call_count == 4
+    result = json.loads(capsys.readouterr().out)
+    assert result["feedback"] is True
+    assert result["group_write"] == ("accepted" if private_group_accepted else "rejected")
     assert not (tmp_path / "config").exists()
 
 

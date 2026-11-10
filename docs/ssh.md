@@ -21,8 +21,11 @@ configuration commonly uses mode 0600.
 
 If OpenSSH reports **Bad owner or permissions**, inspect the exact file named in
 its error. For the default local ~/.ssh/config owned by your account, group or
-other **write** permission is unsafe: 0664 is rejected, while 0644 normally
-passes this file check. Mode 0600 is the conservative recommendation. A correctly
+other **write** permission can cause rejection: upstream OpenSSH rejects 0664,
+while 0644 normally passes this file check. Some Debian/Ubuntu builds allow group
+write when that group contains only the owner; their
+[file requirements](https://manpages.ubuntu.com/manpages/resolute/man5/ssh_config.5.html#FILES)
+document this exception. Mode 0600 is the conservative recommendation. A correctly
 restricted 0700 directory does not replace the file's independent check.
 An editable configuration could change the destination or commands SSH executes.
 See the [OpenSSH file requirements](https://man.openbsd.org/ssh_config#FILES)
