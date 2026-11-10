@@ -104,4 +104,7 @@ This directory is the project's design source of truth. Update specifications an
   one archive, four installed clients, promotion and independent public receiving.
 - [Documentation onboarding audit](32-documentation-onboarding-audit.md): external
   discovery, clarity, friendly first use, a progression of capabilities, visual
-  findings and observable reader-validation criteria; recommendations pending.
+  findings and observable reader-validation criteria for the reviewed snapshot.
+- [Documentation onboarding implementation](33-documentation-onboarding-implementation.md):
+  rewritten entry/task guides, fixture demonstrations, preview metadata, observed
+  technical acceptance and pending reader/external validation.

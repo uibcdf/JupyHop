@@ -4,8 +4,11 @@ Date: 2026-11-10. Release reviewed: published 0.3.0.
 Public-documentation snapshot: **599046e4f04a7324f3e7863c063b4a74604278c8**.
 Expanded review after the first audit at **e210b2d61cd4ec7f2352a204d642ba3c5c72781f**;
 the public guides have not changed between these reviews.
-Status: expert audit complete for the scope below; recommendations await
-implementation and reader validation.
+Status: expert audit complete for the reviewed snapshot. The
+[implementation report](33-documentation-onboarding-implementation.md) records
+the subsequent rewrite, observed checks and remaining reader/external validation.
+The findings below retain the original evidence; they do not describe current
+public-page content after that rewrite.
 
 ## Verdict
 
@@ -588,9 +591,8 @@ required by this audit.
   remote scientific test is claimed here. Keyboard/focus, contrast and image
   alternatives remain checks for the proposed rendered rewrite.
 
-This task expands the canonical audit and its developer-guide index entry.
-Public guide content, product behavior, dependencies, packages, repository About
-settings and site deployment are unchanged. The recommended next work is the
-staged documentation rewrite above, followed by the reader walkthrough. The
-expanded audit is a more complete brief for an inviting, useful introduction;
-it does not claim the resulting reader experience has already been achieved.
+At completion of this audit pass, public guides, product behavior, dependencies,
+packages, repository About settings and site deployment were unchanged. The
+subsequent [implementation report](33-documentation-onboarding-implementation.md)
+records the rewrite and checks separately. This audit supplies the design brief;
+reader engagement still requires observation of actual readers.
