@@ -103,14 +103,27 @@ The current package is 0.2.0, unpublished on PyPI. Real manual/managed sessions,
 7200-second disconnected workload, native terminal/password workflows and the
 installed-client upgrade are covered by the recorded experiments. The maintainer
 requires both native SSH passwords and keys/agent; headless/--batch requires
-noninteractive access. Candidate packaging uses the actual wheel. Physical home
-client/network moves and forced logout/reboot remain unmeasured; their limits are
-explicit and are not counted as passed observations.
+noninteractive access. Candidate packaging uses the actual wheel. The subsequent
+[physical home-client pilot](28-02-physical-client-pilot.md) observes managed and
+manual Jupyter access through a real gateway, same-kernel reconnection and two
+concurrent servers on one workstation. Physical suspend/network moves, transfer
+of the same kernel between two physical clients and forced logout/reboot remain
+unmeasured; these limits are not counted as passed observations.
 The [Conda report](24-conda-publication.md) tracks the separately authorized
 uibcdf channel workflow and observed publication status.
 
 This is stabilization of M0–M6, not a dependency on optional M7 features. Keep the
 finite acceptance matrix distinct from a claim of universal compatibility.
+
+## 0.3.0 — Session usability proposal
+
+The [post-pilot proposal](29-03-session-ux-design.md) addresses friendly names,
+consistent interactive selection, inventory/history summaries, explicit
+stop-and-archive completion and actionable diagnostics. This is unimplemented
+design work, with compatibility and acceptance requirements. Existing 0.2.0
+UUID scripting, unmanaged ownership boundaries and foreground SSH lifetimes
+remain the current contract. Review shared selectors/inventory before adding a
+thin manage menu; a resume alias is optional and never restarts a stopped kernel.
 
 ## M7 — Optional extensions (separate scope decisions)
 

@@ -216,16 +216,24 @@ Conda work requires its own source commit and installed-package qualification.
 
 ## Acceptance boundary and next work
 
+The later [physical home-client pilot](28-02-physical-client-pilot.md), closed on
+2026-11-10, supplements this report with actual manual/managed Jupyter operation
+over a home/gateway/workstation route, same-kernel recovery and concurrent
+single-workstation sessions. Its observations do not relabel the earlier
+doctor-only second target as a tested Jupyter destination.
+
 The scoped Linux functionality, native password/key authentication, discovery,
 managed persistence, concurrency, safe lifecycle and two-hour recovery gates have
 observed results. The [gate table](22-02-stabilization.md) maps these results to
 the supported matrix. Package publication is a separate maintainer action.
 
-Physical home/laptop suspend/network moves, a second physical client and actual
-last-logout/reboot policy remain unmeasured. The real password route's doctor
+Physical home/laptop suspend/network moves, transfer of the same live kernel
+between two physical clients and actual last-logout/reboot policy remain
+unmeasured. The earlier real password route's doctor
 does not by itself demonstrate Jupyter start/kernel operation on that second
 target. Do not turn unavailable or unperformed manual cases into passing results.
 
-The recommended next increment is actual-user stabilization of the declared
-0.2.0 workflows, including a separate physical home client and broader site/OS
-observations when available. Optional M7 features remain outside this increment.
+Continue actual-user stabilization of the declared 0.2.0 workflows and review the
+[0.3.0 usability proposal](29-03-session-ux-design.md) motivated by the completed
+home-client pilot. Broader site/OS observations and optional M7 features remain
+separate work.

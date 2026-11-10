@@ -10,6 +10,11 @@ browser flows. M4 implements managed status and verified stop with exact UUIDs;
 M5 adds named executable/workdir profiles, multi-host inventory/selection and
 inactive-record archive. Name-based session resolution remains unimplemented.
 
+The [physical-client pilot](28-02-physical-client-pilot.md) motivates a separate
+[0.3.0 proposal](29-03-session-ux-design.md), including an interactive chooser even
+for one candidate and visible retained/archive inventory. The rules below remain
+the shipped 0.2.0 behavior until implementation and acceptance of a new contract.
+
 M6's [quickstart](../docs/quickstart.md), [troubleshooting](../docs/troubleshooting.md)
 and [compatibility policy](../docs/compatibility.md) give the beta's current user
 workflow. Private password prompts refuse echo fallback. SIGTERM/SIGHUP closes

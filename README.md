@@ -17,7 +17,12 @@ The guides also cover [remote preparation](docs/remote-setup.md),
 and [updating a client](docs/upgrading.md).
 The [0.2.0 operational scope](devguide/22-02-stabilization.md) and
 [acceptance evidence](devguide/23-02-stabilization-evidence.md) distinguish tested
-workflows from the remaining physical-client/site observations.
+workflows from unmeasured physical transitions and site policies.
+The [physical home-client pilot](devguide/28-02-physical-client-pilot.md) now
+confirms managed/manual access, same-kernel reconnection and concurrent sessions
+through a real SSH gateway. Its usability findings inform the
+[0.3.0 design proposal](devguide/29-03-session-ux-design.md); those improvements
+are not implemented in 0.2.0.
 Version 0.2.0 is available on the [uibcdf Conda channel](https://anaconda.org/uibcdf/jupyhop)
 for Linux. Distribution follows the shared UIBCDF build/test/staging/promotion
 workflow; see [publication evidence](devguide/24-conda-publication.md).

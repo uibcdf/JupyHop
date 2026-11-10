@@ -89,3 +89,9 @@ This directory is the project's design source of truth. Update specifications an
   contracts, client updates, executable examples and observed publication checks.
 - [Documentation precision](27-documentation-precision.md): isolated Python,
   observation/registry scope, multi-kernel ownership and continuous example checks.
+- [Physical home-client pilot](28-02-physical-client-pilot.md): operator-observed
+  managed/manual access through a real gateway, same-kernel recovery, concurrent
+  servers, selected-only stop and explicit archival completion.
+- [0.3.0 session UX proposal](29-03-session-ux-design.md): names/choosers,
+  inventory/history visibility, confirmed stop-and-archive and actionable diagnosis;
+  proposed behavior, not shipped functionality.

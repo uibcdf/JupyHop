@@ -137,6 +137,10 @@ Experiments, internal review and release limits: [20](20-m6-beta-readiness.md).
 | Broader URL variants | IPv6, HTTPS and TLS hostname mismatch | IPv4 HTTP/simple ASCII base paths and browser WebSockets pass; additional variants require live tests |
 | Broader discovery coverage | Additional Conda layouts and legacy runtime formats | Explicit multiple runtime dirs/interpreters and deduplication pass; exhaustive inventory is outside MVP |
 | Browser/tunnel edge cases | Suspend/resume and CLI upgrade during an attached session | Browser/tunnel closure and independent reconnect pass; physical client transitions remain unmeasured |
+| Interactive session selection | Names, consistent single/multiple-candidate choosers, thin manage menu | Physical pilot exposes UUID/picker friction; proposed 0.3.0 behavior and identity guards are in [29](29-03-session-ux-design.md), not implemented |
+| Session inventory/history visibility | Managed state counters and bounded archive inspection | Current status lists unarchived records but has no counts/archive inventory; protocol shape and bounded history reads need review |
+| Interactive completion | Explicitly confirmed stop-and-archive with separate phase outcomes | Manual archive is easily forgotten; retain stop-only automation, proof of inactivity and evidence; no automatic age-based deletion |
+| Actionable diagnostics | SSH permission classification, public reports, discovery limit distinctions | Pilot findings in [28](28-02-physical-client-pilot.md); runtime changes require isolated native-auth/redaction regressions, not assumptions from later successful retries |
 
 ## Architectural decision record format
 
