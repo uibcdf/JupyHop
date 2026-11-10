@@ -108,3 +108,6 @@ This directory is the project's design source of truth. Update specifications an
 - [Documentation onboarding implementation](33-documentation-onboarding-implementation.md):
   rewritten entry/task guides, fixture demonstrations, preview metadata, observed
   technical acceptance and pending reader/external validation.
+- [0.4.0 usability and browser authentication proposal](34-04-usability-and-browser-auth.md):
+  identifier/credential distinction, SSH-authorized native cookie handoff, bounded
+  release priorities, disposable proof and security/compatibility gates.

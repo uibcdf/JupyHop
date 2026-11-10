@@ -141,7 +141,7 @@ do not claim package publication or a new physical-site pilot.
 | Lifecycle rollout extensions | Optional installed helper/migration | M4 source RPC and unchanged M3 runners are verified; no installation is needed |
 | Other process managers / site validation | Explicit systemd backend and PAM/linger fixture | M4 tmux is tested; physical site logout policy cannot be inferred from it |
 | Archive deletion / migration | Explicit retention/deletion policy and orphaned-kernel recovery | M5 archive/name reuse is verified; permanent deletion and migration remain unimplemented |
-| Automatic browser authentication extension | Protected token handoff beyond selected normal-login baseline | Normal password/token login and cookie WebSocket tests pass; automatic credential handoff needs separate exposure review |
+| Automatic browser authentication extension | Protected token handoff beyond selected normal-login baseline | A [0.4 proposal and fixture spike](34-04-usability-and-browser-auth.md) demonstrate native-cookie transfer; the shipped login baseline remains unchanged pending production security/browser/version gates |
 | Broader manually started server discovery | Additional versions/authentication/runtime layouts | M2 current-user metadata, explicit paths/interpreters, ownership and simple base paths are verified; coverage remains partial |
 | Future port customization | M3 fixes native ephemeral allocation; explicit port policy is separate scope | No manual remote-port coordinator is needed for M3 |
 | Background/shared tunnel extension | Detached SSH or verified reuse/control socket | Foreground owned cleanup, independent forwards and reconnection are verified through M5; no background mode is needed |

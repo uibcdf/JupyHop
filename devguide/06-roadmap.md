@@ -8,6 +8,11 @@ and [documentation report](25-public-documentation.md). M7 is optional. Dependen
 vertical slice; security is a gate at every stage. Never advertise proposed CLI
 syntax as implemented.
 
+The [0.4.0 consolidation proposal](34-04-usability-and-browser-auth.md) evaluates
+transparent browser authentication and simpler human output on top of completed
+milestones. It includes a disposable feasibility spike, not an implemented new
+release or a change to the current authentication contract.
+
 See [product scope](01-product-scope.md), [scenario matrix](08-scenarios-and-acceptance.md), [lifecycle/authentication contracts](09-session-lifecycle-and-auth.md), [remote runtime](10-remote-runtime-and-protocol.md), [discovery/connectivity](11-discovery-and-connectivity.md), [UX](12-user-experience.md), and [open decisions](07-decisions.md). Existing tests and public docs must track shipped behavior.
 
 ## M0 — Complete the design baseline
