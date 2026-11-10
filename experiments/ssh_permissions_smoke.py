@@ -32,12 +32,18 @@ try:
     os.fsync(descriptor)
     for mode in (0o600,0o644,0o664):
         os.fchmod(descriptor,mode)
+        if stat.S_IMODE(os.fstat(descriptor).st_mode)!=mode:
+            raise RuntimeError('Fixture mode did not match requested mode')
         result=subprocess.run(['/usr/bin/ssh','-G','workstation'],capture_output=True,timeout=5)
         if mode!=0o664:
             if result.returncode!=0:
                 raise RuntimeError('Safe default configuration unexpectedly refused')
-        elif result.returncode==0 or b'Bad owner or permissions' not in result.stderr:
-            raise RuntimeError('Unsafe default configuration not refused')
+            if b'hostname workstation.example.org\n' not in result.stdout or b'user researcher\n' not in result.stdout:
+                raise RuntimeError('Safe default configuration was not loaded')
+        elif result.returncode==0:
+            raise RuntimeError('Unsafe default configuration was accepted')
+        elif b'bad owner or permissions' not in result.stderr.lower():
+            raise RuntimeError('Unsafe default configuration had a different failure')
     # Exercise the actual client classifier as this UID, without installing a
     # remote package or assuming the checkout is readable by the fixture UID.
     package=types.ModuleType('jupyhop')
@@ -76,8 +82,11 @@ def _failure_reason(stderr):
     for reason in (
         "Not the explicitly generated fixture account",
         "Unexpected private fixture SSH directory",
+        "Fixture mode did not match requested mode",
         "Safe default configuration unexpectedly refused",
-        "Unsafe default configuration not refused",
+        "Safe default configuration was not loaded",
+        "Unsafe default configuration was accepted",
+        "Unsafe default configuration had a different failure",
         "Default-config remedy was not safely classified",
         "Fixture config changed; refusing unrelated removal",
     ):

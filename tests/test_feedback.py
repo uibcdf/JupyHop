@@ -20,9 +20,9 @@ from jupyhop.ssh import ssh_failure
 def test_native_permission_failure_reports_only_fixed_stages_or_exception_classes():
     assert (
         _failure_reason(
-            b"PRIVATE_SENTINEL\nRuntimeError: Unsafe default configuration not refused\n"
+            b"PRIVATE_SENTINEL\nRuntimeError: Unsafe default configuration was accepted\n"
         )
-        == "Unsafe default configuration not refused"
+        == "Unsafe default configuration was accepted"
     )
     assert _failure_reason(b"PRIVATE_SENTINEL\nNameError: private_variable\n") == "NameError"
     assert _failure_reason(b"RuntimeError: PRIVATE_SENTINEL") == "unknown fixture failure"
@@ -60,7 +60,7 @@ def test_permission_fixture_executes_actual_classifier_source_and_removes_its_fi
         return subprocess.CompletedProcess(
             argv,
             255 if unsafe else 0,
-            stdout=b"",
+            stdout=b"hostname workstation.example.org\nuser researcher\n" if not unsafe else b"",
             stderr=(
                 f"Bad owner or permissions on {fake_home}/.ssh/config\n".encode() if unsafe else b""
             ),
