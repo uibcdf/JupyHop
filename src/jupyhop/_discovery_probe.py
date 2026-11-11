@@ -181,10 +181,12 @@ def listener_inode(pid: int, port: int) -> str:
 class _DeadlineSocket(socket.socket):
     """Bound total reads, including a peer that keeps trickling header bytes."""
 
-    def __init__(self) -> None:
+    def __init__(self, deadline: float | None = None) -> None:
         super().__init__(socket.AF_INET, socket.SOCK_STREAM)
         self.deadline = time.monotonic() + 2
-        self.settimeout(1)
+        if deadline is not None:
+            self.deadline = min(self.deadline, deadline)
+        self.settimeout(max(0.001, min(1, self.deadline - time.monotonic())))
 
     def recv_into(self, buffer: Any, nbytes: int = 0, flags: int = 0) -> int:
         remaining = self.deadline - time.monotonic()
@@ -195,8 +197,10 @@ class _DeadlineSocket(socket.socket):
 
 
 class _Connection(http.client.HTTPConnection):
+    deadline: float | None = None
+
     def connect(self) -> None:
-        channel = _DeadlineSocket()
+        channel = _DeadlineSocket(self.deadline)
         try:
             channel.connect(("127.0.0.1", self.port))
             self.sock = channel
@@ -230,7 +234,9 @@ def endpoint(port: int, base: str) -> str:
     return version
 
 
-def _candidate(directory: int, name: str, path: str, scope: str) -> dict[str, Any]:
+def _candidate(
+    directory: int, name: str, path: str, scope: str, *, metadata: dict[str, Any] | None = None
+) -> dict[str, Any]:
     record: dict[str, Any] = {
         "id": _digest(scope, path, name),
         "origin": "unmanaged",
@@ -249,7 +255,7 @@ def _candidate(directory: int, name: str, path: str, scope: str) -> dict[str, An
         if match[1] != "jpserver":
             record["reason"] = "legacy_metadata"
             return record
-        info = _read_record(directory, name)
+        info = _read_record(directory, name) if metadata is None else metadata
         pid, port, base = info.get("pid"), info.get("port"), info.get("base_url")
         if (
             type(pid) is not int

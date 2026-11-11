@@ -12,7 +12,7 @@ from typing import Any
 from jupyhop.discovery import validate_python
 from jupyhop.errors import LaunchError, PrerequisiteError, ProtocolError, SSHError
 from jupyhop.protocol import _invalid_constant, _text, _unique_object, parse_discovery
-from jupyhop.ssh import STDOUT_LIMIT, SSHTransport, ssh_failure
+from jupyhop.ssh import STDIN_LIMIT, STDOUT_LIMIT, SSHTransport, ssh_failure
 
 BOOTSTRAP = "import json,sys; p=json.load(sys.stdin); n={'__name__':'jupyhop_remote','_SOURCES':p['sources']}; [exec(compile(s,'<jupyhop-remote>','exec'),n) for s in p['sources']]; n['start_main'](p['request'])"
 _ERRORS = {
@@ -74,7 +74,7 @@ def new_id() -> str:
     return uuid.uuid4().hex
 
 
-def parse_start(raw: bytes, expected_id: str) -> dict[str, Any]:
+def parse_start(raw: bytes, expected_id: str, expected_mode: str | None = None) -> dict[str, Any]:
     if len(raw) > STDOUT_LIMIT:
         raise ProtocolError(
             "Managed start response exceeds its size limit; remote state is unknown."
@@ -95,6 +95,10 @@ def parse_start(raw: bytes, expected_id: str) -> dict[str, Any]:
         ):
             raise ValueError
         data = envelope["data"]
+        if expected_mode is not None and (
+            protocol["minor"] != 8 or data.get("auth_mode") != expected_mode
+        ):
+            raise ValueError
         if data["id"] != expected_id or data["state"] not in {
             "ready",
             "starting",
@@ -159,7 +163,8 @@ def start(
     helper_python: str = "python3",
     workdir: str = "~",
     name: str | None = None,
-    password: str,
+    password: str | None = None,
+    auth_mode: str | None = None,
     session_id: str | None = None,
 ) -> dict[str, Any]:
     session_id = new_id() if session_id is None else session_id
@@ -183,25 +188,41 @@ def start(
         raise ValueError(
             "Workdir must be a remote path or ~/ path without control characters; ~other is unsupported."
         )
-    if not 8 <= len(password) <= 1024 or any(ord(c) < 32 or ord(c) == 127 for c in password):
+    legacy = auth_mode is None and password is not None
+    mode = auth_mode if auth_mode is not None else "password" if legacy else "token"
+    if mode not in ("password", "token") or (mode == "token" and password is not None):
+        raise ValueError("Token mode accepts no Jupyter password.")
+    if mode == "password" and (
+        password is None
+        or not 8 <= len(password) <= 1024
+        or any(ord(c) < 32 or ord(c) == 127 for c in password)
+    ):
         raise ValueError("A password of 8–1024 characters without control characters is required.")
     sources = [
         files("jupyhop").joinpath(name).read_text()
         for name in ("_discovery_probe.py", "_managed_remote.py")
     ]
-    request = {
-        "protocol": {"major": 1, "minor": 2},
+    request: dict[str, Any] = {
+        "protocol": {"major": 1, "minor": 2 if legacy else 8},
         "id": session_id,
         "name": name,
         "server_python": server_python,
         "workdir": workdir,
-        "password": password,
         "budget": max(1, transport.timeout - 3),
     }
+    if not legacy:
+        request["auth_mode"] = mode
+    if password is not None:
+        request["password"] = password
+    payload = json.dumps({"sources": sources, "request": request}, ensure_ascii=False).encode()
+    if len(payload) > STDIN_LIMIT:
+        raise ValueError(
+            "Managed start request exceeds 64 KiB. Shorten the remote paths or password."
+        )
     try:
         result = transport.run(
             [helper_python, "-I", "-B", "-c", BOOTSTRAP],
-            stdin=json.dumps({"sources": sources, "request": request}).encode(),
+            stdin=payload,
         )
     except SSHError as transport_error:
         raise LaunchError(
@@ -220,7 +241,7 @@ def start(
         raise LaunchError(
             f"Start request {session_id} could not be confirmed. Run discover to inspect remote state; do not assume a server was stopped."
         )
-    report = parse_start(result.stdout, session_id)
+    report = parse_start(result.stdout, session_id, None if legacy else mode)
     report["host"] = transport.host
     return report
 

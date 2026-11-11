@@ -10,6 +10,7 @@ import hashlib
 import json
 import os
 import re
+import secrets
 import shutil
 import stat
 import subprocess
@@ -23,12 +24,19 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING or __name__ == "jupyhop._managed_remote":
-    from jupyhop._discovery_probe import Unsupported, _candidate, listener_inode, process_identity
+    from jupyhop._discovery_probe import (
+        Unsupported,
+        _candidate,
+        _read_record,
+        listener_inode,
+        process_identity,
+    )
 
 SCHEMA = {"major": 1, "minor": 0}
 _SID = re.compile(r"[a-f0-9]{32}\Z")
 _NAME = re.compile(r"[A-Za-z0-9][A-Za-z0-9_.-]{0,63}\Z")
 _STATES = {"requested", "starting", "ready", "failed", "exited"}
+SETTINGS_SCHEMA = {"major": 1, "minor": 0}
 
 
 def _known_schema(value: Any) -> bool:
@@ -334,19 +342,19 @@ class Registry:
             for index, entry in enumerate(entries):
                 if index >= 128 or not _SID.fullmatch(entry.name):
                     raise ManagedProblem("state_limit_or_corruption")
-                with self.session(entry.name) as fd:
-                    value = validate_record(_load(fd, "record.json"), entry.name)
-                    if value["runtime"] != os.path.join(
-                        self.root, "sessions", entry.name, "runtime"
-                    ):
-                        raise ManagedProblem("corrupt_state")
-                    if (
-                        hashlib.sha256(_read(fd, "launch.py", 96 * 1024)).hexdigest()
-                        != value["runner_sha256"]
-                    ):
-                        raise ManagedProblem("corrupt_state")
-                    records.append(value)
+                records.append(self.record(entry.name))
         return records
+
+    def record(self, sid: str) -> dict[str, Any]:
+        with self.session(sid) as fd:
+            value = validate_record(_load(fd, "record.json"), sid)
+            if (
+                value["runtime"] != os.path.join(self.root, "sessions", sid, "runtime")
+                or hashlib.sha256(_read(fd, "launch.py", 96 * 1024)).hexdigest()
+                != value["runner_sha256"]
+            ):
+                raise ManagedProblem("corrupt_state")
+        return value
 
     def update(self, sid: str, changes: dict[str, Any]) -> dict[str, Any]:
         with self.lock(), self.session(sid) as fd:
@@ -492,7 +500,8 @@ try:
         sys.exit(5)
     if sys.version_info < (3,11) or not KernelSpecManager().find_kernel_specs():
         sys.exit(4)
-    print(json.dumps({'hash':passwd(request['password']), 'lab':importlib.util.find_spec('jupyterlab') is not None}))
+    password=request['password']
+    print(json.dumps({'hash':passwd(password) if password is not None else None, 'lab':importlib.util.find_spec('jupyterlab') is not None}))
 except Exception:
     sys.exit(4)
 """
@@ -530,8 +539,14 @@ def _runner_source() -> bytes:
     ).encode()
 
 
-def _validated_request(request: dict[str, Any]) -> tuple[str, str, str, str, str]:
-    if request.get("protocol") != {"major": 1, "minor": 2}:
+def _validated_request(request: dict[str, Any]) -> tuple[str, str, str | None, str, str]:
+    protocol = request.get("protocol")
+    if (
+        not isinstance(protocol, dict)
+        or type(protocol.get("major")) is not int
+        or protocol not in ({"major": 1, "minor": 2}, {"major": 1, "minor": 8})
+        or type(protocol["minor"]) is not int
+    ):
         raise ManagedProblem("incompatible_registry")
     sid, name = request.get("id"), request.get("name")
     if (
@@ -541,11 +556,16 @@ def _validated_request(request: dict[str, Any]) -> tuple[str, str, str, str, str
         or not _NAME.fullmatch(name)
     ):
         raise ManagedProblem("invalid_request")
+    mode = "password" if protocol["minor"] == 2 else request.get("auth_mode")
+    supplied = "password" in request
     password = request.pop("password", None)
-    if (
-        not isinstance(password, str)
-        or not 8 <= len(password) <= 1024
-        or any(ord(c) < 32 or ord(c) == 127 for c in password)
+    if mode == "token":
+        if supplied:
+            raise ManagedProblem("invalid_request")
+    elif mode != "password" or not (
+        isinstance(password, str)
+        and 8 <= len(password) <= 1024
+        and all(ord(c) >= 32 and ord(c) != 127 for c in password)
     ):
         raise ManagedProblem("invalid_request")
     path = request.get("workdir")
@@ -580,6 +600,7 @@ def _validated_request(request: dict[str, Any]) -> tuple[str, str, str, str, str
 
 def _prepare(request: dict[str, Any]) -> dict[str, Any]:
     sid, name, password, workdir, python = _validated_request(request)
+    mode = "token" if password is None else "password"
     if sys.version_info < (3, 11) or not sys.platform.startswith("linux"):
         raise ManagedProblem("server_prerequisites")
     manager = shutil.which("tmux")
@@ -608,12 +629,9 @@ def _prepare(request: dict[str, Any]) -> dict[str, Any]:
     finally:
         del password
     password_hash = checked.get("hash")
-    if (
-        not isinstance(password_hash, str)
-        or not password_hash.startswith("argon2:")
-        or len(password_hash) > 1024
-        or type(checked.get("lab")) is not bool
-    ):
+    if (password_hash is not None if mode == "token" else not _valid_hash(password_hash)) or type(
+        checked.get("lab")
+    ) is not bool:
         raise ManagedProblem("server_prerequisites")
     runner = _runner_source()
     with Registry(create=True) as registry:
@@ -657,12 +675,14 @@ def _prepare(request: dict[str, Any]) -> dict[str, Any]:
                 for directory in ("runtime", "config"):
                     os.mkdir(directory, 0o700, dir_fd=fd)
                 _write(fd, "server.log", b"", exclusive=True)
-                _save(
-                    fd,
-                    "settings.json",
-                    {"password_hash": password_hash, "lab": checked["lab"]},
-                    exclusive=True,
-                )
+                settings: dict[str, Any] = {"lab": checked["lab"]}
+                if request["protocol"]["minor"] == 2:
+                    settings["password_hash"] = password_hash
+                else:
+                    settings.update(settings_schema=SETTINGS_SCHEMA, auth={"mode": mode})
+                    if mode == "password":
+                        settings["auth"]["password_hash"] = password_hash
+                _save(fd, "settings.json", settings, exclusive=True)
                 _save(fd, "record.json", record, exclusive=True)
         environment = dict(os.environ)
         environment.pop("TMUX", None)
@@ -698,6 +718,35 @@ def _prepare(request: dict[str, Any]) -> dict[str, Any]:
         return record
 
 
+def _valid_hash(value: Any) -> bool:
+    return isinstance(value, str) and value.startswith("argon2:") and len(value) <= 1024
+
+
+def settings_mode(settings: dict[str, Any]) -> str:
+    if type(settings.get("lab")) is not bool:
+        raise ManagedProblem("corrupt_state")
+    if set(settings) == {"lab", "password_hash"} and _valid_hash(settings["password_hash"]):
+        return "legacy-password"
+    schema, auth = settings.get("settings_schema"), settings.get("auth")
+    if (
+        set(settings) != {"lab", "settings_schema", "auth"}
+        or not isinstance(schema, dict)
+        or schema != SETTINGS_SCHEMA
+        or any(type(value) is not int for value in schema.values())
+        or not isinstance(auth, dict)
+    ):
+        raise ManagedProblem("incompatible_settings")
+    if auth == {"mode": "token"}:
+        return "token"
+    if (
+        set(auth) == {"mode", "password_hash"}
+        and auth["mode"] == "password"
+        and _valid_hash(auth["password_hash"])
+    ):
+        return "password"
+    raise ManagedProblem("incompatible_settings")
+
+
 def run_server(root: str) -> None:
     """Executed by this session's immutable runner in the chosen server Python."""
     from importlib import import_module
@@ -721,9 +770,12 @@ def run_server(root: str) -> None:
             os.dup2(log, 2)
             os.close(log)
             settings = _load(fd, "settings.json")
-            password_hash = settings.get("password_hash")
-            if not isinstance(password_hash, str) or not password_hash.startswith("argon2:"):
-                raise ManagedProblem("corrupt_state")
+            mode = settings_mode(settings)
+            password_hash = ""
+            if mode == "password":
+                password_hash = settings["auth"]["password_hash"]
+            elif mode == "legacy-password":
+                password_hash = settings["password_hash"]
             started = process_identity(os.getpid())
             registry.update(
                 sid, {"state": "starting", "pid": os.getpid(), "process_start": started}
@@ -759,11 +811,15 @@ def run_server(root: str) -> None:
                 },
                 "PasswordIdentityProvider": {
                     "hashed_password": password_hash,
-                    "password_required": True,
-                    "token": "",
+                    "password_required": mode != "token",
+                    "token": secrets.token_hex(32) if mode == "token" else "",
+                    "allow_password_change": False,
+                    "cookie_options": {"samesite": "Lax"},
                 },
             }
             app = ManagedServer.instance(config=config_class(config))
+            # This native trait is not configurable through traitlets.Config.
+            app.no_browser_open_file = True
             app.initialize([], find_extensions=False)
 
             def checkpoint() -> None:
@@ -795,6 +851,10 @@ def start_main(request: dict[str, Any]) -> None:
         "server": None,
         "record_path": None,
     }
+    modern = request.get("protocol") == {"major": 1, "minor": 8}
+    mode = request.get("auth_mode") if modern else "password"
+    if modern:
+        response["auth_mode"] = mode if mode in ("token", "password") else None
     try:
         deadline = time.monotonic() + max(1, request["budget"])
         record = _prepare(request)
@@ -821,6 +881,14 @@ def start_main(request: dict[str, Any]) -> None:
                             runtime, f"jpserver-{record['pid']}.json", record["runtime"], scope
                         )
                         candidate = mark_managed(candidate, records)
+                        if candidate["state"] == "ready" and mode == "token":
+                            token = _read_record(runtime, f"jpserver-{record['pid']}.json").get(
+                                "token"
+                            )
+                            if not isinstance(token, str) or not re.fullmatch(
+                                r"[a-f0-9]{64}", token
+                            ):
+                                raise ManagedProblem("server_initialization_failed")
                     finally:
                         os.close(runtime)
                     if candidate["state"] == "ready" and candidate["origin"] == "managed":
@@ -848,7 +916,11 @@ def start_main(request: dict[str, Any]) -> None:
         response.update({"state": "starting", "error": "launch_unknown"})
     print(
         json.dumps(
-            {"protocol": {"major": 1, "minor": 2}, "operation": "start", "data": response},
+            {
+                "protocol": {"major": 1, "minor": 8 if modern else 2},
+                "operation": "start",
+                "data": response,
+            },
             ensure_ascii=True,
         )
     )
