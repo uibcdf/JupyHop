@@ -11,7 +11,8 @@ syntax as implemented.
 The [0.4.0 implementation plan](35-04-implementation-plan.md) defines the next
 release: transparent managed browser access, simpler human output and compatible
 recovery. It builds on the [analysis/spike](34-04-usability-and-browser-auth.md).
-The plan is prepared; no new product feature or release is implemented yet.
+The [source implementation report](36-04-implementation.md) tracks the candidate
+and its qualification. Conda installation still uses the published 0.3.0 release.
 
 See [product scope](01-product-scope.md), [scenario matrix](08-scenarios-and-acceptance.md), [lifecycle/authentication contracts](09-session-lifecycle-and-auth.md), [remote runtime](10-remote-runtime-and-protocol.md), [discovery/connectivity](11-discovery-and-connectivity.md), [UX](12-user-experience.md), and [open decisions](07-decisions.md). Existing tests and public docs must track shipped behavior.
 
@@ -143,11 +144,11 @@ by name/number while lifecycle operations retain exact UUID verification.
 
 Required gates, each with recorded acceptance:
 
-- [ ] G0: native-browser feasibility and security/trust review.
-- [ ] G1: token/password launch modes, versioned settings and wire/payload budgets.
-- [ ] G2: selected managed native-cookie RPC with the token kept remote.
-- [ ] G3: bounded one-use local handoff and actual browser acceptance.
-- [ ] G4: CLI defaults/options, simple presentation, targeted lookup and recovery.
+- [x] G0: native-browser feasibility and security/trust review.
+- [x] G1: token/password launch modes, versioned settings and wire/payload budgets.
+- [x] G2: selected managed native-cookie RPC with the token kept remote.
+- [x] G3: bounded one-use local handoff and actual browser acceptance.
+- [x] G4: CLI defaults/options, simple presentation, targeted lookup and recovery.
 - [ ] G5: installed/version/account/SSH/browser/reader/documentation acceptance.
 - [ ] G6: separately authorized numeric release, exact-file publication and receiving.
 

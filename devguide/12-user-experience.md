@@ -12,6 +12,12 @@ inactive-record archive. The 0.3.0 source candidate adds name resolution and the
 shared inventory/selector/completion layer; [30](30-03-implementation.md) records
 implementation and exact qualification evidence.
 
+The [0.4.0 source candidate](36-04-implementation.md) makes automatic browser
+access the human default for new managed sessions. Use a name to resume a
+project and `--verbose` for the underlying identifiers. See the
+[option and recovery contract](35-04-implementation-plan.md) for manual login,
+headless use and JSON automation.
+
 The [physical-client pilot](28-02-physical-client-pilot.md) motivates a separate
 [0.3.0 proposal](29-03-session-ux-design.md), including an interactive chooser even
 for one candidate and visible retained/archive inventory. The current source

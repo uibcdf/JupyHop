@@ -66,10 +66,11 @@ Multiple server versions, differing runtime dirs, custom base URLs, TLS, and pas
 
 ## Credential/authentication contract (security gate)
 
-M0 selected the normal token-free Jupyter login page as the baseline; protected
-automatic browser handoff remains an M2 experiment. See the
-[recorded alternatives and risks](13-m0-validation.md). No new credential cache
-is approved or implemented by M1.
+M0 selected the normal token-free Jupyter login page as the baseline. The
+[recorded alternatives and risks](13-m0-validation.md) describe that decision.
+The [0.4.0 source candidate](36-04-implementation.md) provides automatic access
+for token-based managed sessions after verification through SSH. Native
+Jupyter authentication remains in force.
 
 For new managed servers M3 selects a prompted password sent through encrypted
 stdin and stored only as a native Argon2 hash in private remote settings. This

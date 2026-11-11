@@ -7,7 +7,9 @@ myst:
 
 # Scripting and exit codes
 
-Use explicit SSH aliases and exact server/session IDs in scripts. A headless
+Use explicit SSH aliases and exact server/session IDs in scripts. In 0.4.0, a
+new managed start defaults to token mode. Use `--password-stdin` to keep a
+password-based workflow. A headless
 client requires noninteractive SSH authentication on every hop. `--batch` makes
 that requirement explicit even when a terminal exists.
 
@@ -112,6 +114,12 @@ before using the URL would wait for the tunnel to close. `start` without
 `--no-open` can also attach the browser/tunnel flow. Interactive SSH prompts remain
 owned by OpenSSH's controlling terminal.
 
+In 0.4.0, `--json` defaults to manual Jupyter login. Add `--login auto` only
+when a browser on the same computer will accept the private link. The connection
+object then follows cookie delivery. Use `--json --no-browser` for a normal
+login URL. Combining those two flags with `--login auto` is invalid. A
+`start --no-open` launch result has the same shape for either server mode.
+
 Wire versions, remote registry schema and the local inventory/config format
 have separate contracts. Inspect the [version policy](compatibility.md) and
 validate fields rather than assuming unrelated envelopes have the same shape.
@@ -132,6 +140,7 @@ validate fields rather than assuming unrelated envelopes have the same shape.
 | 12 | Failed/unconfirmed managed launch, including transport failure with unknown remote write outcome |
 | 13 | Unconfirmed stop/archive outcome |
 | 14 | Some inventory routes failed while others succeeded |
+| 15 | Automatic browser access failed or expired in 0.4.0. Retry resume for the same session |
 | 130 | Interrupted; inspect remote state before retrying a write |
 
 For an SSH or interrupted-write failure, do not infer remote process death from

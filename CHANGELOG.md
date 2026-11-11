@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.4.0 — automatic managed browser access
+
+- Start a managed server with remote token authentication by default and resume
+  it by name through a new verified SSH tunnel. Jupyter issues its cookie on the
+  remote host and the client delivers it through a short-lived private file.
+- Use `--auth password` or `--password-stdin` for password-based launches.
+  Existing password sessions and external servers keep their native login.
+- Use `--login manual` for a login URL and `--no-browser` to open a private
+  automatic access link on the same computer. Existing JSON shapes are retained.
+- See names and numbered choices in terminal output and use `--verbose` for
+  identifiers. Browser delivery failures give a resume command and exit 15.
+
+Source candidate. The published Conda release remains 0.3.0.
+
 ## 0.3.0 — session usability
 
 - Always show a terminal chooser for open without a selector, including a single

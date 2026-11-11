@@ -24,6 +24,8 @@ jupyhop open workstation
 
 No local Jupyter or central service required. [Version 0.3.0](releases.md) is
 available from the uibcdf Conda channel.
+The [0.4.0 source candidate](releases.md) adds automatic access to new managed
+sessions. Its options are marked throughout this guide.
 
 ## Two ways to begin
 

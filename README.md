@@ -66,9 +66,10 @@ jupyhop start workstation \
     --name analysis
 ```
 
-Choose a new Jupyter session password when prompted, then authenticate through
-SSH. The browser opens automatically. Remember that session password for later
-Jupyter logins; it is separate from your SSH password.
+With the **0.4.0 source candidate**, authenticate in any OpenSSH prompts and
+continue in your browser. A new managed session opens without a Jupyter password
+prompt. With the published **0.3.0** client, choose a Jupyter session password and
+enter it on the browser login page. Keep it for later visits to that session.
 
 After closing the local tunnel, return from this or another authorized Linux
 client:

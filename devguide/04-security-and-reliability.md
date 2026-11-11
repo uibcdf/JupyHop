@@ -21,7 +21,7 @@ Jupyter grants code execution as the account running its server. Risks include a
 
 JupyHop may inspect only Jupyter runtime data available to the authenticated remote Unix user. A discovered server is not automatically managed: users may connect if verified and authorized, but `stop`/restart must refuse it. Do not assume that a port or PID identifies an authorized Jupyter process. SSH tunnels must preserve remote and local loopback binding, supported base paths, and Jupyter authentication.
 
-## Authentication baseline and pending browser automation
+## SSH and browser authentication
 
 SSH authentication is delegated to native OpenSSH terminal prompts or keys/agent.
 Python never reads or stores the SSH password. --batch/headless is noninteractive.
@@ -32,12 +32,18 @@ ProxyJump. Individual MFA configurations still need separate evidence. See
 [D45 and its alternatives](23-02-stabilization-evidence.md).
 
 M0 selected normal Jupyter login through a token-free URL as the safe baseline.
-No JupyHop credential cache or automatic browser token transfer is implemented.
 M2 validates current UID/process/socket ownership and uses explicit login with
 verified IPv4 loopback forwarding. Read the
 [implemented controls and remaining limits](16-m2-existing-servers.md).
-The following requirements govern future automation; see the
-[M0 threat/tradeoff evaluation](13-m0-validation.md).
+The [M0 threat/tradeoff evaluation](13-m0-validation.md) records the alternatives.
+
+The [0.4.0 source implementation](36-04-implementation.md) gives new managed
+servers a remote-generated Jupyter token. Native Jupyter issues the cookie over
+remote loopback after session verification. The client checks it through the
+owned forward and delivers it through a single-use local POST. The local file
+contains a random proof and expires in 60 seconds. It is private to the client
+account. The token stays in the remote runtime metadata. Native cookie scope
+and lifetime apply, including the limits of port isolation.
 
 M3's [reviewed new-session policy](17-m3-managed-launch.md) uses a separately
 chosen password over encrypted stdin and a native Argon2 hash in private remote

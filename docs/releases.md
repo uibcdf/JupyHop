@@ -7,6 +7,17 @@ myst:
 
 # Release notes
 
+## 0.4.0 source candidate
+
+New managed sessions open after SSH authentication without a Jupyter password
+prompt. Reopen by name from another authorized client and continue with the
+original kernel. Use `--auth password` for password-based launches and
+`--login manual` for the normal Jupyter login page. Existing managed password
+sessions and external Jupyter servers use their existing credentials.
+
+Ordinary terminal output uses names and numbered choices. Use `--verbose` for
+session IDs and detailed observations. The published Conda package is 0.3.0.
+
 ## 0.3.0 — Session usability
 
 Version **0.3.0=py_0** is available from [uibcdf on Conda](https://anaconda.org/uibcdf/jupyhop).

@@ -34,7 +34,7 @@ route. If a step went differently, start here:
 | Where the prompt appears | Password to use |
 | --- | --- |
 | OpenSSH prompt in the terminal | That SSH account's password or key passphrase; a gateway can ask separately |
-| New Jupyter session password during start | Choose a new password for this one managed session, then confirm it |
+| New Jupyter session password during start | In 0.3.0 or with `--auth password` in 0.4.0, choose and confirm a password for this session |
 | Jupyter's browser login page | The chosen managed-session password, or the existing server's own password/token |
 
 If you never set a password for a manually started Jupyter, it may use a token
@@ -205,6 +205,21 @@ check the chosen Python with isolated imports as described in
 [Environments](environments.md#match-the-interpreters-import-mode). User-site or
 `PYTHONPATH` packages are not sufficient for the remote helper/server.
 
+## The browser access link expired
+
+In 0.4.0, open the private file link on the same computer within 60 seconds.
+When it expires or the browser cannot open it, run resume again with the same
+session name. The error message includes the command. You can add
+`--no-browser` to choose a browser yourself.
+
+```console
+jupyhop resume workstation --name analysis --no-browser
+```
+
+If start reached readiness, resume creates a new tunnel to that session.
+If readiness could not be confirmed, inspect the printed request UUID with
+status before repeating start.
+
 ## The browser opens the wrong page or cannot log in
 
 Use the exact current URL printed by the active invocation, on the same computer
@@ -255,6 +270,7 @@ checks retain uncertainty about remote state after a transport failure.
 | Lifecycle refusal (11) | Use an exact managed UUID in the selected account/host registry. Unmanaged servers cannot be stopped; live or uncertain entries cannot be archived. Recheck status and preserve evidence. |
 | Launch unconfirmed/failed (12) | Record the printed request UUID and inspect status/discover before another start. A server may already exist. Check the remote Python, workdir, version and tmux availability. |
 | Registry full (12, registry_full) | All 128 unarchived slots are used. Inspect status and archive a verified inactive entry. This refusal happens before creating the new request's record/server; existing records remain intact. |
+| Automatic browser access failed (15) | In 0.4.0, resume the same session for a new link. Use --no-browser to open the link yourself on this computer. |
 | Stop/archive pending (13) | The action's result is unknown. Inspect status after stop; retry archive with the same UUID. No forced kill or automatic deletion is attempted. |
 | Partial fleet result (14) | Read each host's result; successful routes remain usable. `list` returns 3 when all selected routes fail, 0 when every route was inspected, even with no ready servers. |
 | Interrupted (130) | Owned local SSH resources are closed. Remote start/stop may already have taken effect; reconcile before retrying. Closing an open forward does not stop remote Jupyter. |

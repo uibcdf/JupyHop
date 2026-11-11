@@ -39,19 +39,27 @@ jupyhop start workstation \
     --name analysis
 ```
 
-1. Choose and confirm a **new Jupyter session password** in the private prompt.
-   Remember it for later browser logins. Use a strong password separate from SSH.
-2. Authenticate in any **OpenSSH** prompts, including a gateway if present.
-3. The browser opens automatically. Log in with the **new session password**.
+With the **0.4.0 source candidate**, answer any OpenSSH prompts and continue in
+your browser. New managed servers use a native Jupyter token generated on the
+remote computer. JupyHop delivers browser access automatically after verifying
+the selected session through SSH.
 
-The server and local forward receive ports automatically. The session name
-`analysis` is for you to recognize later; its printed UUID identifies the exact
-server. **Names and UUIDs are identifiers, not authentication tokens.**
+With the published **0.3.0** client, choose and confirm a Jupyter session
+password first. After SSH authenticates, enter that password in Jupyter's login
+page. Sessions started this way keep their usual login when reopened.
 
-Passwords contain 8–1024 characters without ASCII control characters. Only the
-hash is retained in private remote settings; there is no JupyHop password-reset
-command. [Scripting](scripting.md#start-with-a-protected-password-source) covers
-protected stdin input for automation.
+The server and local forward receive ports automatically. Use the name
+`analysis` to find this project again. In 0.4.0, `--verbose` shows session UUIDs
+and detailed observations. Names and UUIDs identify sessions.
+
+### Choose password authentication
+
+In 0.4.0, add `--auth password` if you want a Jupyter password for a new session.
+Choose and confirm it in the terminal. JupyHop uses it to open the browser for
+that first start. On later visits, enter it on Jupyter's login page if prompted.
+Passwords contain 8–1024 characters without ASCII control characters. The
+remote settings retain the hash. See the protected stdin workflow in
+[Scripting](scripting.md#start-with-a-protected-password-source).
 
 Use start once for a new project session. Repeating it creates a new request;
 an unarchived duplicate name is refused. If start is interrupted, keep its
@@ -66,7 +74,7 @@ and leaves the remote server under its tmux launcher. Later, run **locally**:
 jupyhop resume workstation --name analysis
 ```
 
-Log in and select the original running notebook/kernel. Resume is an alias for
+Complete Jupyter login if prompted, then select the original notebook/kernel. Resume is an alias for
 open: it makes a fresh forward without restarting the server. Memory survives
 only while the same kernel runs. See [Recovery](recovery.md) for another-client
 access and site persistence limits.
@@ -79,7 +87,8 @@ jupyhop status workstation
 ```
 
 These are independent choices, not mandatory steps before every connection.
-The chooser shows names, origins, states and IDs, even for one ready candidate.
+The chooser shows names, origins and states, even for one ready candidate. In
+0.4.0, add `--verbose` for UUIDs and endpoint details.
 Only ready servers can open. Exit 0 from status means observation succeeded;
 it can still describe a stopped/stale server. [Session states](sessions.md)
 explain the exact distinctions.
@@ -180,9 +189,14 @@ jupyhop start workstation \
     --name analysis --no-open
 ```
 
-Use this **instead of** the normal start for a new session. `--no-browser` alone
-still attaches a tunnel and prints a login URL. Exact IDs remain available for
-recovery and scripts:
+Use this form to start the server and return without opening it. To keep the
+tunnel attached and open the browser yourself, add `--no-browser` to an open or
+resume command. In 0.4.0, automatic access prints a private file link that you
+can open on this computer within 60 seconds. For manual Jupyter login, use
+`--login manual` to get the normal login URL. Manual login requires the server's
+own credential or an existing browser cookie.
+
+Use exact IDs for recovery and scripts:
 
 ```console
 jupyhop status workstation SESSION_ID

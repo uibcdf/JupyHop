@@ -131,12 +131,13 @@ jupyhop start workstation \
     --name analysis
 ```
 
-The prompt sequence is:
+With the published **0.3.0** client, choose and confirm a new Jupyter session
+password, answer any OpenSSH prompts, then enter the Jupyter password in the
+browser. Keep it for later visits to this session.
 
-1. Choose and confirm a **new Jupyter session password**. Remember it for future
-   browser logins; it is separate from your SSH password and belongs to this session.
-2. Authenticate in any native **SSH** prompts. A gateway may prompt too.
-3. The browser opens. Enter the **new session password** in Jupyter's login form.
+With the **0.4.0 source candidate**, answer the OpenSSH prompts and continue in
+your browser. JupyHop handles access to the newly managed session automatically.
+A gateway can still prompt for its own SSH password.
 
 The command normally starts the server **and opens it**. Do not start it again
 to reconnect. Create a notebook and try the cell above. After Ctrl-C closes the
@@ -146,7 +147,7 @@ tunnel, return with the name you chose:
 jupyhop resume workstation --name analysis
 ```
 
-Log in and select the original running notebook/kernel. As long as that server
+Complete Jupyter login if prompted, then select the original running notebook/kernel. As long as that server
 and kernel survived, their computation and memory remain. A stopped kernel,
 remote reboot or site policy that kills workloads cannot be undone by reconnecting.
 

@@ -93,7 +93,10 @@ gives the next checks for specific messages.
 
 ## Credentials and client upgrades
 
-Use the same session's Jupyter password/token at its login page. If credentials
+With 0.4.0, resume a token-based managed session by name to open the browser
+again. If browser access fails after readiness, retry resume for that same
+session. For password-based or manually started servers, use the session's
+Jupyter password or token at its login page. If credentials
 changed, obtain the current one through your private authorized workflow. Browser
 cookies follow Jupyter's policy; a private window can help diagnose login.
 JupyHop does not cache or reset Jupyter passwords.

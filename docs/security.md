@@ -18,13 +18,22 @@ environments and authenticated remote account.
 - **SSH:** OpenSSH handles keys/agent and native terminal password/passphrase
   prompts. Python does not read/cache the SSH password. Verify host fingerprints
   through a trusted channel, including gateway hosts.
-- **Jupyter:** use its normal login page with the existing password/token. For a
-  new managed server, choose a separate new Jupyter password. Its hash is stored
-  privately; plaintext is not retained by JupyHop.
+- **Jupyter:** use the server's own password or token when its login page
+  appears. The published 0.3.0 client creates password-based managed sessions.
+  The 0.4.0 source candidate opens new token-based managed sessions automatically.
 
-JupyHop opens token-free local URLs. It does not bypass login, put credentials in
-argv or silently adopt another user's server. Browser-cookie validity remains
-Jupyter's policy. Headless/`--batch` operation needs authorized noninteractive SSH.
+In 0.4.0, the managed server keeps its token in private remote runtime metadata.
+After SSH authentication and session verification, Jupyter issues a native cookie
+over remote loopback. JupyHop carries the cookie through the owned SSH connection
+and delivers it to the local browser using a private, single-use file. The link
+expires after 60 seconds. URLs stay free of credentials. Existing password
+sessions and servers started elsewhere retain their native login. A password
+chosen with `--auth password` is hashed in private remote settings.
+
+Run JupyHop on the browser computer. Keep both computers and their loopback
+services trusted. The browser scopes cookies by host and path, and cookies can
+be sent to other ports on the same host. Jupyter sets the cookie's lifetime.
+See [HTTP cookie port scope](https://httpwg.org/specs/rfc6265.html#section-8.5).
 
 ## Ownership and local access
 
@@ -49,8 +58,8 @@ listener. Keep Jupyter authentication enabled on both the remote endpoint and
 the locally forwarded route. A printed token-free URL alone is not a credential.
 
 An invocation owns its private SSH connections and explicit forwards. Unrelated
-listeners or arbitrary shared masters are not adopted. SSH agent/X11 forwarding,
-host-key bypass and automatic credential handoff are not introduced.
+listeners or arbitrary shared masters are not adopted. OpenSSH continues to
+verify host keys for each route.
 
 ## Protect your environment
 

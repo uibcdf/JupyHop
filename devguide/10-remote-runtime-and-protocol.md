@@ -24,6 +24,13 @@ old client does not need a remote package update or new enum parser. Installed
 0.2.0-to-candidate qualification is separate from the older observations below;
 see [30](30-03-implementation.md).
 
+The [0.4.0 source candidate](36-04-implementation.md) adds private browser
+access at wire 1.7 and explicit launch mode acknowledgment at wire 1.8. The
+browser operation returns a validated native cookie only for the pinned token
+session. Launch settings have a separate schema from registry 1.0. See the
+[implementation plan](35-04-implementation-plan.md) for the wire fields and
+resource budgets.
+
 M6 retains these contracts. Managed start now requires Server >=2.20,<3 and can
 return allowlisted `unsupported_server_version` before registry creation. Existing
 server access is validated separately. Client package versions do not update

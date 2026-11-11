@@ -7,7 +7,9 @@ myst:
 
 # JSON output reference
 
-This page describes **0.3.0 CLI output**, after validation of remote replies.
+This page describes the public JSON output shared by **0.3.0** and the
+**0.4.0 source candidate**. 0.4.0 uses manual login with ordinary `--json`.
+Explicit `--login auto` emits the connection object after cookie delivery.
 It is distinct from the internal SSH wire envelopes. Ordinary `doctor --json` retains
 `protocol`, `operation` and `data` at the top level; do not expect those keys in
 the other commands' JSON. Doctor --report is a separate support shape; `list`

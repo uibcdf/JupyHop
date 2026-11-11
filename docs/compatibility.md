@@ -22,7 +22,7 @@ and [the future macOS investigation](https://github.com/uibcdf/jupyhop/issues/2)
 | --- | --- |
 | SSH | Existing authorized alias, trusted host keys, POSIX-compatible remote shell. Keys/agent and native terminal password/passphrase prompts; headless/--batch requires noninteractive access. OpenSSH handles Include/Match/ProxyJump. Jump-host configuration is trusted too; individual MFA variants are untested. |
 | Discover/open | Linux remote helper Python >=3.11 (stdlib sufficient), readable private current-user runtime metadata, verified current-user process and IPv4 loopback TCP listener, recognizable Jupyter 2 API/auth behavior. |
-| HTTP/URLs | `127.0.0.1`, HTTP, normal password/token login and simple ASCII base paths including WebSockets. No automatic credential handoff. |
+| HTTP/URLs | `127.0.0.1`, HTTP, normal password/token login and simple ASCII base paths including WebSockets. Automatic managed access is available in the 0.4.0 source candidate. |
 | Unsupported endpoints | Public/wildcard listeners, IPv6-only, HTTPS, Unix sockets, legacy nbserver metadata, exotic auth/proxies. Refused or labeled unsupported; no TLS/host-key bypass. |
 | Managed start | Existing Python >=3.11, Jupyter Server >=2.20,<3, usable kernelspec, tmux and a readable stable Linux machine ID; selected directory must exist. Server 2.21.1 is the recommended tested stack. |
 | Safe stop | Linux pidfd support (kernel >=5.3), exposed by Python or named libc wrappers. Otherwise refused. No PID-only or forced-kill fallback. |

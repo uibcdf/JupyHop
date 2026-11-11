@@ -65,6 +65,19 @@ check the supported versions. Do not edit schema numbers, delete the registry or
 start a replacement server as a migration step. Report the redacted version/error
 details using [Troubleshooting](troubleshooting.md#reporting-a-problem).
 
+## Try the 0.4.0 source candidate
+
+Install the candidate in a separate local environment using the
+[source installation instructions](installation.md). Check that
+`jupyhop --version` reports 0.4.0. Return to a named managed session using
+`jupyhop resume HOST --name NAME`. A session created by 0.3.0 still uses its
+existing Jupyter password. Start a new disposable project to try automatic
+access, or add `--auth password` to choose password authentication.
+
+Ordinary JSON keeps manual login and its existing fields. Scripts using
+`--password-stdin` still create password-based sessions. See
+[Scripting](scripting.md) for the browser options and new access failure code.
+
 ## Interaction changes in 0.3.0
 
 Open without a selector always offers a terminal chooser, even for one candidate.

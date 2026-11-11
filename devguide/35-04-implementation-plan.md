@@ -1,11 +1,12 @@
 # 35 — 0.4.0 implementation plan
 
 Date: 2026-11-10. Baseline: released **0.3.0**, analysis commit **57ad340**.
-Status: **implementation baseline for the requested 0.4.0 release; product work
-has not started**. All gates below remain open unless evidence says otherwise.
+Status: **implementation baseline for 0.4.0**. See the
+[implementation report](36-04-implementation.md) for the candidate, test evidence
+and remaining qualification.
 This plan supersedes unresolved choices in [34](34-04-usability-and-browser-auth.md),
 which retains the historical analysis and original feasibility evidence.
-Current public commands/security remain the 0.3.0 contracts until implementation.
+The published 0.3.0 package follows its original commands and security contract.
 
 ## 1. Outcome and scope
 
@@ -616,11 +617,11 @@ R01–R12, A01–A24 and the G0–G6 work/checklist entries. These do not replac
 production security/browser/upgrade test or a new source/Docs CI qualification;
 the unchanged public docs and product are not redeployed by these planning commits.
 
-- [ ] G0 threat/native-desktop-browser gate closed with evidence.
-- [ ] G1 launch/settings/byte-budget foundation complete.
-- [ ] G2 private cookie path and secret-type/refusal acceptance complete.
-- [ ] G3 bounded handoff and full browser acceptance complete.
-- [ ] G4 default/CLI/UX/compatibility behavior complete.
+- [x] G0 threat/native-browser gate closed for the tested Linux setup.
+- [x] G1 launch/settings/byte-budget foundation complete.
+- [x] G2 private cookie path and secret-type/refusal acceptance complete.
+- [x] G3 bounded handoff and browser acceptance on the tested browsers complete.
+- [x] G4 default/CLI/UX behavior implemented and verified in the source fixtures.
 - [ ] G5 all A01–A23, installed/source/docs and reader acceptance recorded.
 - [ ] G6 A24 and separately authorized publication/receiving recorded.
 
