@@ -67,6 +67,8 @@ access checks passed 11 cases, including invalid HTTP requests, concurrent
 redemption, elapsed expiry, SSH reply redaction, anonymous HTTP/WebSocket
 refusal, private metadata and target mismatch. The documentation builds
 with warnings treated as errors and passes example and reference checks.
+The full 60-second production expiry and a system launcher failure both
+returned code 15, removed the private link and preserved the ready server.
 
 ```console
 pytest --run-integration
@@ -83,6 +85,19 @@ direct and jump SSH password prompts, and both browsers using the installed
 candidate wheel. Compatibility jobs include Server 2.20.0 and the 2.17.0
 managed-launch refusal. All test hosts, keys and notebooks are generated
 fixtures. The local unprivileged environment cannot provision Unix accounts.
+
+The installed wheel from `91300cc` passed both Chrome and Firefox and the
+two-way 0.3.0 upgrade check. The private Conda build from the same source used
+the existing recipe. Its archive `jupyhop-0.4.0-py_0.tar.bz2` passed metadata and
+source inspection and the installed smoke test on Python 3.11, 3.12, 3.13 and
+3.14. Its SHA256 was
+`851fb172040606ea3c37cb45975dcff0c2debc5dd8e953aa43d5b42f049f7cb7`.
+
+The [first hosted run](https://github.com/uibcdf/jupyhop/actions/runs/42929289691)
+passed both server compatibility jobs, real account isolation and the native
+SSH password cases. It exposed shared test state when a retained managed record
+appeared in a subsequent unmanaged discovery test. The new credential test now
+owns a separate SSH lab. Both tests passed together locally after the change.
 
 ## Release status
 

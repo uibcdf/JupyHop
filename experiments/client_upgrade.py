@@ -338,17 +338,14 @@ def exercise(old_wheel, new_wheel, *, hold_seconds=2, reverse_managed=False):
             if reverse_managed:
                 reverse_access(lab, old, fresh, cleanup)
         finally:
-            # A lost start reply may still have created a session. This private
-            # lab had no pre-existing records; recover only its own fixture state.
-            if cleanup.record is None:
-                for path in (lab.home / "state/jupyhop").glob("hosts/*/sessions/*/record.json"):
-                    cleanup.record = json.loads(path.read_text())
-                    if cleanup.record.get("port"):
-                        cleanup.url = (
-                            f"http://127.0.0.1:{cleanup.record['port']}{cleanup.record['base_url']}"
-                        )
-                    cleanup.close()
-            else:
+            # A lost reply in either launch can still leave a session in this lab.
+            for path in (lab.home / "state/jupyhop").glob("hosts/*/sessions/*/record.json"):
+                cleanup.sid = path.parent.name
+                cleanup.record = json.loads(path.read_text())
+                if cleanup.record.get("port"):
+                    cleanup.url = (
+                        f"http://127.0.0.1:{cleanup.record['port']}{cleanup.record['base_url']}"
+                    )
                 cleanup.close()
 
 
