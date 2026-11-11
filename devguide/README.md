@@ -1,18 +1,15 @@
 # JupyHop Development Guide
 
-> **Status: M0–M6 local and GitHub CI acceptance passed.** SSH diagnostics, existing-server access, managed
-> lifecycle/reconnection, profiles, multi-host inventory and archive ship.
-> Real Unix account isolation and test-fixture cleanup are verified. OS logout
-> policy, physical reboot and wider compatibility are bounded in the reports.
-> See the milestone reports below for exact acceptance evidence and limits.
-> The [0.2.0 operational stabilization candidate](22-02-stabilization.md) is prepared,
-> with [observed progress](23-02-stabilization-evidence.md) for real-site,
-> native SSH passwords/keys, endurance and installed-upgrade acceptance.
-> [Conda distribution status](31-03-conda-publication.md) is tracked separately;
-> no PyPI publication is included.
-> Published **0.3.0** adds the post-pilot session/diagnostic UX. Its
-> [implementation acceptance](30-03-implementation.md) and
-> [Conda publication](31-03-conda-publication.md) retain their exact source and artifact identities.
+> **Status: 0.4.0 is published on uibcdf/main.** M0–M6 and the subsequent
+> session/diagnostic and automatic browser-access work have recorded acceptance.
+> See the [implementation report](36-04-implementation.md),
+> [guided physical-client pilot](37-04-physical-client-pilot.md) and
+> [Conda publication/independent receiving](38-04-conda-publication.md) for exact
+> evidence and limits. The unassisted new-reader walkthrough remains pending.
+> Earlier milestone and release reports preserve their historical source and
+> artifact identities; no PyPI publication is included. The
+> [post-0.4.0 review](39-post-04-usability-review.md) records the improvement
+> backlog to prioritize during dogfooding.
 
 JupyHop is a lightweight, SSH-native tool to launch, discover, manage, and reconnect to remote Jupyter sessions without deploying JupyterHub.
 
@@ -121,3 +118,6 @@ This directory is the project's design source of truth. Update specifications an
   managed sessions, confirmed completion and the next-version menu finding.
 - [0.4.0 Conda publication](38-04-conda-publication.md): maintainer authorization,
   accepted validation scope and the exact-file release and receiving evidence.
+- [Post-0.4.0 usability review](39-post-04-usability-review.md): code/documentation
+  findings, offline reproductions and prioritized issues to inform dogfooding and
+  a possible 0.5.0 scope.

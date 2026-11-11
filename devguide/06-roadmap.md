@@ -165,6 +165,15 @@ publication and deferred A23's new-reader walkthrough to subsequent feedback.
 See the [publication report](38-04-conda-publication.md). The management output is tracked for the next release
 in [issue #6](https://github.com/uibcdf/jupyhop/issues/6).
 
+## After 0.4.0 — Dogfooding and evidence-driven consolidation
+
+The [post-0.4.0 review](39-post-04-usability-review.md) records focused source and
+documentation analysis, offline experiments and the improvement backlog in issues
+#7–#13. Use ordinary work and the pending unassisted quickstart validation to
+prioritize the next release. Manage's presentation remains in issue #6; macOS
+remains the separate issue #2 investigation. These proposals are not an approved
+0.5.0 implementation plan. Actual defects can receive 0.4.x fixes independently.
+
 ## M7 — Optional extensions (separate scope decisions)
 
 - **Slurm launcher:** submit/cancel within scheduler allocations and route to compute nodes; never run compute workloads by default on the login/bastion node.
