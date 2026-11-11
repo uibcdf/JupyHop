@@ -119,3 +119,5 @@ This directory is the project's design source of truth. Update specifications an
 - [0.4.0 physical-client pilot](37-04-physical-client-pilot.md): guided automatic
   browser access, named/menu reconnection, expired-link recovery, two independent
   managed sessions, confirmed completion and the next-version menu finding.
+- [0.4.0 Conda publication](38-04-conda-publication.md): maintainer authorization,
+  accepted validation scope and the exact-file release and receiving evidence.

@@ -122,7 +122,8 @@ sequence. It ended with zero unarchived managed records. Its menu readability
 finding is recorded in [issue #6](https://github.com/uibcdf/jupyhop/issues/6) for
 the next version.
 
-The source implements G0–G4. G5's automated qualification and guided physical
-pilot have observed evidence. A23's unassisted new-reader walkthrough remains
-open. G6 covers the authorized Conda workflow, exact package promotion and
-independent public installation. See [the release procedure](../docs/releasing.md).
+The source implements G0–G4. The maintainer accepted G5's automated qualification
+and guided physical pilot for 0.4.0, explicitly deferring A23's unassisted
+new-reader walkthrough to subsequent feedback. G6's authorized publication and
+independent public installation are tracked in the
+[publication report](38-04-conda-publication.md). See [the release procedure](../docs/releasing.md).

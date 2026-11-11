@@ -64,7 +64,9 @@ is explicitly approved.
 
 ## Conda packages on uibcdf
 
-The maintainer authorized publishing tested 0.2.0 and 0.3.0 packages to uibcdf.
+The maintainer authorized publishing tested 0.2.0, 0.3.0 and 0.4.0 packages to uibcdf.
+The [0.4.0 publication report](https://github.com/uibcdf/jupyhop/blob/main/devguide/38-04-conda-publication.md)
+records the accepted automated/guided validation and deferred new-reader feedback.
 The [0.3.0 Conda report](https://github.com/uibcdf/jupyhop/blob/main/devguide/31-03-conda-publication.md) records the reused UIBCDF
 actions, Linux-only noarch decision and observed publication status. This route
 does not publish PyPI, create a tag or create a GitHub Release.

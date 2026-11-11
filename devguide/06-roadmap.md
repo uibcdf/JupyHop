@@ -149,7 +149,7 @@ Required gates, each with recorded acceptance:
 - [x] G2: selected managed native-cookie RPC with the token kept remote.
 - [x] G3: bounded one-use local handoff and actual browser acceptance.
 - [x] G4: CLI defaults/options, simple presentation, targeted lookup and recovery.
-- [ ] G5: installed/version/account/SSH/browser/reader/documentation acceptance.
+- [x] G5: automated and guided acceptance, with the maintainer's recorded A23 deferral.
 - [ ] G6: separately authorized numeric release, exact-file publication and receiving.
 
 A cookie-delivery acknowledgment is not proof that the browser accepted it.
@@ -160,8 +160,9 @@ unmanaged credential automation and other M7 topics outside this release.
 The [physical-client pilot](37-04-physical-client-pilot.md) completed default
 automatic access, named/menu return, expired-link recovery, concurrent session
 selection and independent stop/archive. The final managed inventory had zero
-active records. The pilot was guided, so A23's unassisted reader case remains
-open. The denser-than-desired management output is tracked for the next release
+active records. The maintainer accepted the guided and automated validation for
+publication and deferred A23's new-reader walkthrough to subsequent feedback.
+See the [publication report](38-04-conda-publication.md). The management output is tracked for the next release
 in [issue #6](https://github.com/uibcdf/jupyhop/issues/6).
 
 ## M7 — Optional extensions (separate scope decisions)

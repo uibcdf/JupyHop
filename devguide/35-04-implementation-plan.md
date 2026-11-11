@@ -622,14 +622,18 @@ the unchanged public docs and product are not redeployed by these planning commi
 - [x] G2 private cookie path and secret-type/refusal acceptance complete.
 - [x] G3 bounded handoff and browser acceptance on the tested browsers complete.
 - [x] G4 default/CLI/UX behavior implemented and verified in the source fixtures.
-- [ ] G5 all A01–A23, installed/source/docs and reader acceptance recorded.
+- [x] G5 automated/source/installed/docs acceptance and guided pilot recorded.
+  The maintainer accepted this evidence for 0.4.0 and deferred A23's unassisted
+  new-reader walkthrough to subsequent user feedback. A23 was not executed.
 - [ ] G6 A24 and separately authorized publication/receiving recorded.
 
 The [implementation report](36-04-implementation.md) records the qualified
 source revision and private package checks. The [physical-client pilot](37-04-physical-client-pilot.md)
 adds guided operator evidence with successful automatic access, named/menu
-return, expired-link recovery and independent completion. It does not close
-A23's unassisted new-reader requirement.
+return, expired-link recovery and independent completion. After that pilot,
+the maintainer explicitly authorized publication with the existing validation
+and collection of new-user feedback afterwards. The A23 deferral is recorded
+in the [publication report](38-04-conda-publication.md).
 
 The first implementation task is **G0**, followed by the source-bundle/settings
 work in G1. Do not begin by wiring the experimental HTTP handler directly into

@@ -66,13 +66,15 @@ and safe completion paths. Physical evidence supports A01, A09, A14–A17 and th
 native-password ProxyJump portion of A21. Same-client continuity is a subset of
 A04, whose independent installed-client checks are recorded separately.
 
-This was a guided pilot. A23's unassisted new-reader walkthrough remains open.
+This was a guided pilot. The maintainer subsequently authorized publication
+using the current validation and collection of new-user feedback afterwards.
+A23's unassisted new-reader walkthrough is deferred, with that decision recorded
+in the [publication report](38-04-conda-publication.md).
 This run did not repeat the external-server or existing password-session paths,
 change the server's native token policy, or directly inspect private credentials.
 Automated browser, cross-account, protocol, installed-upgrade and package checks
 remain separate evidence. Conda staging, promotion and independent public
 receiving belong to G6 and require the release workflow.
 
-The requested physical test sequence is complete. The next action is to review
-the remaining reader/release acceptance and decide publication. Issue #6 is
-scheduled for the following version.
+The requested physical test sequence is complete. The next action is the
+authorized publication workflow. Issue #6 is scheduled for the following version.
