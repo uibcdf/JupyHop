@@ -35,10 +35,11 @@ from experiments.managed_fixture import ManagedFixture
 from jupyhop.discovery import discover, select_server
 from jupyhop.opening import open_connection
 from jupyhop.ssh import SSHTransport
+from jupyhop.tunnel import _free_port
 
 
 @contextmanager
-def chrome(root):
+def chrome(root, launch):
     binary = shutil.which("google-chrome") or shutil.which("chromium")
     if binary is None:
         raise RuntimeError("This optional spike requires Chrome/Chromium")
@@ -56,7 +57,7 @@ def chrome(root):
             "--remote-debugging-address=127.0.0.1",
             "--remote-debugging-port=0",
             f"--user-data-dir={profile}",
-            "about:blank",
+            launch.as_uri(),
         ],
         stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL,
@@ -82,6 +83,79 @@ def chrome(root):
             devtools.socket.close()
         stop(process)
         shutil.rmtree(profile, ignore_errors=True)
+
+
+@contextmanager
+def firefox(root, launch, binary, driver):
+    """Run the same local-file navigation with a fresh Firefox WebDriver profile."""
+    port = _free_port()
+    process = subprocess.Popen(
+        [driver, "--host", "127.0.0.1", "--port", str(port)],
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+        start_new_session=True,
+    )
+    with requests.Session() as client:
+        client.trust_env = False
+        base = f"http://127.0.0.1:{port}"
+
+        def command(method, path, value=None):
+            result = client.request(method, base + path, json=value, timeout=40)
+            if not result.ok:
+                raise RuntimeError(f"Firefox WebDriver command failed ({result.status_code})")
+            return result.json()["value"]
+
+        session = None
+        try:
+            deadline = time.monotonic() + 10
+            while True:
+                try:
+                    command("GET", "/status")
+                    break
+                except requests.ConnectionError:
+                    if process.poll() is not None or time.monotonic() >= deadline:
+                        raise RuntimeError("Private geckodriver did not start") from None
+                    time.sleep(0.1)
+            profile = root / "firefox-profile"
+            profile.mkdir(mode=0o700)
+            session = command(
+                "POST",
+                "/session",
+                {
+                    "capabilities": {
+                        "alwaysMatch": {
+                            "browserName": "firefox",
+                            "moz:firefoxOptions": {
+                                "binary": binary,
+                                "args": ["-headless", "-profile", str(profile), launch.as_uri()],
+                                "prefs": {"network.proxy.type": 0},
+                            },
+                        }
+                    }
+                },
+            )["sessionId"]
+            path = "/session/" + session
+
+            class Browser:
+                def evaluate(self, script):
+                    return command(
+                        "POST", path + "/execute/sync", {"script": "return " + script, "args": []}
+                    )
+
+                def until(self, script):
+                    deadline = time.monotonic() + 20
+                    while not self.evaluate(script):
+                        if time.monotonic() >= deadline:
+                            raise RuntimeError("Firefox did not open authenticated JupyterLab")
+                        time.sleep(0.1)
+
+            yield Browser()
+        finally:
+            try:
+                if session is not None:
+                    command("DELETE", "/session/" + session)
+            finally:
+                stop(process)
 
 
 def fixture_token(tunnel, fixture, report, server, *, local_port=None):
@@ -324,7 +398,17 @@ def kernel_roundtrip(devtools, base, *, create):
     )
 
 
-def visit(lab, transport, fixture, label, *, create=False, password=False, remote_cookie=False):
+def visit(
+    lab,
+    transport,
+    fixture,
+    label,
+    *,
+    create=False,
+    password=False,
+    remote_cookie=False,
+    browser=chrome,
+):
     report = discover(transport)
     server = select_server(report, None, interactive=False)
     with open_connection(transport, report, server) as (tunnel, _):
@@ -379,16 +463,17 @@ def visit(lab, transport, fixture, label, *, create=False, password=False, remot
             negative_checks(target, proof)
             assert credential not in launch.read_text()
             assert launch.stat().st_mode & 0o777 == 0o600
-            with chrome(root) as devtools:
-                devtools.command("Page.navigate", {"url": launch.as_uri()})
+            with browser(root, launch) as devtools:
                 devtools.until("!!document.querySelector('.jp-LabShell')")
                 assert state["used"] and not launch.exists()
-                history = devtools.command("Page.getNavigationHistory")
+                urls = [devtools.evaluate("location.href")]
+                if browser is chrome:
+                    urls += [
+                        e["url"] for e in devtools.command("Page.getNavigationHistory")["entries"]
+                    ]
                 assert all(
-                    "token=" not in e["url"]
-                    and proof not in e["url"]
-                    and credential not in e["url"]
-                    for e in history["entries"]
+                    "token=" not in url and proof not in url and credential not in url
+                    for url in urls
                 )
                 result = kernel_roundtrip(devtools, base, create=create)
                 assert result["output"] == "42"
@@ -424,7 +509,14 @@ def main():
         action="store_true",
         help="Mint the native cookie remotely; do not return the runtime token over SSH.",
     )
+    parser.add_argument("--firefox", metavar="EXECUTABLE")
+    parser.add_argument("--geckodriver", default="geckodriver")
     args = parser.parse_args()
+    browser = (
+        chrome
+        if not args.firefox
+        else lambda root, launch: firefox(root, launch, args.firefox, args.geckodriver)
+    )
     with SSHLab() as lab:
         with JupyterFixture(lab.root / "native-token", runtime=lab.runtime, lab=True) as fixture:
             first = visit(
@@ -434,6 +526,7 @@ def main():
                 "first",
                 create=True,
                 remote_cookie=args.remote_cookie,
+                browser=browser,
             )
             config = independent_client(lab, "second-client", jump=False)
             second = visit(
@@ -442,6 +535,7 @@ def main():
                 fixture,
                 "second",
                 remote_cookie=args.remote_cookie,
+                browser=browser,
             )
             assert first["kernel"] == second["kernel"] and first["session"] == second["session"]
             print(
@@ -458,6 +552,7 @@ def main():
                 "legacy",
                 create=True,
                 password=True,
+                browser=browser,
             )
             print(
                 "PASS: existing 0.3 managed password -> native login cookie -> browser handoff; password still required once"
