@@ -625,6 +625,12 @@ the unchanged public docs and product are not redeployed by these planning commi
 - [ ] G5 all A01–A23, installed/source/docs and reader acceptance recorded.
 - [ ] G6 A24 and separately authorized publication/receiving recorded.
 
+The [implementation report](36-04-implementation.md) records the qualified
+source revision and private package checks. The [physical-client pilot](37-04-physical-client-pilot.md)
+adds guided operator evidence with successful automatic access, named/menu
+return, expired-link recovery and independent completion. It does not close
+A23's unassisted new-reader requirement.
+
 The first implementation task is **G0**, followed by the source-bundle/settings
 work in G1. Do not begin by wiring the experimental HTTP handler directly into
 open or by changing the default password prompt before the bounded handoff is

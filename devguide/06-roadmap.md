@@ -157,6 +157,13 @@ Explicit no-browser/JSON/password compatibility and all A01–A24 acceptance cas
 are part of the plan. Keep management-connection retention, stable cookie naming,
 unmanaged credential automation and other M7 topics outside this release.
 
+The [physical-client pilot](37-04-physical-client-pilot.md) completed default
+automatic access, named/menu return, expired-link recovery, concurrent session
+selection and independent stop/archive. The final managed inventory had zero
+active records. The pilot was guided, so A23's unassisted reader case remains
+open. The denser-than-desired management output is tracked for the next release
+in [issue #6](https://github.com/uibcdf/jupyhop/issues/6).
+
 ## M7 — Optional extensions (separate scope decisions)
 
 - **Slurm launcher:** submit/cancel within scheduler allocations and route to compute nodes; never run compute workloads by default on the login/bastion node.

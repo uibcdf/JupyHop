@@ -101,8 +101,28 @@ owns a separate SSH lab. Both tests passed together locally after the change.
 
 ## Release status
 
-The source implements G0–G4. G5 tracks exact-revision workflow results,
-installed compatibility and the reader walkthrough. Desktop environments with
-custom application selection can be exercised with `--no-browser` during the
-walkthrough. G6 covers the authorized Conda workflow, exact package promotion
-and independent public installation. See [the release procedure](../docs/releasing.md).
+Source revision **18009b1c6f7b54da073d0f2e08946e8b041573f7** passed all six
+[source qualification jobs](https://github.com/uibcdf/jupyhop/actions/runs/42930654711),
+including Python 3.11–3.14, the server compatibility cases, disposable Unix
+accounts, native SSH password routes and installed Chrome/Firefox access.
+The [documentation build and deployment](https://github.com/uibcdf/jupyhop/actions/runs/42930654613)
+also passed for that revision.
+
+The final local Conda archive from this revision passed source/metadata
+inspection and clean installed checks on Python 3.11–3.14. Its SHA256 was
+`2465edd9c9a17314d565a686b75a14340caa35a078ab75988086599d4b0497cd`.
+The corresponding wheel SHA256 was
+`4ddbf53323bf8e4add455aef902177ec4ac8c3ddcd0f13786f24040c433a2895`.
+These identify the private qualification artifacts. G6 qualifies the exact
+staged archive again through the publication workflow.
+
+The [guided physical-client pilot](37-04-physical-client-pilot.md) passed its
+automatic access, continuity, menu, expiry/recovery and independent completion
+sequence. It ended with zero unarchived managed records. Its menu readability
+finding is recorded in [issue #6](https://github.com/uibcdf/jupyhop/issues/6) for
+the next version.
+
+The source implements G0–G4. G5's automated qualification and guided physical
+pilot have observed evidence. A23's unassisted new-reader walkthrough remains
+open. G6 covers the authorized Conda workflow, exact package promotion and
+independent public installation. See [the release procedure](../docs/releasing.md).

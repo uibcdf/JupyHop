@@ -116,3 +116,6 @@ This directory is the project's design source of truth. Update specifications an
   bounded handoff, failure recovery, staged work and A01–A24 acceptance matrix.
 - [0.4.0 implementation report](36-04-implementation.md): source candidate,
   design adjustments, reproduced tests and remaining release checks.
+- [0.4.0 physical-client pilot](37-04-physical-client-pilot.md): guided automatic
+  browser access, named/menu reconnection, expired-link recovery, two independent
+  managed sessions, confirmed completion and the next-version menu finding.
