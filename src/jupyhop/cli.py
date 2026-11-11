@@ -2,6 +2,8 @@
 
 import argparse
 import json
+import re
+import shlex
 import signal
 import sys
 import webbrowser
@@ -10,17 +12,19 @@ from pathlib import Path
 from typing import Any
 
 from jupyhop import __version__
+from jupyhop.auth import AuthObservation, observe, password_cookie, verify_cookie
 from jupyhop.config import Config, Host, load_config
 from jupyhop.connection import ConnectionPool
 from jupyhop.controls import control, show_inventory
 from jupyhop.diagnostics import support_report
 from jupyhop.discovery import discover, select_server
 from jupyhop.doctor import diagnose
-from jupyhop.errors import JupyHopError, SelectionError
+from jupyhop.errors import JupyHopError, PrerequisiteError, ProtocolError, SelectionError
 from jupyhop.fleet import inventory, select_inventory
+from jupyhop.handoff import launch_file, prepare_handoff
 from jupyhop.managed import new_id, password_input, require_ready, start
 from jupyhop.opening import open_connection
-from jupyhop.selection import choose, validate_name
+from jupyhop.selection import choose, describe_session, validate_name
 from jupyhop.session_inventory import inspect_sessions
 from jupyhop.ssh import SSHTransport, validate_alias
 
@@ -81,15 +85,20 @@ def _parser() -> argparse.ArgumentParser:
                 dest="selector_name",
                 help="Select one exact current managed session name.",
             )
+            _login_argument(command)
             command.add_argument(
                 "--no-browser",
                 action="store_true",
-                help="Print a token-free login URL and keep the tunnel attached.",
+                help="Print an access link and keep the tunnel attached.",
             )
-    launch = commands.add_parser(
-        "start", help="Launch a password-authenticated owned Jupyter server using private tmux."
-    )
+    launch = commands.add_parser("start", help="Launch an owned Jupyter server using private tmux.")
     _connection_arguments(launch, multiple=False)
+    _login_argument(launch)
+    launch.add_argument(
+        "--auth",
+        choices=("token", "password"),
+        help="Server authentication mode. Default token, or password with --password-stdin.",
+    )
     launch.add_argument(
         "--env",
         help="Named launch profile from the optional JupyHop config; not a Conda activation command.",
@@ -118,7 +127,7 @@ def _parser() -> argparse.ArgumentParser:
     launch.add_argument(
         "--no-browser",
         action="store_true",
-        help="Print the login URL and keep the tunnel attached.",
+        help="Print an access link and keep the tunnel attached.",
     )
     for name in ("status", "stop", "archive"):
         control = commands.add_parser(
@@ -176,6 +185,7 @@ def _parser() -> argparse.ArgumentParser:
         "manage", help="Inspect sessions and choose open, stop or archive in a terminal."
     )
     _connection_arguments(manage, multiple=False, host_nargs="?")
+    _login_argument(manage)
     manage.add_argument(
         "--runtime-dir",
         action="append",
@@ -185,9 +195,17 @@ def _parser() -> argparse.ArgumentParser:
     manage.add_argument(
         "--no-browser",
         action="store_true",
-        help="Print a login URL while keeping the selected tunnel attached.",
+        help="Print an access link while keeping the selected tunnel attached.",
     )
     return parser
+
+
+def _login_argument(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument(
+        "--login",
+        choices=("auto", "manual"),
+        help="Browser access policy. Default auto for terminal output and manual with --json.",
+    )
 
 
 def _connection_arguments(
@@ -197,6 +215,9 @@ def _connection_arguments(
         "host",
         nargs=host_nargs,
         help="Existing OpenSSH alias; routing/User/keys come from SSH config.",
+    )
+    parser.add_argument(
+        "--verbose", action="store_true", help="Show session IDs and detailed observations."
     )
     if multiple:
         parser.add_argument(
@@ -254,11 +275,18 @@ def _display(report: dict[str, Any]) -> None:
     print("Coverage: selected interpreter only; no server discovery performed.")
 
 
-def _coverage(report: dict[str, Any]) -> None:
+def _coverage(report: dict[str, Any], *, concise: bool = False) -> None:
     print(
         "Discovery is partial: only known runtime paths were searched; other environments or paths may exist.",
         file=sys.stderr,
     )
+    if concise and any(s["state"] == "ready" for s in report["servers"]):
+        if report["coverage"]["issues"]:
+            print(
+                "Search limits or other diagnostics apply. Use --verbose for details.",
+                file=sys.stderr,
+            )
+        return
     for path in report["coverage"]["paths"]:
         if path["status"] != "ok":
             print(f"Runtime directory {path['status']}: {path['path']}", file=sys.stderr)
@@ -279,15 +307,17 @@ def _coverage(report: dict[str, Any]) -> None:
         )
 
 
-def _servers(report: dict[str, Any], *, all_candidates: bool, prefix: str = "") -> None:
+def _servers(
+    report: dict[str, Any], *, all_candidates: bool, prefix: str = "", verbose: bool = False
+) -> None:
     hidden: Counter[str] = Counter()
+    number = 0
     for server in report["servers"]:
         if server["origin"] == "unmanaged" and server["state"] != "ready" and not all_candidates:
             hidden[server["state"]] += 1
             continue
-        print(
-            f"{prefix}{server['id']}  {server['origin']}  {server.get('name') or ''}  {server['state']}  port={server['port']}  {server['reason']}"
-        )
+        number += 1
+        print(f"{prefix}{number}: {describe_session(server, verbose=verbose or all_candidates)}")
     if hidden:
         counts = ", ".join(f"{state}={count}" for state, count in sorted(hidden.items()))
         print(
@@ -328,6 +358,7 @@ def _fleet(args: argparse.Namespace, config: Config) -> int:
             data,
             interactive=not args.json and sys.stdin.isatty() and sys.stdout.isatty(),
             name=args.selector_name,
+            verbose=args.verbose,
         )
         args.host, args.session = report["host"], server["id"]
         args.selector_name = None
@@ -350,25 +381,148 @@ def _fleet(args: argparse.Namespace, config: Config) -> int:
         for entry in data["hosts"]:
             if entry["ok"]:
                 _servers(
-                    entry["report"], all_candidates=args.all_candidates, prefix=entry["host"] + "  "
+                    entry["report"],
+                    all_candidates=args.all_candidates,
+                    prefix=entry["host"] + "  ",
+                    verbose=args.verbose,
                 )
     if not any(entry["ok"] for entry in data["hosts"]):
         return 3
     return 14 if any(not entry["ok"] for entry in data["hosts"]) else 0
 
 
-def _open(args: argparse.Namespace, transport: SSHTransport, report: dict[str, Any]) -> int:
+def _observe(
+    transport: SSHTransport,
+    pythons: list[str],
+    *,
+    identifier: str | None,
+    name: str | None = None,
+    identity: dict[str, Any] | None = None,
+) -> tuple[AuthObservation, str]:
+    for python in pythons:
+        try:
+            return observe(
+                transport,
+                python,
+                transport.timeout,
+                identifier=identifier,
+                name=name,
+                identity=identity,
+            ), python
+        except PrerequisiteError:
+            if len(pythons) == 1:
+                raise
+    raise PrerequisiteError(
+        "No selected remote Python could inspect the managed session. Check --remote-python."
+    )
+
+
+def _resume_command(
+    args: argparse.Namespace,
+    transport: SSHTransport,
+    server: dict[str, Any],
+) -> str:
+    command = ["jupyhop", "resume", transport.host]
+    if server.get("name"):
+        command += ["--name", server["name"]]
+    else:
+        command += [server["id"]]
+    if transport.config is not None:
+        command += ["--ssh-config", str(transport.config)]
+    for python in args.remote_python or []:
+        if python != "python3":
+            command += ["--remote-python", python]
+    return shlex.join(command)
+
+
+def _open(
+    args: argparse.Namespace,
+    transport: SSHTransport,
+    report: dict[str, Any],
+    *,
+    selected: tuple[AuthObservation, str] | None = None,
+    fresh_password: list[str] | None = None,
+) -> int:
     server = select_server(
         report,
         args.session,
         interactive=not args.json and sys.stdin.isatty() and sys.stdout.isatty(),
         name=getattr(args, "selector_name", None),
+        verbose=args.verbose,
     )
+    if args.login == "auto" and server["origin"] == "managed" and selected is None:
+        selected = _observe(
+            transport, args.remote_python, identifier=server["id"], identity=report["identity"]
+        )
+    observation, python = selected if selected is not None else (None, None)
+    if observation is not None:
+        if observation.server["observed_id"] != server["observed_id"]:
+            raise ProtocolError(
+                "Selected managed endpoint changed. Check jupyhop status and try again."
+            )
+        server = observation.server
+        if not args.json:
+            context = observation.context
+            print(
+                f"{context['name']} on {transport.host} · {context['project_display']} · {context['python_display']}",
+                file=sys.stderr,
+            )
+    if args.verbose and not args.json:
+        print(describe_session(server, verbose=True), file=sys.stderr)
     handlers = {number: signal.getsignal(number) for number in (signal.SIGTERM, signal.SIGHUP)}
     try:
         for number in handlers:
             signal.signal(number, _interrupted)
-        with open_connection(transport, report, server, args.remote_python) as (tunnel, url):
+        options = (
+            {"managed_python": python, "managed_mode": observation.mode} if observation else {}
+        )
+        with open_connection(transport, report, server, args.remote_python, **options) as (
+            tunnel,
+            url,
+        ):
+            automatic = False
+            cookie = None
+            base = server["base_url"]
+            if observation is not None and python is not None:
+                if observation.mode == "token":
+                    issued = observe(
+                        tunnel,
+                        python,
+                        transport.timeout,
+                        identifier=server["id"],
+                        identity=observation.identity,
+                        observed_id=server["observed_id"],
+                        local_port=tunnel.local_port,
+                    )
+                    if issued.cookie is None or issued.server != server:
+                        raise ProtocolError(
+                            "Managed endpoint or authentication mode changed during access."
+                        )
+                    cookie = issued.cookie
+                    del issued
+                elif observation.mode == "password" and fresh_password:
+                    cookie = password_cookie(tunnel.local_port, base, fresh_password.pop())
+            if fresh_password:
+                fresh_password.clear()
+            if cookie is not None:
+                verify_cookie(tunnel.local_port, base, cookie)
+                destination = f"http://127.0.0.1:{tunnel.local_port}{base}"
+                with prepare_handoff(destination, cookie) as handoff:
+                    launcher = None if args.no_browser else launch_file(handoff.uri)
+
+                    def offer_link() -> None:
+                        print(
+                            f"Open this link in a browser on this computer within 60 seconds: {handoff.uri}",
+                            flush=True,
+                        )
+
+                    handoff.wait(
+                        launcher,
+                        fallback=None if args.json else offer_link,
+                        check_connection=tunnel.check_alive,
+                    )
+                del cookie
+                automatic = True
             if args.json:
                 print(
                     json.dumps(
@@ -383,25 +537,39 @@ def _open(args: argparse.Namespace, transport: SSHTransport, report: dict[str, A
                     ),
                     flush=True,
                 )
-            else:
+            elif not automatic or args.verbose:
                 print(url, flush=True)
-            print(
-                "Tunnel attached. Log in with your existing Jupyter password/token. Ctrl-C closes only this tunnel; the remote server is not stopped.",
-                file=sys.stderr,
-                flush=True,
-            )
-            if not args.no_browser:
-                try:
-                    opened = webbrowser.open(url, new=2)
-                except (webbrowser.Error, OSError):
-                    opened = False
-                if not opened:
-                    print(
-                        "Browser unavailable. Open the printed login URL on this client, or use --no-browser; the tunnel remains attached.",
-                        file=sys.stderr,
-                        flush=True,
-                    )
+            if automatic:
+                print(
+                    "Jupyter is ready. Continue in your browser. Ctrl-C closes this tunnel and keeps the remote session.",
+                    file=sys.stderr,
+                    flush=True,
+                )
+            else:
+                print(
+                    "Tunnel attached. Log in with your existing Jupyter password/token. Ctrl-C closes only this tunnel; the remote server is not stopped.",
+                    file=sys.stderr,
+                    flush=True,
+                )
+                if not args.no_browser:
+                    try:
+                        opened = webbrowser.open(url, new=2)
+                    except (webbrowser.Error, OSError):
+                        opened = False
+                    if not opened:
+                        print(
+                            "Browser unavailable. Open the printed login URL on this client, or use --no-browser; the tunnel remains attached.",
+                            file=sys.stderr,
+                            flush=True,
+                        )
             tunnel.wait()
+    except JupyHopError:
+        if observation is not None and args.command != "start":
+            print(
+                f"To reopen the selected session, run {_resume_command(args, transport, server)}",
+                file=sys.stderr,
+            )
+        raise
     finally:
         for number, handler in handlers.items():
             signal.signal(number, handler)
@@ -438,7 +606,7 @@ def _manage(args: argparse.Namespace, transport: SSHTransport, config: Config) -
     history = False
     while True:
         observed = inspect_sessions(transport, python=args.remote_python)
-        show_inventory(observed, history=history)
+        show_inventory(observed, history=history, verbose=args.verbose)
         history = False
         try:
             action = choose(
@@ -460,8 +628,8 @@ def _manage(args: argparse.Namespace, transport: SSHTransport, config: Config) -
                     args.host, [args.remote_python], args.runtime_dir
                 )
                 report = discover(transport, pythons, paths)
-                _coverage(report)
-                server = select_server(report, None, interactive=True)
+                _coverage(report, concise=not args.verbose)
+                server = select_server(report, None, interactive=True, verbose=args.verbose)
                 opening = argparse.Namespace(
                     **(
                         vars(args)
@@ -509,11 +677,29 @@ def main(argv: list[str] | None = None) -> int:
     if args.command == "resume":
         args.command = "open"
     launch_id = None
+    launch_ready = False
     connections = None
     handlers = {number: signal.getsignal(number) for number in (signal.SIGTERM, signal.SIGHUP)}
     try:
         for number in handlers:
             signal.signal(number, _interrupted)
+        if getattr(args, "login", None) is not None and getattr(args, "no_open", False):
+            raise ValueError(
+                "--login requires opening a browser connection. Use it without --no-open."
+            )
+        if getattr(args, "login", None) == "auto" and args.json and args.no_browser:
+            raise ValueError("Use --login manual with --json --no-browser, or remove --json.")
+        args.login = getattr(args, "login", None) or ("manual" if args.json else "auto")
+        if args.command == "doctor" and args.report and args.verbose:
+            raise ValueError("--report produces a shareable report. Run --verbose separately.")
+        if args.command == "start":
+            if args.auth == "token" and args.password_stdin:
+                raise ValueError("--password-stdin requires password authentication.")
+            args.auth = args.auth or ("password" if args.password_stdin else "token")
+            if args.auth == "password" and args.json and not args.password_stdin:
+                raise ValueError("Password mode with --json requires --password-stdin.")
+            if args.name is not None:
+                validate_name(args.name)
         config = load_config(args.config)
         if getattr(args, "selector_name", None) is not None:
             validate_name(args.selector_name)
@@ -544,10 +730,13 @@ def main(argv: list[str] | None = None) -> int:
             return _manage(args, transport, config)
         if args.command == "start":
             profile = config.profile(args.host, args.env)
-            password = password_input(args.password_stdin)
+            password = [password_input(args.password_stdin)] if args.auth == "password" else []
             launch_id = new_id()
+            launch_name = args.name or "session-" + launch_id[:8]
             print(
-                f"Starting managed session {launch_id}…",
+                f"Starting managed session {launch_id}…"
+                if args.json or args.verbose
+                else f"Starting {launch_name} on {transport.host}…",
                 file=sys.stderr,
             )
             report = start(
@@ -561,33 +750,58 @@ def main(argv: list[str] | None = None) -> int:
                 if profile
                 else "~",
                 name=args.name,
-                password=password,
+                password=password[0] if password else None,
+                auth_mode=args.auth,
                 session_id=launch_id,
             )
-            del password
             if args.no_open or report["state"] != "ready":
                 if args.json:
                     print(json.dumps(report, ensure_ascii=True))
                 else:
-                    print(f"{report['id']}  managed  {report['state']}")
+                    label = (
+                        report["id"] if args.verbose or report["state"] != "ready" else launch_name
+                    )
+                    print(f"{label}  managed  {report['state']}")
                 require_ready(report)
                 return 0
             require_ready(report)
+            launch_ready = True
             args.session = launch_id
             pythons = [args.remote_python]
             args.remote_python = pythons
             return _open(
-                args, transport, {"identity": report["identity"], "servers": [report["server"]]}
+                args,
+                transport,
+                {"identity": report["identity"], "servers": [report["server"]]},
+                fresh_password=password,
+            )
+        if (
+            args.command == "open"
+            and args.login == "auto"
+            and (
+                args.selector_name is not None
+                or (args.session is not None and re.fullmatch(r"[a-f0-9]{32}", args.session))
+            )
+        ):
+            selected = _observe(
+                transport, args.remote_python, identifier=args.session, name=args.selector_name
+            )
+            observation = selected[0]
+            return _open(
+                args,
+                transport,
+                {"identity": observation.identity, "servers": [observation.server]},
+                selected=selected,
             )
         if args.command != "doctor":
             report = discover(transport, args.remote_python, args.runtime_dir)
-            _coverage(report)
+            _coverage(report, concise=args.command == "open" and not args.verbose and not args.json)
             if args.command == "open":
                 return _open(args, transport, report)
             if args.json:
                 print(json.dumps(report, ensure_ascii=True))
             else:
-                _servers(report, all_candidates=args.all_candidates)
+                _servers(report, all_candidates=args.all_candidates, verbose=args.verbose)
             ready = any(s["state"] == "ready" for s in report["servers"])
             if not ready:
                 print(
@@ -616,6 +830,11 @@ def main(argv: list[str] | None = None) -> int:
     except ValueError as exc:
         parser.error(str(exc))
     except JupyHopError as exc:
+        if launch_ready:
+            print(
+                f"Start of {launch_name} reached readiness before the access error. To reconnect, run {_resume_command(args, transport, report['server'])}",
+                file=sys.stderr,
+            )
         print(f"jupyhop: {exc}", file=sys.stderr)
         return exc.exit_code
     except KeyboardInterrupt:
@@ -624,6 +843,8 @@ def main(argv: list[str] | None = None) -> int:
             if args.command == "archive" or getattr(args, "lifecycle_phase", None) == "archive"
             else "jupyhop: stop interrupted; remote outcome is unknown. Use status before retrying."
             if args.command == "stop" or getattr(args, "lifecycle_phase", None) == "stop"
+            else f"jupyhop: tunnel closed. The last observation of {launch_name} was ready. Reconnect with {_resume_command(args, transport, report['server'])}"
+            if launch_ready
             else f"jupyhop: interrupted; session request {launch_id} may remain running. Owned tunnel closed; use discover before retrying start."
             if launch_id
             else "jupyhop: interrupted; owned tunnel closed, remote sessions were not modified."

@@ -12,7 +12,7 @@ from jupyhop.session_inventory import inspect_sessions, summary
 from jupyhop.ssh import SSHTransport
 
 
-def show_inventory(report: dict[str, Any], *, history: bool = False) -> None:
+def show_inventory(report: dict[str, Any], *, history: bool = False, verbose: bool = False) -> None:
     counts = summary(report)
     display = {key: "unknown" if value is None else str(value) for key, value in counts.items()}
     archived = display["archived"]
@@ -22,15 +22,16 @@ def show_inventory(report: dict[str, Any], *, history: bool = False) -> None:
         f"{report['host']}: ready={display['ready']}  stopped awaiting archive={display['stopped']}  "
         f"review={display['review']}  unarchived={display['unarchived']}/128  archived={archived}"
     )
-    for session in report["sessions"]:
-        print(describe_session(session) + f"  {session['reason']}")
+    for number, session in enumerate(report["sessions"], 1):
+        print(f"{number}: {describe_session(session, verbose=verbose)}")
     if counts["stopped"]:
         print(
             "Stopped records still reserve names/slots. Use archive HOST, or manage HOST to select them."
         )
     if history and report["history"] is not None:
         for entry in report["history"]["entries"]:
-            print(f"{entry['name']}  archived evidence  {entry['id']}  (not resumable)")
+            identifier = f"  {entry['id']}" if verbose else ""
+            print(f"{entry['name']}  archived evidence{identifier}  (not resumable)")
     if report["history"] is not None and report["history"]["next_offset"] is not None:
         print(
             f"More history: status {report['host']} --history --history-offset {report['history']['next_offset']}"
@@ -43,19 +44,27 @@ def show_inventory(report: dict[str, Any], *, history: bool = False) -> None:
             )
 
 
-def show_lifecycle(report: dict[str, Any]) -> None:
+def show_lifecycle(
+    report: dict[str, Any], *, verbose: bool = False, name: str | None = None
+) -> None:
     for session in report["servers"]:
-        print(
-            f"{session['id']}  managed  {session['name']}  {session['state']}  {session['reason']}"
-        )
+        print(describe_session(session, verbose=verbose))
     if report.get("archived") is not None:
-        print(f"Archived {report['archived']['id']} -> {report['archived']['path']}")
+        if verbose or name is None:
+            print(f"Archived {report['archived']['id']} -> {report['archived']['path']}")
+        else:
+            print(f"Archived {name}")
     elif not report["servers"]:
         print("No managed session records found in this host/account registry.")
 
 
 def select_managed(
-    report: dict[str, Any], operation: str, *, name: str | None, interactive: bool
+    report: dict[str, Any],
+    operation: str,
+    *,
+    name: str | None,
+    interactive: bool,
+    verbose: bool = False,
 ) -> dict[str, Any]:
     if not report["complete"] or report["error"] is not None:
         raise ProtocolError(
@@ -72,11 +81,25 @@ def select_managed(
             else s["state"] not in {"stopped", "stale"}
         )
     ]
-    return choose(eligible, describe_session, interactive=interactive)
+    return choose(
+        eligible,
+        lambda session: describe_session(session, verbose=verbose),
+        interactive=interactive,
+    )
 
 
-def confirm(operation: str, sid: str, name: str | None, *, archive_after: bool) -> None:
-    target = f"{name} ({sid})" if name else sid
+def confirm(
+    operation: str,
+    sid: str,
+    name: str | None,
+    *,
+    archive_after: bool,
+    host: str | None = None,
+    verbose: bool = False,
+) -> None:
+    target = (f"{name} ({sid})" if verbose else name) if name else sid
+    if host:
+        target += f" on {host}"
     if operation == "stop":
         text = f"Stop {'and archive ' if archive_after else ''}managed session {target}? This terminates all its kernels and computations. "
         if archive_after:
@@ -93,6 +116,7 @@ def control(
 ) -> int:
     operation = operation or args.command
     identifier = args.session
+    detailed = args.verbose or identifier is not None
     name = args.selector_name
     interactive = not args.json and sys.stdin.isatty()
     if identifier is not None:
@@ -116,7 +140,7 @@ def control(
             if args.json:
                 print(json.dumps(report, ensure_ascii=True))
             else:
-                show_inventory(report, history=args.history)
+                show_inventory(report, history=args.history, verbose=detailed)
             if report["error"] is not None or report["history_error"] is not None:
                 raise ProtocolError(
                     "Session inventory is unavailable or incomplete; inspect its diagnostics."
@@ -129,7 +153,7 @@ def control(
         if args.json:
             print(json.dumps(report, ensure_ascii=True))
         else:
-            show_lifecycle(report)
+            show_lifecycle(report, verbose=detailed, name=name)
         require_lifecycle_ok(report)
         return 0
     if not interactive and not (args.yes and identifier is not None):
@@ -142,17 +166,26 @@ def control(
         )
     if identifier is None:
         observed = inspect_sessions(transport, python=args.remote_python)
-        selected = select_managed(observed, operation, name=name, interactive=interactive)
+        selected = select_managed(
+            observed, operation, name=name, interactive=interactive, verbose=detailed
+        )
         identifier, name = selected["id"], selected["name"]
     archive_after = operation == "stop" and (
         args.archive_after or interactive and not args.yes and not args.keep_record
     )
     if not args.yes:
-        confirm(operation, identifier, name, archive_after=archive_after)
+        confirm(
+            operation,
+            identifier,
+            name,
+            archive_after=archive_after,
+            host=transport.host,
+            verbose=detailed,
+        )
     args.lifecycle_phase = operation
     result = lifecycle(transport, operation, identifier, python=args.remote_python)
     if not args.json:
-        show_lifecycle(result)
+        show_lifecycle(result, verbose=detailed, name=name)
     if not archive_after:
         if args.json:
             print(json.dumps(result, ensure_ascii=True))
@@ -176,7 +209,7 @@ def control(
         combined["archive"] = archived
         require_lifecycle_ok(archived)
         if not args.json:
-            show_lifecycle(archived)
+            show_lifecycle(archived, verbose=detailed, name=name)
     except JupyHopError as error:
         if args.json:
             combined["error"] = {"code": error.exit_code, "message": str(error)}

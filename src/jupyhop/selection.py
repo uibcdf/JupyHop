@@ -45,8 +45,20 @@ def choose(
     return candidates[int(value) - 1]
 
 
-def describe_session(session: dict[str, Any]) -> str:
-    return f"{session.get('name') or '(unnamed)'}  {session.get('origin', 'managed')}  {session['state']}  {session['id']}"
+def describe_session(session: dict[str, Any], *, verbose: bool = False) -> str:
+    label = session.get("name") or (
+        f"Port {session['port']}" if session.get("port") else "(unnamed)"
+    )
+    row = f"{label}  {session.get('origin', 'managed')}  {session['state']}"
+    if verbose:
+        row += f"  {session['id']}"
+        if session.get("observed_id") and session["observed_id"] != session["id"]:
+            row += f"  observation={session['observed_id']}"
+        if session.get("port") is not None:
+            row += f"  port={session['port']}"
+        if session.get("reason"):
+            row += f"  {session['reason']}"
+    return row
 
 
 def resolve_name(sessions: list[dict[str, Any]], name: str) -> dict[str, Any]:

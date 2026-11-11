@@ -203,7 +203,8 @@ def test_default_human_discovery_summarizes_stale_rows_and_explicit_all_restores
     ready = dict(stale, id="b" * 24, state="ready", reason="verified")
     _servers({"servers": [stale, ready]}, all_candidates=False)
     output = capsys.readouterr()
-    assert stale["id"] not in output.out and ready["id"] in output.out
+    assert stale["id"] not in output.out and ready["id"] not in output.out
+    assert "1: Port 8888  unmanaged  ready" in output.out
     assert "partial sample" in output.err and "stale=1" in output.err
     _servers({"servers": [stale, ready]}, all_candidates=True)
     assert stale["id"] in capsys.readouterr().out

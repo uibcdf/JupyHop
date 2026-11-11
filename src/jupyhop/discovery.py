@@ -117,7 +117,12 @@ def discover(
 
 
 def select_server(
-    report: dict[str, Any], identifier: str | None, *, interactive: bool, name: str | None = None
+    report: dict[str, Any],
+    identifier: str | None,
+    *,
+    interactive: bool,
+    name: str | None = None,
+    verbose: bool = False,
 ) -> dict[str, Any]:
     if identifier is not None and name is not None:
         raise ValueError("Choose an exact ID or --name, not both.")
@@ -139,5 +144,8 @@ def select_server(
             "Multiple verified servers found. Use discover --json, then open HOST ID; no server was selected."
         )
     return choose(
-        candidates, describe_session, interactive=interactive, explicit=identifier is not None
+        candidates,
+        lambda server: describe_session(server, verbose=verbose),
+        interactive=interactive,
+        explicit=identifier is not None,
     )

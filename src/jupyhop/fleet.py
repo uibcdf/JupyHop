@@ -54,7 +54,7 @@ def inventory(
 
 
 def select_inventory(
-    data: dict[str, Any], *, interactive: bool, name: str | None = None
+    data: dict[str, Any], *, interactive: bool, name: str | None = None, verbose: bool = False
 ) -> tuple[dict[str, Any], dict[str, Any]]:
     if name is not None:
         validate_name(name)
@@ -72,7 +72,7 @@ def select_inventory(
         )
     return choose(
         candidates,
-        lambda item: f"{item[0]['host']}  {describe_session(item[1])}",
+        lambda item: f"{item[0]['host']}  {describe_session(item[1], verbose=verbose)}",
         interactive=interactive,
         explicit=name is not None and len(candidates) == 1,
     )
