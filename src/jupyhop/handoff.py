@@ -4,6 +4,7 @@ import base64
 import hashlib
 import html
 import io
+import math
 import os
 import re
 import secrets
@@ -180,6 +181,10 @@ class Handoff:
     def __init__(self, relay: _Relay, uri: str):
         self._relay = relay
         self.uri = uri
+
+    @property
+    def seconds_left(self) -> int:
+        return max(0, math.ceil(self._relay.deadline - time.monotonic()))
 
     def wait(
         self,

@@ -156,6 +156,19 @@ def test_invalid_cli_and_unimplemented_commands(argv, capsys):
     assert capsys.readouterr().err
 
 
+def test_explicit_password_mode_can_use_a_private_terminal_with_json(capsys):
+    report = {"id": "a" * 32, "state": "ready", "error": None}
+    with (
+        patch("sys.stdin.isatty", return_value=True),
+        patch("jupyhop.managed.getpass.getpass", return_value="fixture-password") as prompt,
+        patch("jupyhop.cli.start", return_value=report) as launch,
+    ):
+        assert main(["start", "workstation", "--auth", "password", "--no-open", "--json"]) == 0
+    assert prompt.call_count == 2
+    assert launch.call_args.kwargs["password"] == "fixture-password"
+    assert json.loads(capsys.readouterr().out) == report
+
+
 def test_error_stdout_empty(envelope, capsys):
     broken = copy.deepcopy(envelope)
     broken["protocol"]["major"] = 99

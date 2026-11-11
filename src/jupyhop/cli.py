@@ -512,7 +512,7 @@ def _open(
 
                     def offer_link() -> None:
                         print(
-                            f"Open this link in a browser on this computer within 60 seconds: {handoff.uri}",
+                            f"Open this link in a browser on this computer within {handoff.seconds_left} seconds: {handoff.uri}",
                             flush=True,
                         )
 
@@ -696,8 +696,6 @@ def main(argv: list[str] | None = None) -> int:
             if args.auth == "token" and args.password_stdin:
                 raise ValueError("--password-stdin requires password authentication.")
             args.auth = args.auth or ("password" if args.password_stdin else "token")
-            if args.auth == "password" and args.json and not args.password_stdin:
-                raise ValueError("Password mode with --json requires --password-stdin.")
             if args.name is not None:
                 validate_name(args.name)
         config = load_config(args.config)

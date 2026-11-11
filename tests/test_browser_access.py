@@ -67,6 +67,7 @@ def test_cookie_scope_and_ambiguous_headers_are_refused(field):
     assert "fixture" not in repr(_cookie())
 
 
+@pytest.mark.integration
 def test_handoff_only_delivers_once_and_cleans_up():
     offered = threading.Event()
     cookie = _cookie()
@@ -110,6 +111,7 @@ def test_handoff_only_delivers_once_and_cleans_up():
         _post(port, proof)
 
 
+@pytest.mark.integration
 def test_expiry_closes_even_with_slow_trickle(monkeypatch):
     monkeypatch.setattr(handoff, "LIFETIME", 0.3)
     with handoff.prepare_handoff("http://127.0.0.1:12345/project/", _cookie()) as exchange:
