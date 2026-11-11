@@ -1,9 +1,10 @@
-# 36 — 0.4.0 source candidate
+# 36 — 0.4.0 implementation and qualification
 
-The 0.4.0 source candidate implements automatic browser access for managed
-Jupyter sessions, named selection and recovery. The published Conda release
-is 0.3.0. The [implementation plan](35-04-implementation-plan.md) specifies the
-acceptance cases and release workflow.
+JupyHop 0.4.0 implements automatic browser access for managed Jupyter sessions,
+named selection and recovery. Build 0.4.0=py_0 is published on uibcdf/main.
+The [publication report](38-04-conda-publication.md) records the exact released
+source, archive, promotion and independent installation. The
+[implementation plan](35-04-implementation-plan.md) specifies the acceptance cases.
 
 ## Implemented contracts
 
@@ -125,5 +126,5 @@ the next version.
 The source implements G0–G4. The maintainer accepted G5's automated qualification
 and guided physical pilot for 0.4.0, explicitly deferring A23's unassisted
 new-reader walkthrough to subsequent feedback. G6's authorized publication and
-independent public installation are tracked in the
+independent public installation passed and are recorded in the
 [publication report](38-04-conda-publication.md). See [the release procedure](../docs/releasing.md).

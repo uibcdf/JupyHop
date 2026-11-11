@@ -76,5 +76,6 @@ Automated browser, cross-account, protocol, installed-upgrade and package checks
 remain separate evidence. Conda staging, promotion and independent public
 receiving belong to G6 and require the release workflow.
 
-The requested physical test sequence is complete. The next action is the
-authorized publication workflow. Issue #6 is scheduled for the following version.
+The requested physical test sequence is complete. The subsequent
+[publication workflow and independent receiving](38-04-conda-publication.md)
+passed for 0.4.0=py_0. Issue #6 is scheduled for the following version.

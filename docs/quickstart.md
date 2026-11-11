@@ -18,12 +18,12 @@ locally and authorized SSH access to that remote computer.
 Run in your **local terminal**, using mamba:
 
 ```console
-mamba create -n jupyhop -c uibcdf -c conda-forge python=3.14 jupyhop=0.3.0
+mamba create -n jupyhop -c uibcdf -c conda-forge python=3.14 jupyhop=0.4.0
 mamba activate jupyhop
 jupyhop --version
 ```
 
-Expect `jupyhop 0.3.0`. With Conda, replace `mamba` with `conda` in both commands.
+Expect `jupyhop 0.4.0`. With Conda, replace `mamba` with `conda` in both commands.
 Python 3.11–3.14 is supported. The package includes OpenSSH; you do not need
 Jupyter or tmux locally. See [Installation](installation.md) for other methods.
 
@@ -131,13 +131,8 @@ jupyhop start workstation \
     --name analysis
 ```
 
-With the published **0.3.0** client, choose and confirm a new Jupyter session
-password, answer any OpenSSH prompts, then enter the Jupyter password in the
-browser. Keep it for later visits to this session.
-
-With the **0.4.0 source candidate**, answer the OpenSSH prompts and continue in
-your browser. JupyHop handles access to the newly managed session automatically.
-A gateway can still prompt for its own SSH password.
+Answer the OpenSSH prompts and continue in your browser. JupyHop opens the
+new managed session automatically. A gateway can prompt for its own SSH password.
 
 The command normally starts the server **and opens it**. Do not start it again
 to reconnect. Create a notebook and try the cell above. After Ctrl-C closes the

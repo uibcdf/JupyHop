@@ -22,10 +22,9 @@ jupyhop open workstation
 
 **Linux · Python 3.11–3.14 · Existing SSH access**
 
-No local Jupyter or central service required. [Version 0.3.0](releases.md) is
-available from the uibcdf Conda channel.
-The [0.4.0 source candidate](releases.md) adds automatic access to new managed
-sessions. Its options are marked throughout this guide.
+[Version 0.4.0](releases.md) is available from the uibcdf Conda channel.
+New managed sessions open automatically after SSH authentication. Install the
+client on the computer where you use the browser.
 
 ## Two ways to begin
 

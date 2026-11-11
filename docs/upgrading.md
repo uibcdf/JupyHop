@@ -7,21 +7,21 @@ myst:
 
 # Update the client
 
-The current public Conda release is **0.3.0**. Run these steps on each local
+The current public Conda release is **0.4.0**. Run these steps on each local
 client you want to update. Remote Jupyter environments, existing notebook files
 and managed runners have separate lifetimes and do not need reinstalling for a
 client update.
 
 ## Before changing the local environment
 
-Save notebook files and note the SSH alias, managed UUID and any custom runtime
-paths. Keep the session's Jupyter password available through your private
-credential workflow. Close an attached JupyHop tunnel with Ctrl-C before changing
+Save notebook files and note the SSH alias, managed name or UUID and any custom
+runtime paths. For a password-based session, keep its Jupyter password available
+through your private credential workflow. Close an attached JupyHop tunnel with Ctrl-C before changing
 its local environment, then update from a separate terminal. The remote server
 and kernel remain subject to their launcher and site policy.
 
 Check the [release notes](releases.md) and [compatibility policy](compatibility.md).
-Installed upgrades from 0.1.0 and 0.2.0 to the actual 0.3.0 client are tested with
+Installed upgrades from 0.1.0, 0.2.0 and 0.3.0 to the actual 0.4.0 client are tested with
 the same surviving kernel and unchanged remote runner/registry. This does not
 promise arbitrary future schema migrations, downgrades or survival after a remote
 process exits.
@@ -32,7 +32,7 @@ For an existing client environment named `jupyhop`:
 
 ```console
 mamba activate jupyhop
-mamba install -c uibcdf -c conda-forge jupyhop=0.3.0
+mamba install -c uibcdf -c conda-forge jupyhop=0.4.0
 jupyhop --version
 ```
 
@@ -56,7 +56,7 @@ jupyhop resume workstation --name analysis
 ```
 
 Replace `analysis` with your current managed name; an exact session UUID works
-too. Authenticate to Jupyter and return to the existing notebook/kernel. Use
+too. Complete any required login and return to the existing notebook/kernel. Use
 `discover`/`open` with the required runtime paths for an unmanaged server.
 Reconnection makes a new local forward; it does not recreate kernel memory.
 
@@ -65,14 +65,12 @@ check the supported versions. Do not edit schema numbers, delete the registry or
 start a replacement server as a migration step. Report the redacted version/error
 details using [Troubleshooting](troubleshooting.md#reporting-a-problem).
 
-## Try the 0.4.0 source candidate
+## Interaction changes in 0.4.0
 
-Install the candidate in a separate local environment using the
-[source installation instructions](installation.md). Check that
-`jupyhop --version` reports 0.4.0. Return to a named managed session using
-`jupyhop resume HOST --name NAME`. A session created by 0.3.0 still uses its
-existing Jupyter password. Start a new disposable project to try automatic
-access, or add `--auth password` to choose password authentication.
+New managed sessions open automatically after SSH authentication. Return by name
+with `jupyhop resume HOST --name NAME`. A session created by 0.3.0 still uses its
+existing Jupyter password. Add `--auth password` to choose password authentication
+for a new session, and `--verbose` to see full identifiers and observations.
 
 Ordinary JSON keeps manual login and its existing fields. Scripts using
 `--password-stdin` still create password-based sessions. See

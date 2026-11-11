@@ -18,11 +18,11 @@ from another computer and manage your projects from one terminal.
 On the Linux computer where you use the browser, with mamba installed:
 
 ```console
-mamba create -n jupyhop -c uibcdf -c conda-forge python=3.14 jupyhop=0.3.0
+mamba create -n jupyhop -c uibcdf -c conda-forge python=3.14 jupyhop=0.4.0
 mamba activate jupyhop
 ```
 
-Use `conda` instead of `mamba` if you prefer. The published **0.3.0** package
+Use `conda` instead of `mamba` if you prefer. The published **0.4.0** package
 includes OpenSSH; local Jupyter and tmux are unnecessary. See
 [installation options](https://www.uibcdf.org/jupyhop/installation.html) for
 other Python versions and source installation. JupyHop is not on PyPI.
@@ -66,10 +66,9 @@ jupyhop start workstation \
     --name analysis
 ```
 
-With the **0.4.0 source candidate**, authenticate in any OpenSSH prompts and
-continue in your browser. A new managed session opens without a Jupyter password
-prompt. With the published **0.3.0** client, choose a Jupyter session password and
-enter it on the browser login page. Keep it for later visits to that session.
+Authenticate in any OpenSSH prompts and continue in your browser. JupyHop
+opens the new managed session automatically. For an existing password-based
+session, enter its Jupyter password in the browser if prompted.
 
 After closing the local tunnel, return from this or another authorized Linux
 client:
@@ -144,10 +143,10 @@ and host verification remain enabled. Read the
 
 ## Project and contributing
 
-Version **0.3.0** is published on the [uibcdf Conda channel](https://anaconda.org/uibcdf/jupyhop).
+Version **0.4.0** is published on the [uibcdf Conda channel](https://anaconda.org/uibcdf/jupyhop).
 See [release notes](https://www.uibcdf.org/jupyhop/releases.html),
 [updating a client](https://www.uibcdf.org/jupyhop/upgrading.html) and the
-[publication record](devguide/31-03-conda-publication.md).
+[publication record](devguide/38-04-conda-publication.md).
 
 Contributions and research-computing use cases are welcome. Start with
 [CONTRIBUTING](CONTRIBUTING.md) for development and isolated tests, or the

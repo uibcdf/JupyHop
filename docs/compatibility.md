@@ -7,13 +7,13 @@ myst:
 
 # Compatibility and version policy
 
-JupyHop 0.3.0 is the current public Linux Conda release. Compatibility means the specific
+JupyHop 0.4.0 is the current public Linux Conda release. Compatibility means the specific
 workflows/versions observed below, not every Jupyter Server 2 deployment. The
 client needs OpenSSH and CPython 3.11–3.14; it has zero mandatory Python packages
 and needs no local Jupyter. Free-threaded Python, macOS and Windows are untested.
 The Conda recipe restricts installation to Linux via __linux and Python
 `>=3.11,<3.15`, and supplies OpenSSH. Noarch describes the Python payload, not a
-claim of macOS/Windows support. See [Conda evidence](https://github.com/uibcdf/jupyhop/blob/main/devguide/31-03-conda-publication.md)
+claim of macOS/Windows support. See [Conda evidence](https://github.com/uibcdf/jupyhop/blob/main/devguide/38-04-conda-publication.md)
 and [the future macOS investigation](https://github.com/uibcdf/jupyhop/issues/2).
 
 ## Endpoint and remote requirements
@@ -22,7 +22,7 @@ and [the future macOS investigation](https://github.com/uibcdf/jupyhop/issues/2)
 | --- | --- |
 | SSH | Existing authorized alias, trusted host keys, POSIX-compatible remote shell. Keys/agent and native terminal password/passphrase prompts; headless/--batch requires noninteractive access. OpenSSH handles Include/Match/ProxyJump. Jump-host configuration is trusted too; individual MFA variants are untested. |
 | Discover/open | Linux remote helper Python >=3.11 (stdlib sufficient), readable private current-user runtime metadata, verified current-user process and IPv4 loopback TCP listener, recognizable Jupyter 2 API/auth behavior. |
-| HTTP/URLs | `127.0.0.1`, HTTP, normal password/token login and simple ASCII base paths including WebSockets. Automatic managed access is available in the 0.4.0 source candidate. |
+| HTTP/URLs | `127.0.0.1`, HTTP, normal password/token login and simple ASCII base paths including WebSockets. Token-based managed sessions support automatic browser access. |
 | Unsupported endpoints | Public/wildcard listeners, IPv6-only, HTTPS, Unix sockets, legacy nbserver metadata, exotic auth/proxies. Refused or labeled unsupported; no TLS/host-key bypass. |
 | Managed start | Existing Python >=3.11, Jupyter Server >=2.20,<3, usable kernelspec, tmux and a readable stable Linux machine ID; selected directory must exist. Server 2.21.1 is the recommended tested stack. |
 | Safe stop | Linux pidfd support (kernel >=5.3), exposed by Python or named libc wrappers. Otherwise refused. No PID-only or forced-kill fallback. |
@@ -39,12 +39,13 @@ the owned socket and cannot fall back to a fresh connection if it is lost.
 
 ## Observed matrix
 
-The published 0.3.0 source passed 394 tests on each CPython 3.11–3.14, installed
-upgrades from 0.1.0/0.2.0, native SSH passwords, browser reconnect and separate
-Unix-account checks. The same Conda archive was qualified on four installed
-clients before promotion and independent public installation. See the
-[current implementation evidence](https://github.com/uibcdf/jupyhop/blob/main/devguide/30-03-implementation.md)
-and [publication record](https://github.com/uibcdf/jupyhop/blob/main/devguide/31-03-conda-publication.md).
+The published 0.4.0 source passed the suite on CPython 3.11–3.14, installed
+upgrades from 0.1.0/0.2.0/0.3.0, native SSH passwords and separate Unix-account
+checks. Automatic access and kernel continuity passed in Chrome and Firefox.
+The same Conda archive was qualified on four installed clients before promotion
+and independent public installation. See the
+[current implementation evidence](https://github.com/uibcdf/jupyhop/blob/main/devguide/36-04-implementation.md)
+and [publication record](https://github.com/uibcdf/jupyhop/blob/main/devguide/38-04-conda-publication.md).
 These are observed workflows, not certification of every Linux/site setup.
 
 The version comparisons below also retain historical observations:
@@ -83,9 +84,11 @@ real-site OS observation is x86_64 Ubuntu 26.04.1, not a claim about every distr
 
 | Contract | Current version / behavior |
 | --- | --- |
-| Client package | Published Conda 0.3.0=py_0, qualified on Python 3.11–3.14; no PyPI publication |
+| Client package | Published Conda 0.4.0=py_0, qualified on Python 3.11–3.14; no PyPI publication |
 | Doctor wire | 1.0 |
-| Managed start wire | 1.2; version refusal is a new allowlisted error |
+| Managed start wire | 1.8 with explicit authentication mode acknowledgment; legacy password requests use 1.2 |
+| Private managed browser access | 1.7; selected native-cookie issuance over SSH |
+| New managed launch settings | Separate schema 1.0 for token/password mode; legacy settings remain readable |
 | Discovery wire | 1.6; distinct sample/scan limit diagnostics, retaining legacy entry_limit |
 | Status/stop wire | 1.3; existing scripting output preserved |
 | Archive wire | 1.4, sent only for explicit archive |

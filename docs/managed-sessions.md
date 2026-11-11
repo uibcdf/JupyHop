@@ -39,22 +39,20 @@ jupyhop start workstation \
     --name analysis
 ```
 
-With the **0.4.0 source candidate**, answer any OpenSSH prompts and continue in
-your browser. New managed servers use a native Jupyter token generated on the
+Answer any OpenSSH prompts and continue in your browser. New managed servers use a native Jupyter token generated on the
 remote computer. JupyHop delivers browser access automatically after verifying
 the selected session through SSH.
 
-With the published **0.3.0** client, choose and confirm a Jupyter session
-password first. After SSH authenticates, enter that password in Jupyter's login
-page. Sessions started this way keep their usual login when reopened.
+Existing password-based sessions, including those created with 0.3.0, use
+their existing Jupyter password on later visits if the browser asks for it.
 
 The server and local forward receive ports automatically. Use the name
-`analysis` to find this project again. In 0.4.0, `--verbose` shows session UUIDs
+`analysis` to find this project again. `--verbose` shows session UUIDs
 and detailed observations. Names and UUIDs identify sessions.
 
 ### Choose password authentication
 
-In 0.4.0, add `--auth password` if you want a Jupyter password for a new session.
+Add `--auth password` if you want a Jupyter password for a new session.
 Choose and confirm it in the terminal. JupyHop uses it to open the browser for
 that first start. On later visits, enter it on Jupyter's login page if prompted.
 Passwords contain 8–1024 characters without ASCII control characters. The
@@ -87,8 +85,7 @@ jupyhop status workstation
 ```
 
 These are independent choices, not mandatory steps before every connection.
-The chooser shows names, origins and states, even for one ready candidate. In
-0.4.0, add `--verbose` for UUIDs and endpoint details.
+The chooser shows names, origins and states, even for one ready candidate. Add `--verbose` for UUIDs and endpoint details.
 Only ready servers can open. Exit 0 from status means observation succeeded;
 it can still describe a stopped/stale server. [Session states](sessions.md)
 explain the exact distinctions.
@@ -191,7 +188,7 @@ jupyhop start workstation \
 
 Use this form to start the server and return without opening it. To keep the
 tunnel attached and open the browser yourself, add `--no-browser` to an open or
-resume command. In 0.4.0, automatic access prints a private file link that you
+resume command. Automatic access prints a private file link that you
 can open on this computer within 60 seconds. For manual Jupyter login, use
 `--login manual` to get the normal login URL. Manual login requires the server's
 own credential or an existing browser cookie.

@@ -19,8 +19,8 @@ environments and authenticated remote account.
   prompts. Python does not read/cache the SSH password. Verify host fingerprints
   through a trusted channel, including gateway hosts.
 - **Jupyter:** use the server's own password or token when its login page
-  appears. The published 0.3.0 client creates password-based managed sessions.
-  The 0.4.0 source candidate opens new token-based managed sessions automatically.
+  appears. JupyHop opens new token-based managed sessions automatically.
+  Existing password-based sessions use their existing Jupyter credentials.
 
 In 0.4.0, the managed server keeps its token in private remote runtime metadata.
 After SSH authentication and session verification, Jupyter issues a native cookie

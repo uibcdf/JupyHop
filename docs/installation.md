@@ -17,7 +17,7 @@ Python versions are **3.11, 3.12, 3.13 and 3.14**.
 Run in your **local terminal**:
 
 ```console
-mamba create -n jupyhop -c uibcdf -c conda-forge python=3.14 jupyhop=0.3.0
+mamba create -n jupyhop -c uibcdf -c conda-forge python=3.14 jupyhop=0.4.0
 mamba activate jupyhop
 jupyhop --version
 ```
@@ -25,13 +25,13 @@ jupyhop --version
 Expected result:
 
 ```text
-jupyhop 0.3.0
+jupyhop 0.4.0
 ```
 
 Prefer Conda? Use the equivalent commands **instead**:
 
 ```console
-conda create -n jupyhop -c uibcdf -c conda-forge python=3.14 jupyhop=0.3.0
+conda create -n jupyhop -c uibcdf -c conda-forge python=3.14 jupyhop=0.4.0
 conda activate jupyhop
 jupyhop --version
 ```
@@ -44,9 +44,9 @@ ordinary SSH route; remote managed-session records stay on the remote host.
 **Next: [Open your first notebook →](quickstart.md#2-check-your-ssh-route)**
 
 If JupyHop is already installed, follow [Update the client](upgrading.md).
-The current Conda build is `0.3.0=py_0`. Its noarch Python payload has an explicit
+The current Conda build is `0.4.0=py_0`. Its noarch Python payload has an explicit
 Linux constraint; macOS and Windows are outside current support. Detailed
-[publication evidence](https://github.com/uibcdf/jupyhop/blob/main/devguide/31-03-conda-publication.md)
+[publication evidence](https://github.com/uibcdf/jupyhop/blob/main/devguide/38-04-conda-publication.md)
 identifies the tested archive and digest.
 
 ## What the remote host needs

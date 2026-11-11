@@ -150,7 +150,7 @@ Required gates, each with recorded acceptance:
 - [x] G3: bounded one-use local handoff and actual browser acceptance.
 - [x] G4: CLI defaults/options, simple presentation, targeted lookup and recovery.
 - [x] G5: automated and guided acceptance, with the maintainer's recorded A23 deferral.
-- [ ] G6: separately authorized numeric release, exact-file publication and receiving.
+- [x] G6: authorized 0.4.0 publication, exact-file promotion and independent public receiving.
 
 A cookie-delivery acknowledgment is not proof that the browser accepted it.
 Explicit no-browser/JSON/password compatibility and all A01–A24 acceptance cases

@@ -2,7 +2,7 @@
 
 Date: 2026-11-10. Baseline: released **0.3.0**, analysis commit **57ad340**.
 Status: **implementation baseline for 0.4.0**. See the
-[implementation report](36-04-implementation.md) for the candidate, test evidence
+[implementation report](36-04-implementation.md) for the release, test evidence
 and remaining qualification.
 This plan supersedes unresolved choices in [34](34-04-usability-and-browser-auth.md),
 which retains the historical analysis and original feasibility evidence.
@@ -625,7 +625,7 @@ the unchanged public docs and product are not redeployed by these planning commi
 - [x] G5 automated/source/installed/docs acceptance and guided pilot recorded.
   The maintainer accepted this evidence for 0.4.0 and deferred A23's unassisted
   new-reader walkthrough to subsequent user feedback. A23 was not executed.
-- [ ] G6 A24 and separately authorized publication/receiving recorded.
+- [x] G6 A24 and authorized publication/receiving recorded in the publication report.
 
 The [implementation report](36-04-implementation.md) records the qualified
 source revision and private package checks. The [physical-client pilot](37-04-physical-client-pilot.md)

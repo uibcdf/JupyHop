@@ -12,7 +12,9 @@
 - See names and numbered choices in terminal output and use `--verbose` for
   identifiers. Browser delivery failures give a resume command and exit 15.
 
-Source candidate. The published Conda release remains 0.3.0.
+Build `0.4.0=py_0` is published on uibcdf/main after source qualification,
+four installed Conda clients and independent public receiving. See the
+[publication report](devguide/38-04-conda-publication.md).
 
 ## 0.3.0 — session usability
 

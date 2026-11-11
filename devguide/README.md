@@ -114,7 +114,7 @@ This directory is the project's design source of truth. Update specifications an
 - [0.4.0 implementation plan](35-04-implementation-plan.md): authoritative release
   scope, explicit CLI modes, cookie-only private protocol, settings compatibility,
   bounded handoff, failure recovery, staged work and A01–A24 acceptance matrix.
-- [0.4.0 implementation report](36-04-implementation.md): source candidate,
+- [0.4.0 implementation report](36-04-implementation.md): implemented release,
   design adjustments, reproduced tests and remaining release checks.
 - [0.4.0 physical-client pilot](37-04-physical-client-pilot.md): guided automatic
   browser access, named/menu reconnection, expired-link recovery, two independent

@@ -1,14 +1,14 @@
 ---
 myst:
   html_meta:
-    description: "Understand JupyHop 0.3.0 JSON output for discovery, multi-host inventory, managed lifecycle, attached tunnels and support reports."
-    "property=og:description": "Understand JupyHop 0.3.0 JSON output for discovery, multi-host inventory, managed lifecycle, attached tunnels and support reports."
+    description: "Understand JupyHop 0.4.0 JSON output for discovery, multi-host inventory, managed lifecycle, attached tunnels and support reports."
+    "property=og:description": "Understand JupyHop 0.4.0 JSON output for discovery, multi-host inventory, managed lifecycle, attached tunnels and support reports."
 ---
 
 # JSON output reference
 
 This page describes the public JSON output shared by **0.3.0** and the
-**0.4.0 source candidate**. 0.4.0 uses manual login with ordinary `--json`.
+**0.4.0**. 0.4.0 uses manual login with ordinary `--json`.
 Explicit `--login auto` emits the connection object after cookie delivery.
 It is distinct from the internal SSH wire envelopes. Ordinary `doctor --json` retains
 `protocol`, `operation` and `data` at the top level; do not expect those keys in

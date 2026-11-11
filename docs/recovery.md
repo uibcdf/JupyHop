@@ -102,8 +102,8 @@ cookies follow Jupyter's policy; a private window can help diagnose login.
 JupyHop does not cache or reset Jupyter passwords.
 
 [Updating the local client](upgrading.md) does not reinstall remote scientific
-environments or rewrite living launchers. Installed upgrades from 0.1.0 and
-0.2.0 to 0.3.0 have been tested with a surviving kernel and unchanged remote
+environments or rewrite living launchers. Installed upgrades from 0.1.0,
+0.2.0 and 0.3.0 to 0.4.0 have been tested with a surviving kernel and unchanged remote
 runner/registry. Unknown state/protocol versions are refused; arbitrary future
 migrations are not promised. Keep [compatible clients and helpers](compatibility.md).
 

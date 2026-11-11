@@ -7,7 +7,7 @@ myst:
 
 # Preparing a release
 
-The current Conda release is 0.3.0. This repository has not published it to PyPI.
+The current Conda release is 0.4.0. This repository has not published it to PyPI.
 Builds, CI artifacts, commits and tags do not constitute a package publication.
 Uploading a release is a separate explicit maintainer action after artifact review.
 The 0.3.0 reports track [source qualification](https://github.com/uibcdf/jupyhop/blob/main/devguide/30-03-implementation.md)
@@ -71,7 +71,7 @@ The [0.3.0 Conda report](https://github.com/uibcdf/jupyhop/blob/main/devguide/31
 actions, Linux-only noarch decision and observed publication status. This route
 does not publish PyPI, create a tag or create a GitHub Release.
 
-The coordinates `0.2.0=py_0` and `0.3.0=py_0` are already published. For a future reviewed,
+The coordinates `0.2.0=py_0`, `0.3.0=py_0` and `0.4.0=py_0` are already published. For a future reviewed,
 unoccupied coordinate, wait for the exact main commit's six source jobs to pass,
 then substitute the approved commit, numeric version and integer build number
 in this template:

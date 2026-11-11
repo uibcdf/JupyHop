@@ -1,13 +1,13 @@
 ---
 myst:
   html_meta:
-    description: "Read JupyHop release notes, including 0.3.0 named sessions, management menu, history, confirmed completion and support reports."
-    "property=og:description": "Read JupyHop release notes, including 0.3.0 named sessions, management menu, history, confirmed completion and support reports."
+    description: "Read JupyHop release notes, including 0.4.0 automatic browser access, named reconnection and compatible managed sessions."
+    "property=og:description": "Read JupyHop release notes, including 0.4.0 automatic browser access, named reconnection and compatible managed sessions."
 ---
 
 # Release notes
 
-## 0.4.0 source candidate
+## 0.4.0 — Automatic managed browser access
 
 New managed sessions open after SSH authentication without a Jupyter password
 prompt. Reopen by name from another authorized client and continue with the
@@ -16,7 +16,15 @@ original kernel. Use `--auth password` for password-based launches and
 sessions and external Jupyter servers use their existing credentials.
 
 Ordinary terminal output uses names and numbered choices. Use `--verbose` for
-session IDs and detailed observations. The published Conda package is 0.3.0.
+session IDs and detailed observations.
+
+Version **0.4.0=py_0** is available from [uibcdf on Conda](https://anaconda.org/uibcdf/jupyhop).
+The [publication report](https://github.com/uibcdf/jupyhop/blob/main/devguide/38-04-conda-publication.md)
+records its exact source, qualified archive and independent installation.
+The [physical pilot](https://github.com/uibcdf/jupyhop/blob/main/devguide/37-04-physical-client-pilot.md)
+verified named/menu return, access-expiry recovery and independent completion.
+The next-version [menu presentation issue](https://github.com/uibcdf/jupyhop/issues/6)
+and subsequent new-user feedback remain tracked.
 
 ## 0.3.0 — Session usability
 
