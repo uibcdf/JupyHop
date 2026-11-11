@@ -101,6 +101,7 @@ def check_source(sha, version):
                 "Run python -m experiments.package_smoke",
                 "Verify installed client upgrade from 0.1.0 using the actual candidate",
                 "Verify installed client upgrade from published 0.2.0 source",
+                "Verify both directions of installed 0.3.0 compatibility",
             }
             if job["name"] == "linux (3.14)":
                 required |= {
@@ -110,6 +111,7 @@ def check_source(sha, version):
                     "Verify native Unix SSH password workflows",
                     "Verify default SSH configuration permission feedback",
                     "Remove isolated account fixture",
+                    "Check installed automatic access in Chrome and Firefox",
                 }
             executed = {
                 step["name"] for step in job["steps"] if step.get("conclusion") == "success"

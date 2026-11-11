@@ -109,6 +109,7 @@ def source_gate_responses(sha):
         "Run python -m experiments.package_smoke",
         "Verify installed client upgrade from 0.1.0 using the actual candidate",
         "Verify installed client upgrade from published 0.2.0 source",
+        "Verify both directions of installed 0.3.0 compatibility",
         "Run google-chrome --version && python -m experiments.browser_smoke",
         "Run python -m experiments.browser_smoke --managed --reconnect",
         'Run python -m experiments.m6_compatibility --server-python "$(command -v python)"',
@@ -116,6 +117,7 @@ def source_gate_responses(sha):
         "Verify native Unix SSH password workflows",
         "Verify default SSH configuration permission feedback",
         "Remove isolated account fixture",
+        "Check installed automatic access in Chrome and Firefox",
     ]
     jobs = [
         {
@@ -138,6 +140,8 @@ def source_gate_responses(sha):
         "skipped_step",
         "failed_job",
         "missing_02_upgrade",
+        "missing_03_upgrade",
+        "missing_auto_browser",
         "missing_config_acceptance",
     ],
 )
@@ -147,14 +151,16 @@ def test_source_acceptance_requires_exact_complete_executed_matrix(monkeypatch, 
     monkeypatch.delenv("GITHUB_REPOSITORY", raising=False)
     monkeypatch.delenv("GITHUB_REF", raising=False)
     responses = source_gate_responses(sha)
+    missing_steps = {
+        "missing_02_upgrade": "Verify installed client upgrade from published 0.2.0 source",
+        "missing_03_upgrade": "Verify both directions of installed 0.3.0 compatibility",
+        "missing_auto_browser": "Check installed automatic access in Chrome and Firefox",
+        "missing_config_acceptance": "Verify default SSH configuration permission feedback",
+    }
     if failure == "wrong_commit":
         responses[0]["workflow_runs"][0]["head_sha"] = "2" * 40
-    elif failure in {"missing_02_upgrade", "missing_config_acceptance"}:
-        name = (
-            "Verify installed client upgrade from published 0.2.0 source"
-            if failure == "missing_02_upgrade"
-            else "Verify default SSH configuration permission feedback"
-        )
+    elif failure in missing_steps:
+        name = missing_steps[failure]
         job = next(j for j in responses[1]["jobs"] if j["name"] == "linux (3.14)")
         job["steps"] = [step for step in job["steps"] if step["name"] != name]
     elif failure == "missing_job":

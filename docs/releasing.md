@@ -35,6 +35,10 @@ checking a package, and wire/registry versions keep their independent contracts.
    The 0.3.0 gate additionally covers the published 0.2.0 source baseline,
    default-config native permission acceptance, new installed report/named-open/
    history/completion flows and management terminal signals.
+   The 0.4.0 source gate also requires installed compatibility in both directions
+   with 0.3.0 on all four Python versions and automatic access in Chrome and
+   Firefox on Python 3.14. The publication checker verifies that these steps
+   actually succeeded in the selected source run.
 4. Build in a clean checkout/environment with only the chosen release artifacts
    in `dist`, then run:
 
