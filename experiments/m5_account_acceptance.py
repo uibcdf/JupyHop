@@ -15,12 +15,87 @@ import requests
 
 from experiments.m0_spike import execute
 from experiments.m5_accounts import check
+from jupyhop.auth import observe, verify_cookie
 from jupyhop.discovery import discover, select_server
 from jupyhop.errors import DiscoveryError, JupyHopError
+from jupyhop.handoff import prepare_handoff
 from jupyhop.lifecycle import lifecycle, require_lifecycle_ok
 from jupyhop.managed import new_id, require_ready, start
 from jupyhop.opening import open_connection
 from jupyhop.ssh import SSHTransport
+
+
+def token_isolation(transports, server_python):
+    first, other = transports.values()
+    sid = new_id()
+    try:
+        launched = start(
+            first,
+            server_python=server_python,
+            helper_python="/usr/bin/python3",
+            workdir="~/project",
+            name="token-isolation-" + sid[:8],
+            auth_mode="token",
+            session_id=sid,
+        )
+        require_ready(launched)
+        server = launched["server"]
+        other_identity = discover(other)["identity"]
+        assert other_identity["uid"] != launched["identity"]["uid"]
+        for path in (
+            launched["record_path"],
+            str(Path(launched["record_path"]).with_name("settings.json")),
+            f"{server['sources'][0]}/jpserver-{server['pid']}.json",
+        ):
+            denied = other.run(["cat", path])
+            assert denied.returncode and not denied.stdout
+        try:
+            observe(
+                other,
+                "/usr/bin/python3",
+                other.timeout,
+                identifier=sid,
+                identity=other_identity,
+                observed_id=server["observed_id"],
+                local_port=12345,
+            )
+        except DiscoveryError:
+            pass
+        else:
+            raise AssertionError("Another Unix account obtained managed browser access")
+        with open_connection(
+            first,
+            launched,
+            server,
+            managed_python="/usr/bin/python3",
+            managed_mode="token",
+        ) as (tunnel, _):
+            issued = observe(
+                tunnel,
+                "/usr/bin/python3",
+                first.timeout,
+                identifier=sid,
+                identity=launched["identity"],
+                observed_id=server["observed_id"],
+                local_port=tunnel.local_port,
+            )
+            assert issued.cookie is not None
+            verify_cookie(tunnel.local_port, server["base_url"], issued.cookie)
+            destination = f"http://127.0.0.1:{tunnel.local_port}{server['base_url']}"
+            with prepare_handoff(destination, issued.cookie) as exchange:
+                from urllib.parse import unquote, urlsplit
+
+                denied = other.run(["cat", unquote(urlsplit(exchange.uri).path)])
+                assert denied.returncode and not denied.stdout
+    finally:
+        stopped = lifecycle(first, "stop", sid, python="/usr/bin/python3")
+        if stopped["error"] != "not_managed":
+            require_lifecycle_ok(stopped)
+            require_lifecycle_ok(lifecycle(first, "archive", sid, python="/usr/bin/python3"))
+    print(
+        "PASS: distinct Unix UID cannot read token/runtime/state/proof or issue the selected cookie",
+        flush=True,
+    )
 
 
 def login(base, password):
@@ -172,6 +247,7 @@ def run(root, server_python):
         "Real-account M5 acceptance passed. Operator cleanup of the temporary users/sshd remains explicit.",
         flush=True,
     )
+    token_isolation(transports, server_python)
 
 
 def main():

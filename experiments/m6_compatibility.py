@@ -11,6 +11,7 @@ from experiments.jupyter_fixture import JupyterFixture
 from experiments.lab import SSHLab, free_port
 from experiments.m0_spike import execute
 from experiments.managed_fixture import ManagedFixture
+from jupyhop.auth import observe, verify_cookie
 from jupyhop.discovery import discover, select_server
 from jupyhop.lifecycle import lifecycle, require_lifecycle_ok
 from jupyhop.managed import require_ready
@@ -62,6 +63,33 @@ def main():
                     require_lifecycle_ok(lifecycle(transport, operation, fixture.sid))
         finally:
             fixture.close()
+        if not args.expect_start_refusal:
+            fixture = ManagedFixture(
+                lab, server_python=args.server_python, name="token-compatibility"
+            )
+            fixture.parameters.update(auth_mode="token", password=None)
+            with fixture:
+                server = fixture.report["server"]
+                with open_connection(
+                    transport,
+                    fixture.report,
+                    server,
+                    managed_python="python3",
+                    managed_mode="token",
+                ) as (tunnel, _):
+                    issued = observe(
+                        tunnel,
+                        "python3",
+                        transport.timeout,
+                        identifier=fixture.sid,
+                        identity=fixture.report["identity"],
+                        observed_id=server["observed_id"],
+                        local_port=tunnel.local_port,
+                    )
+                    assert issued.cookie is not None
+                    verify_cookie(tunnel.local_port, server["base_url"], issued.cookie)
+                for operation in ("stop", "archive"):
+                    require_lifecycle_ok(lifecycle(transport, operation, fixture.sid))
     print(
         json.dumps(
             {

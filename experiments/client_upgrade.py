@@ -262,7 +262,7 @@ def check_continuity(first, current):
     assert current["progress"] > first["progress"], "Background computation stopped progressing"
 
 
-def exercise(old_wheel, new_wheel, *, hold_seconds=2):
+def exercise(old_wheel, new_wheel, *, hold_seconds=2, reverse_managed=False):
     from experiments.managed_fixture import ManagedFixture
 
     with SSHLab() as lab:
@@ -335,6 +335,8 @@ def exercise(old_wheel, new_wheel, *, hold_seconds=2):
                 "PASS: new installed client safely stops and archives only the experiment UUID",
                 flush=True,
             )
+            if reverse_managed:
+                reverse_access(lab, old, fresh, cleanup)
         finally:
             # A lost start reply may still have created a session. This private
             # lab had no pre-existing records; recover only its own fixture state.
@@ -350,6 +352,47 @@ def exercise(old_wheel, new_wheel, *, hold_seconds=2):
                 cleanup.close()
 
 
+def reverse_access(lab, old, fresh, cleanup):
+    """Check that an installed 0.3 client understands a 0.4 token runner."""
+    import requests
+
+    launched = fresh.rpc(
+        "start",
+        None,
+        "--server-python",
+        sys.executable,
+        "--name",
+        "new-token-fixture",
+        "--no-open",
+    )
+    assert launched["state"] == "ready"
+    sid = cleanup.sid = launched["id"]
+    path = Path(launched["record_path"])
+    assert path.is_relative_to(lab.home / "state/jupyhop")
+    cleanup.record = record = json.loads(path.read_text())
+    cleanup.url = f"http://127.0.0.1:{record['port']}{record['base_url']}"
+    assert old.rpc("status", sid)["servers"][0]["state"] == "ready"
+    token = json.loads(Path(record["runtime"], f"jpserver-{record['pid']}.json").read_text())[
+        "token"
+    ]
+    assert re.fullmatch(r"[a-f0-9]{64}", token)
+    with old.opened(sid) as base, requests.Session() as client:
+        client.trust_env = False
+        assert client.get(base + "api/status", timeout=4).status_code == 403
+        assert (
+            client.get(
+                base + "api/status", headers={"Authorization": "token " + token}, timeout=4
+            ).status_code
+            == 200
+        )
+    assert old.rpc("stop", sid, "--yes")["servers"][0]["state"] == "stopped"
+    assert old.rpc("archive", sid, "--yes")["archived"]["id"] == sid
+    print(
+        "PASS: installed 0.3 observes, opens manually, stops and archives a new token runner",
+        flush=True,
+    )
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--baseline-ref", default=BASELINE_REF)
@@ -357,6 +400,9 @@ def main():
     candidate.add_argument("--candidate-wheel", type=Path)
     candidate.add_argument("--preview-version")
     parser.add_argument("--hold-seconds", type=float, default=2)
+    parser.add_argument(
+        "--reverse-managed", action="store_true", help="Also check 0.3 against a new token runner."
+    )
     args = parser.parse_args()
     if not math.isfinite(args.hold_seconds) or not 0 <= args.hold_seconds <= 14400:
         parser.error("Hold duration must be between 0 and 14400 seconds")
@@ -382,7 +428,7 @@ def main():
                 hashlib.sha256(wheel.read_bytes()).hexdigest(),
                 flush=True,
             )
-        exercise(old, new, hold_seconds=args.hold_seconds)
+        exercise(old, new, hold_seconds=args.hold_seconds, reverse_managed=args.reverse_managed)
 
 
 if __name__ == "__main__":

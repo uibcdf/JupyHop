@@ -18,7 +18,9 @@ import sys
 import termios
 import time
 from pathlib import Path
+from urllib.parse import unquote, urlsplit
 
+from experiments.browser_handoff import chrome
 from experiments.m5_account_acceptance import login
 from experiments.m5_accounts import _prepared, _read
 from jupyhop.lifecycle import lifecycle, require_lifecycle_ok
@@ -100,6 +102,22 @@ def terminal_case(argv, password, *, jupyter_password=None, action="open", stdin
                     os.write(
                         terminal, (wrong if action == "retry" and count == 1 else password) + b"\n"
                     )
+            if not connected and action == "browser":
+                match = re.search(rb"file://[^\r\n ]+\.html", transcript)
+                if match:
+                    launch = Path(unquote(urlsplit(match[0].decode()).path))
+                    assert (
+                        launch.stat().st_uid == os.getuid()
+                        and launch.stat().st_mode & 0o777 == 0o600
+                    )
+                    config = Path(argv[argv.index("--ssh-config") + 1])
+                    with chrome(config.parent, launch) as browser:
+                        browser.until("!!document.querySelector('.jp-LabShell')")
+                        assert not launch.exists() and "token=" not in browser.evaluate(
+                            "location.href"
+                        )
+                    connected = True
+                    os.write(terminal, b"\x03")
             if not connected and jupyter_password is not None:
                 for line in transcript.decode(errors="replace").splitlines():
                     if not line.startswith('{"host":'):
@@ -122,7 +140,7 @@ def terminal_case(argv, password, *, jupyter_password=None, action="open", stdin
             0 if action == "start" else 3 if action == "timeout" else 130
         )
         assert prompts == (2 if action == "retry" else 1)
-        assert connected == (jupyter_password is not None)
+        assert connected == (jupyter_password is not None or action == "browser")
         assert password not in transcript and wrong not in transcript
         if stdin:
             assert stdin.rstrip(b"\n") not in transcript
@@ -195,6 +213,42 @@ Host *
             assert status["servers"][0]["pid"] == launched["server"]["pid"]
         print(
             "PASS: native Unix SSH password opens the same live Jupyter directly and through ProxyJump, once per invocation, without password echo/caching",
+            flush=True,
+        )
+        token_id = new_id()
+        active.append(token_id)
+        require_ready(
+            start(
+                transport,
+                server_python=server_python,
+                helper_python="/usr/bin/python3",
+                workdir="~/project",
+                name="token-password-acceptance",
+                auth_mode="token",
+                session_id=token_id,
+            )
+        )
+        for jump in (False, True):
+            config.write_text(
+                ("Host password-target\n    ProxyJump account-b\n" if jump else "") + prefix
+            )
+            terminal_case(
+                [
+                    "resume",
+                    "password-target",
+                    "--name",
+                    "token-password-acceptance",
+                    "--no-browser",
+                    "--ssh-config",
+                    str(config),
+                    "--timeout",
+                    "15",
+                ],
+                password,
+                action="browser",
+            )
+        print(
+            "PASS: native SSH password and automatic Jupyter browser access compose on direct and jump routes",
             flush=True,
         )
         config.write_text(prefix)

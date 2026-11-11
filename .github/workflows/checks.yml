@@ -20,7 +20,7 @@ jobs:
       - uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python }}
-      - run: sudo apt-get update && sudo apt-get install -y openssh-server tmux
+      - run: sudo apt-get update && sudo apt-get install -y openssh-server tmux xdg-utils
       - run: sudo mkdir -p /run/sshd
       - run: python -m pip install -e '.[dev,experiments]'
       - run: ruff check . && ruff format --check . && mypy
@@ -63,6 +63,10 @@ jobs:
         run: |
           candidate_wheel="$(python -c 'from pathlib import Path; print(next(Path("dist").glob("jupyhop-*.whl")))')"
           python -m experiments.client_upgrade --candidate-wheel "$candidate_wheel" --baseline-ref 6e0438eeb39a3bc8b92acb48545e55b343b52279
+      - name: Verify both directions of installed 0.3.0 compatibility
+        run: |
+          candidate_wheel="$(python -c 'from pathlib import Path; print(next(Path("dist").glob("jupyhop-*.whl")))')"
+          python -m experiments.client_upgrade --candidate-wheel "$candidate_wheel" --baseline-ref 9a50bef3d5144420ccb0c5776d1158b4e1a76613 --reverse-managed
       - if: matrix.python == '3.14'
         uses: actions/upload-artifact@v4
         with:
@@ -75,6 +79,31 @@ jobs:
         run: google-chrome --version && python -m experiments.browser_smoke
       - if: matrix.python == '3.14'
         run: python -m experiments.browser_smoke --managed --reconnect
+      - name: Check installed automatic access in Chrome and Firefox
+        if: matrix.python == '3.14'
+        run: |
+          browser_dir="$RUNNER_TEMP/jupyhop-browsers"
+          mkdir -m 700 "$browser_dir"
+          curl --fail --silent --show-error --location --max-time 120 \
+            https://download-installer.cdn.mozilla.net/pub/firefox/releases/160.0/linux-x86_64/en-US/firefox-160.0.tar.xz \
+            --output "$browser_dir/firefox.tar.xz"
+          curl --fail --silent --show-error --location --max-time 90 \
+            https://github.com/mozilla/geckodriver/releases/download/v0.37.0/geckodriver-v0.37.0-linux64.tar.gz \
+            --output "$browser_dir/geckodriver.tar.gz"
+          (
+            cd "$browser_dir"
+            sha256sum --check <<'CHECKSUMS'
+          fde774e9757c8878534c05ec210db592bf6a1b244c57941ffb2e364c04f35fcd  firefox.tar.xz
+          90d4e33bd9816684400c160d1309aaffec23a3f65103511d5a62d8501062e548  geckodriver.tar.gz
+          CHECKSUMS
+            tar -xJf firefox.tar.xz
+            tar -xzf geckodriver.tar.gz
+          )
+          python -m venv "$browser_dir/client"
+          "$browser_dir/client/bin/python" -m pip install --no-index --no-deps dist/*.whl
+          python -m experiments.managed_browser --client-python "$browser_dir/client/bin/python"
+          python -m experiments.managed_browser --client-python "$browser_dir/client/bin/python" \
+            --firefox "$browser_dir/firefox/firefox" --geckodriver "$browser_dir/geckodriver"
   server-compatibility:
     runs-on: ubuntu-latest
     timeout-minutes: 15
