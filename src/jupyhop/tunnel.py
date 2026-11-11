@@ -63,13 +63,16 @@ class Tunnel:
         except SSHError as error:
             raise TunnelError(str(error)) from None
 
-    def wait(self) -> None:
+    def check_alive(self) -> None:
         assert self.connection is not None
+        try:
+            self.connection.alive()
+        except SSHError as error:
+            raise TunnelError(str(error)) from None
+
+    def wait(self) -> None:
         while True:
-            try:
-                self.connection.alive()
-            except SSHError as error:
-                raise TunnelError(str(error)) from None
+            self.check_alive()
             time.sleep(0.2)
 
     def close(self) -> None:

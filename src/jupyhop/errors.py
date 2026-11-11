@@ -39,3 +39,7 @@ class LaunchError(JupyHopError):
 
 class LifecycleError(JupyHopError):
     exit_code = 13
+
+
+class BrowserAccessError(JupyHopError):
+    exit_code = 15
